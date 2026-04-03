@@ -594,12 +594,19 @@ This block is especially important for research, debugging, and external replay 
 
 `structure` gives major structural references:
 
+- EMA-set-derived structure from `regime_raw`
 - relative high / low
 - their bar indexes
 - RHL bias values
 
 Interpretation guidance:
 
+- structural analysis should not rely only on swing high / low
+- EMA set is part of the structure model, especially `ema20`, `ema50`, `ema100`, and `ema200` from `regime_raw`
+- these EMA levels often behave as dynamic support or resistance depending on regime and price location
+- EMA importance is timeframe-sensitive:
+  - on lower intraday frames such as `15m` and `1h`, `ema100` and `ema200` often carry more structural weight
+  - on higher frames such as `4h`, `1d`, and `1w`, `ema20` and `ema50` also become structurally important and should be treated more seriously
 - use this block to understand where price sits inside recent structure
 - use relative high / low as structure anchors, not as standalone signals
 - bias fields help interpret structural lean beyond raw price location
@@ -618,7 +625,47 @@ Interpretation guidance:
 - POC and value area levels are useful for market positioning and trade-location quality
 - do not treat every VP node as equally important; proximity to current price and clustering matter
 
-### 5.13 `divergence`
+### 5.13 `key level synthesis`
+
+The most useful structural levels are usually not created by one source alone.
+
+In this framework, key levels are composed from three structural families:
+
+- EMA set from `regime_raw`
+- volume profile references from `vp`
+- swing structure from `structure`
+
+This means the most relevant support and resistance zones often come from combinations such as:
+
+- EMA level + VP node
+- EMA level + relative high / low
+- VP node + relative high / low
+- EMA cluster + VP node + relative high / low
+
+Interpretation guidance:
+
+- EMA-set interpretation should adapt to timeframe:
+  - on `15m` and `1h`, deeper EMA references like `ema100` and `ema200` often matter more as structural support or resistance
+  - on `4h`, `1d`, and `1w`, the faster EMA structure such as `ema20` and `ema50` also becomes highly relevant
+- if two structural families overlap or sit close together, the value of that area as a potential key level increases
+- if all three overlap or cluster tightly, the level becomes a much more important structural zone
+- if current price is approaching that zone, price behavior around that area becomes especially important
+
+Near a high-quality structural cluster, the analyst should pay close attention to:
+
+- whether price is accepted through the zone
+- whether price is rejected sharply from the zone
+- whether internal state remains aligned as the zone is tested
+- whether the move extends through the zone or fails and reverses from it
+
+These clustered levels should usually be treated as zones rather than a single precise tick.
+
+When price is close to such a zone, that region may become a decision area where:
+
+- trend continuation is confirmed by clean acceptance and follow-through
+- reversal risk rises if rejection appears and internal state weakens
+
+### 5.14 `divergence`
 
 `divergence` contains both classification and source geometry.
 
@@ -635,7 +682,7 @@ Interpretation guidance:
 - it does not independently create a signal
 - `bull_boost` and `bear_boost` show how much score support divergence contributed
 
-### 5.14 `obos`
+### 5.15 `obos`
 
 `obos` is the overbought / oversold summary layer.
 
@@ -732,6 +779,7 @@ Question to answer:
 
 Use:
 
+- `regime_raw` EMA set
 - `structure`
 - `vp`
 - `divergence`
@@ -739,7 +787,7 @@ Use:
 
 Question to answer:
 
-- Is the event occurring in a structurally attractive place?
+- Is the event occurring near an important EMA / VP / swing structure cluster?
 - Is there supporting divergence?
 - Is the event stretched, crowded, or location-rich?
 
