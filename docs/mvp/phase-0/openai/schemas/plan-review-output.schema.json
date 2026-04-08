@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Plan Review Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "action",
+    "reason",
+    "changed_fields",
+    "new_status",
+    "thesis_still_valid",
+    "recommended_user_action",
+    "revised_trade_plan",
+    "revised_risk_plan"
+  ],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "keep",
+        "modify",
+        "reduce_risk",
+        "partial_take_profit",
+        "invalidate",
+        "close_plan"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "new_status": {
+      "type": "string",
+      "enum": [
+        "drafted",
+        "active_waiting_entry",
+        "active_entered",
+        "active_scaling_out",
+        "closed_tp",
+        "closed_sl",
+        "closed_manual_rule",
+        "invalidated",
+        "expired"
+      ]
+    },
+    "thesis_still_valid": {
+      "type": "boolean"
+    },
+    "recommended_user_action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revised_trade_plan": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "direction",
+        "confidence",
+        "thesis",
+        "entry_plan",
+        "take_profit_plan",
+        "invalidation_plan",
+        "management_rules",
+        "expiry_rules"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "drafted",
+            "active_waiting_entry",
+            "active_entered",
+            "active_scaling_out",
+            "closed_tp",
+            "closed_sl",
+            "closed_manual_rule",
+            "invalidated",
+            "expired"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["long", "short"]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "thesis": {
+          "type": "object"
+        },
+        "entry_plan": {
+          "type": "object"
+        },
+        "take_profit_plan": {
+          "type": "object"
+        },
+        "invalidation_plan": {
+          "type": "object"
+        },
+        "management_rules": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "expiry_rules": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "revised_risk_plan": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "max_initial_risk_pct",
+        "size_guidance",
+        "invalid_if",
+        "reduce_risk_if",
+        "exposure_constraints",
+        "notes"
+      ],
+      "properties": {
+        "max_initial_risk_pct": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "size_guidance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "invalid_if": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reduce_risk_if": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "exposure_constraints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "notes": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
