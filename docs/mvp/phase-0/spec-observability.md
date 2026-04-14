@@ -10,7 +10,7 @@
 结论先行：
 
 - 可观测性不是 Phase 0 主链路必需项
-- 但如果你希望减少 OpenAI 相关排错成本，建议在 Phase 0 尽快补：
+- 但如果你希望减少 AI 调用相关排错成本，建议在 Phase 0 尽快补：
   - `llm_runs`
   - `system_prompt_versions`
 
@@ -135,7 +135,7 @@ Phase 0 冻结 3 种 task：
 
 ## 3.5 应用方式
 
-每次调用 OpenAI 前：
+每次调用 Foundry 模型前：
 
 1. 先加载当前 task 对应的 active prompt version
 2. 将 prompt 文本与 output schema 一起传入调用层
@@ -181,7 +181,7 @@ Phase 0 冻结 3 种 task：
   "task_type": "event_analyst | plan_writer | plan_reviewer",
   "run_status": "started | completed | failed | validation_failed | persistence_failed",
   "model_name": "string",
-  "provider": "openai",
+  "provider": "foundry",
   "prompt_version_id": "uuid | null",
   "source_snapshot_id": "uuid | null",
   "source_trade_plan_id": "uuid | null",
@@ -202,7 +202,7 @@ Phase 0 冻结 3 种 task：
 字段含义冻结为：
 
 - `request_payload`
-  - 传给 OpenAI 的最终业务输入
+  - 传给 AI provider 的最终业务输入
   - 不要求 1:1 保存 SDK 原始请求
 - `raw_response`
   - 模型原始结构化响应

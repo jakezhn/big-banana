@@ -32,7 +32,7 @@ Phase 0 的 ingestion 不负责：
 
 - 复杂编排
 - 长事务
-- 同步调用 OpenAI
+- 同步调用 Foundry
 - 同步生成 plan
 - 多来源 webhook 兼容
 

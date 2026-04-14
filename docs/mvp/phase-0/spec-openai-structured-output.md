@@ -1,8 +1,14 @@
-# OpenAI Structured Output Schema
+# AI Structured Output Schema
 
-这份文档冻结 Phase 0 的 OpenAI structured outputs 方案。
+这份文档冻结 Phase 0 的 AI structured outputs 方案。
 
 目标不是描述 prompt，而是把模型输出定成可以直接经过校验、映射并落库的 JSON contract。
+
+说明：
+
+- 当前文件名保留 `spec-openai-structured-output.md`，是历史命名
+- 当前 MVP 的 AI provider 已切到 Microsoft Foundry
+- 本文中的 schema contract 是 provider-agnostic 的，可直接用于 Foundry 调用链路
 
 ---
 
@@ -40,7 +46,7 @@ Phase 0 区分两层 schema：
 
 ## 1.3 Phase 0 的 3 类 LLM 输出
 
-Phase 0 只定义 3 类 OpenAI 输出：
+Phase 0 只定义 3 类 AI 输出：
 
 1. Event Analyst
 2. Plan Writer

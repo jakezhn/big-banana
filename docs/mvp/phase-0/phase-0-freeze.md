@@ -37,7 +37,7 @@ Phase 0 不做：
 
 当前 MVP 冻结为以下主链路：
 
-**TradingView Webhook -> Supabase Edge Function -> Postgres -> OpenAI -> Next.js Dashboard**
+**TradingView Webhook -> Supabase Edge Function -> Postgres -> Microsoft Foundry -> Next.js Dashboard**
 
 MVP 必须覆盖：
 

@@ -12,7 +12,7 @@ Phase 1 的目标非常窄：
 Phase 1 不做：
 
 - `bar_snapshots` 规范化
-- OpenAI 分析
+- Foundry 分析
 - 计划生成
 - 计划评审
 - 前端页面接入
@@ -83,7 +83,7 @@ Phase 1 的硬阻塞对象只有一个：
 
 原因：
 
-- MVP 主链路已经冻结为 `TradingView Webhook -> Supabase Edge Function -> Postgres -> OpenAI -> Next.js Dashboard`
+- MVP 主链路已经冻结为 `TradingView Webhook -> Supabase Edge Function -> Postgres -> Microsoft Foundry -> Next.js Dashboard`
 - 现在拆分服务只会增加环境变量、部署链路和本地联调复杂度
 - 单仓库已经足够承载 Phase 1 到 Phase 4
 
@@ -121,13 +121,13 @@ Phase 1 的硬阻塞对象只有一个：
 - GitHub repo
 - Supabase project
 - Vercel project
-- OpenAI API key
+- Microsoft Foundry project / endpoint / key
 - TradingView alert source
 
 说明：
 
 - Phase 1 真正要接入的云端只有 Supabase 和 TradingView
-- Vercel 和 OpenAI 虽然不是 Phase 1 的阻塞项，但工程结构上要提前预留
+- Vercel 和 Foundry 虽然不是 Phase 1 的阻塞项，但工程结构上要提前预留
 
 ## 4.3 代码依赖分层
 
@@ -142,13 +142,13 @@ Phase 1 的硬阻塞对象只有一个：
 
 服务端 / AI 共享依赖：
 
-- `openai`
+- Foundry / Azure AI SDK
 - `zod`
 
 建议：
 
 - 共享类型、schema、AI 输出校验都放进 workspace 包
-- 不要把 webhook schema、OpenAI schema、业务枚举复制进多个目录
+- 不要把 webhook schema、AI schema、业务枚举复制进多个目录
 
 ---
 
@@ -190,7 +190,7 @@ big-banana/
 - `apps/web`：唯一前端应用
 - `supabase/functions`：唯一后端入口层
 - `packages/ai`：共享 AI 逻辑，不单独部署
-- `packages/schemas`：统一放 webhook payload 和 OpenAI structured output 校验
+- `packages/schemas`：统一放 webhook payload 和 AI structured output 校验
 - `packages/domain`：统一放对象名、枚举、常量、领域类型
 - `packages/db`：统一放数据库读写映射
 
@@ -220,10 +220,11 @@ SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 SB_PUBLISHABLE_KEY=
 SB_SECRET_KEY=
-OPENAI_API_KEY=
-OPENAI_MODEL_ANALYSIS=
-OPENAI_MODEL_PLAN=
-OPENAI_MODEL_REVIEW=
+FOUNDRY_PROJECT_ENDPOINT=
+FOUNDRY_API_KEY=
+FOUNDRY_MODEL_ANALYSIS=
+FOUNDRY_MODEL_PLAN=
+FOUNDRY_MODEL_REVIEW=
 ```
 
 ## 6.2 `apps/web/.env.local`
@@ -247,16 +248,17 @@ SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 SB_PUBLISHABLE_KEY=
 SB_SECRET_KEY=
-OPENAI_API_KEY=
-OPENAI_MODEL_ANALYSIS=
-OPENAI_MODEL_PLAN=
-OPENAI_MODEL_REVIEW=
+FOUNDRY_PROJECT_ENDPOINT=
+FOUNDRY_API_KEY=
+FOUNDRY_MODEL_ANALYSIS=
+FOUNDRY_MODEL_PLAN=
+FOUNDRY_MODEL_REVIEW=
 ```
 
 原则：
 
 - 前端绝不能读取 `SUPABASE_SECRET_KEY`
-- `OPENAI_API_KEY` 不进入前端环境变量
+- `FOUNDRY_API_KEY` 不进入前端环境变量
 - 本地和云端先保持同一份 `TRADINGVIEW_WEBHOOK_SECRET`
 - Supabase 托管的 Edge Functions 当前默认仍注入旧 key；如果函数代码要显式读取新 key，线上请手动设置 `SB_PUBLISHABLE_KEY` 和 `SB_SECRET_KEY`
 
@@ -367,10 +369,14 @@ SUPABASE_URL
 SUPABASE_SECRET_KEY
 ```
 
-Phase 1 不需要：
+Phase 1 不需要真正调用 Foundry，但建议把下面这些变量预留好：
 
 ```txt
-OPENAI_API_KEY
+FOUNDRY_PROJECT_ENDPOINT
+FOUNDRY_API_KEY
+FOUNDRY_MODEL_ANALYSIS
+FOUNDRY_MODEL_PLAN
+FOUNDRY_MODEL_REVIEW
 ```
 
 建议你至少维护两份本地环境文件：
@@ -420,10 +426,11 @@ SB_SECRET_KEY
 后续进入 AI 阶段时，还要补：
 
 ```txt
-OPENAI_API_KEY
-OPENAI_MODEL_ANALYSIS
-OPENAI_MODEL_PLAN
-OPENAI_MODEL_REVIEW
+FOUNDRY_PROJECT_ENDPOINT
+FOUNDRY_API_KEY
+FOUNDRY_MODEL_ANALYSIS
+FOUNDRY_MODEL_PLAN
+FOUNDRY_MODEL_REVIEW
 ```
 
 推荐直接用 CLI 设置：
@@ -619,7 +626,7 @@ Phase 1 入库只做一件事：
 
 - Phase 1 不同步写 `bar_snapshots`
 - Phase 1 不调用 normalizer
-- Phase 1 不调用 OpenAI
+- Phase 1 不调用 Foundry
 
 ## Step 15. 实现重复请求处理
 
@@ -824,7 +831,7 @@ Phase 1 通过的标准：
 Phase 1 常见跑偏点：
 
 - 一上来就写 normalizer
-- 一上来就接 OpenAI
+- 一上来就接 Foundry 推理
 - 想把 webhook 做成大而全 orchestrator
 - 把前端联调也塞进来
 - 为 future 扩展过度设计
