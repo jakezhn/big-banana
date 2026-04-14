@@ -212,11 +212,14 @@ big-banana/
 
 ```txt
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_APP_URL=
 TRADINGVIEW_WEBHOOK_SECRET=
 SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SB_PUBLISHABLE_KEY=
+SB_SECRET_KEY=
 OPENAI_API_KEY=
 OPENAI_MODEL_ANALYSIS=
 OPENAI_MODEL_PLAN=
@@ -229,7 +232,7 @@ OPENAI_MODEL_REVIEW=
 
 ```txt
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_APP_URL=
 ```
 
@@ -240,7 +243,10 @@ NEXT_PUBLIC_APP_URL=
 ```txt
 TRADINGVIEW_WEBHOOK_SECRET=
 SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SB_PUBLISHABLE_KEY=
+SB_SECRET_KEY=
 OPENAI_API_KEY=
 OPENAI_MODEL_ANALYSIS=
 OPENAI_MODEL_PLAN=
@@ -249,9 +255,10 @@ OPENAI_MODEL_REVIEW=
 
 原则：
 
-- 前端绝不能读取 `SUPABASE_SERVICE_ROLE_KEY`
+- 前端绝不能读取 `SUPABASE_SECRET_KEY`
 - `OPENAI_API_KEY` 不进入前端环境变量
 - 本地和云端先保持同一份 `TRADINGVIEW_WEBHOOK_SECRET`
+- Supabase 托管的 Edge Functions 当前默认仍注入旧 key；如果函数代码要显式读取新 key，线上请手动设置 `SB_PUBLISHABLE_KEY` 和 `SB_SECRET_KEY`
 
 ---
 
@@ -357,7 +364,7 @@ TRADINGVIEW_WEBHOOK_SECRET
 
 ```txt
 SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_SECRET_KEY
 ```
 
 Phase 1 不需要：
@@ -379,14 +386,17 @@ cp supabase/functions/.env.example supabase/functions/.env
 ```txt
 TRADINGVIEW_WEBHOOK_SECRET=replace_me
 SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+SUPABASE_PUBLISHABLE_KEY=<publishable-key>
+SUPABASE_SECRET_KEY=<secret-key>
+SB_PUBLISHABLE_KEY=<publishable-key>
+SB_SECRET_KEY=<secret-key>
 ```
 
 `apps/web/.env.local` 预留：
 
 ```txt
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -394,7 +404,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 - 不要把真实 secret 提交到 git
 - 本地和云端先使用同一份 `TRADINGVIEW_WEBHOOK_SECRET`
-- 不要把 `SUPABASE_SERVICE_ROLE_KEY` 暴露到前端
+- 不要把 `SUPABASE_SECRET_KEY` 暴露到前端
 
 ## Step 6. 配置 Supabase 云端 secrets
 
@@ -403,7 +413,8 @@ Edge Function 线上运行时必须能读取：
 ```txt
 TRADINGVIEW_WEBHOOK_SECRET
 SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
+SB_PUBLISHABLE_KEY
+SB_SECRET_KEY
 ```
 
 后续进入 AI 阶段时，还要补：
@@ -420,7 +431,8 @@ OPENAI_MODEL_REVIEW
 ```bash
 supabase secrets set TRADINGVIEW_WEBHOOK_SECRET=replace_me
 supabase secrets set SUPABASE_URL=https://<project-ref>.supabase.co
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+supabase secrets set SB_PUBLISHABLE_KEY=<publishable-key>
+supabase secrets set SB_SECRET_KEY=<secret-key>
 ```
 
 验收点：
