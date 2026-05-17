@@ -1,0 +1,48 @@
+{
+  "schema_version": "bitpunk.webhook.v12",
+  "type": "snapshot",
+  "context": {
+    "market": {
+      "tickerid": "BINANCE:BTCUSDT",
+      "source": "BINANCE",
+      "timeframe": "240",
+      "timeframe_label": "4h"
+    },
+    "bar": {
+      "index": 12346,
+      "time_ms": 1778419200000,
+      "open": 67400,
+      "high": 68100,
+      "low": 67100,
+      "close": 67950,
+      "volume": 11820.4
+    },
+    "volatility": {
+      "atr": 318.2,
+      "atr_len": 14
+    },
+    "regime": {
+      "name": "Bull Expansion",
+      "trend_score": 6.4
+    },
+    "structure": {
+      "ema20": 67820,
+      "ema50": 66940,
+      "ema100": 65110,
+      "ema200": 62090,
+      "relative_high": 69200,
+      "relative_low": 66540
+    },
+    "momentum": {
+      "value": 22.7,
+      "direction": "bull",
+      "sqz": "off"
+    },
+    "osc": {
+      "fast": 57.3,
+      "slow": 50.1,
+      "spread": 7.2,
+      "direction": "bull"
+    }
+  }
+}

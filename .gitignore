@@ -1,7 +1,11 @@
-.DS_Store
 node_modules/
+.next/
+.pnpm-store/
+dist/
+coverage/
+.turbo/
+.vercel/
 .env
-.env.local
-.env.*.local
-apps/web/.env.local
-supabase/functions/.env
+.env.*
+!.env.example
+.DS_Store

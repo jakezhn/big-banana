@@ -1,0 +1,14 @@
+{
+  "name": "@big-banana/contracts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  }
+}

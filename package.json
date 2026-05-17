@@ -1,0 +1,16 @@
+{
+  "name": "big-banana",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "test": "pnpm -r --if-present test",
+    "test:contracts": "pnpm --filter @big-banana/contracts test",
+    "test:domain": "pnpm --filter @big-banana/domain test",
+    "test:web": "pnpm --filter @big-banana/web test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

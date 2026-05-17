@@ -1,0 +1,48 @@
+{
+  "schema_version": "bitpunk.webhook.v12",
+  "type": "signal",
+  "context": {
+    "market": {
+      "tickerid": "BINANCE:BTCUSDT",
+      "source": "BINANCE",
+      "timeframe": "240",
+      "timeframe_label": "4h"
+    },
+    "bar": {
+      "index": 12345,
+      "time_ms": 1778404800000,
+      "open": 67000,
+      "high": 67800,
+      "low": 66500,
+      "close": 67400,
+      "volume": 12345.6
+    },
+    "volatility": {
+      "atr": 320.5,
+      "atr_len": 14
+    },
+    "regime": {
+      "name": "Bull Pullback",
+      "trend_score": 5.8
+    },
+    "structure": {
+      "ema20": 67600,
+      "ema50": 66800,
+      "ema100": 65000,
+      "ema200": 62000,
+      "relative_high": 69000,
+      "relative_low": 66000
+    },
+    "momentum": {
+      "value": 18.2,
+      "direction": "bull",
+      "sqz": "off"
+    },
+    "osc": {
+      "fast": 54.1,
+      "slow": 48.6,
+      "spread": 5.5,
+      "direction": "bull"
+    }
+  }
+}

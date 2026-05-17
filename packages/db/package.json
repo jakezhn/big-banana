@@ -1,0 +1,12 @@
+{
+  "name": "@big-banana/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@big-banana/domain": "workspace:*",
+    "postgres": "^3.4.0"
+  }
+}
