@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/trade-plan.schema.json",
+  "title": "Trade Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "market_thesis", "execution_playbook", "risk_intent", "reasoning_summary", "evidence"],
+  "properties": {
+    "action": {
+      "enum": ["create", "keep", "patch", "terminate", "skip"]
+    },
+    "market_thesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bias",
+        "environment",
+        "htf_bias",
+        "mtf_bias",
+        "bias_confidence",
+        "trend_end_score",
+        "structure_summary",
+        "key_levels"
+      ],
+      "properties": {
+        "bias": { "enum": ["long", "short", "neutral"] },
+        "environment": { "enum": ["trend", "range", "transition", "exhaustion"] },
+        "htf_bias": { "enum": ["bull", "bear", "neutral"] },
+        "mtf_bias": { "enum": ["bull", "bear", "neutral"] },
+        "bias_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "trend_end_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "structure_summary": { "type": "string" },
+        "key_levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "price_ref", "importance"],
+            "properties": {
+              "role": { "enum": ["support", "resistance"] },
+              "price_ref": {
+                "enum": ["EMA50", "EMA100", "EMA200", "relative_high", "relative_low"]
+              },
+              "importance": { "enum": ["primary", "secondary"] }
+            }
+          }
+        }
+      }
+    },
+    "execution_playbook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "entry_style",
+        "entry_zone",
+        "allowed_triggers",
+        "requires_signal",
+        "disqualifiers",
+        "tp_style",
+        "update_policy"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "watch",
+            "armed",
+            "pending_entry",
+            "entered",
+            "managing",
+            "exit_only",
+            "closed",
+            "invalidated",
+            "expired"
+          ]
+        },
+        "entry_style": {
+          "enum": ["pullback", "breakout_retest", "range_edge", "probe"]
+        },
+        "entry_zone": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["low", "high", "source"],
+          "properties": {
+            "low": { "type": ["number", "null"] },
+            "high": { "type": ["number", "null"] },
+            "source": { "enum": ["structure", "atr_band", "exec_tf_setup"] }
+          }
+        },
+        "allowed_triggers": {
+          "type": "array",
+          "items": {
+            "enum": ["aligned_signal", "zone_touch", "break_retest", "counter_signal_for_trim"]
+          }
+        },
+        "requires_signal": { "type": "boolean" },
+        "disqualifiers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tp_style": {
+          "enum": ["ladder", "dynamic_trail", "range_mean_revert"]
+        },
+        "update_policy": {
+          "enum": ["minor_patch", "major_patch", "replace_only"]
+        }
+      }
+    },
+    "risk_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_tier",
+        "suggested_max_account_risk_pct",
+        "stop_anchor",
+        "stop_buffer_atr",
+        "rationale_codes"
+      ],
+      "properties": {
+        "risk_tier": {
+          "enum": ["probe", "starter", "standard", "high_conviction"]
+        },
+        "suggested_max_account_risk_pct": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stop_anchor": {
+          "enum": ["swing_low", "swing_high", "key_level_break", "range_edge_break"]
+        },
+        "stop_buffer_atr": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rationale_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "reasoning_summary": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "skip"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution_playbook": {
+            "properties": {
+              "state": {
+                "const": "watch"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

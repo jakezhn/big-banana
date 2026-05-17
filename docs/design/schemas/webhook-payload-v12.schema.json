@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/webhook-payload-v12.schema.json",
+  "title": "Bitpunk Webhook Payload v12",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "type", "context"],
+  "properties": {
+    "schema_version": {
+      "const": "bitpunk.webhook.v12"
+    },
+    "type": {
+      "enum": ["snapshot", "signal"]
+    },
+    "context": {
+      "$ref": "#/$defs/context"
+    },
+    "signal": {
+      "$ref": "#/$defs/signal"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "signal"
+          }
+        }
+      },
+      "then": {
+        "required": ["signal"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "snapshot"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": ["signal"]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["market", "bar", "volatility", "regime", "structure", "momentum", "osc"],
+      "properties": {
+        "market": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tickerid", "source", "timeframe", "timeframe_label"],
+          "properties": {
+            "tickerid": { "type": "string" },
+            "source": { "type": "string" },
+            "timeframe": { "type": "string" },
+            "timeframe_label": { "type": "string" }
+          }
+        },
+        "bar": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["index", "time_ms", "open", "high", "low", "close", "volume"],
+          "properties": {
+            "index": { "type": "integer" },
+            "time_ms": { "type": "integer" },
+            "open": { "type": "number" },
+            "high": { "type": "number" },
+            "low": { "type": "number" },
+            "close": { "type": "number" },
+            "volume": { "type": "number" }
+          }
+        },
+        "volatility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["atr", "atr_len"],
+          "properties": {
+            "atr": { "type": "number" },
+            "atr_len": { "type": "integer" }
+          }
+        },
+        "regime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "trend_score"],
+          "properties": {
+            "name": { "type": "string" },
+            "trend_score": { "type": "number" }
+          }
+        },
+        "structure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ema20", "ema50", "ema100", "ema200", "relative_high", "relative_low"],
+          "properties": {
+            "ema20": { "type": "number" },
+            "ema50": { "type": "number" },
+            "ema100": { "type": "number" },
+            "ema200": { "type": "number" },
+            "relative_high": { "type": "number" },
+            "relative_low": { "type": "number" }
+          }
+        },
+        "momentum": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "direction", "sqz"],
+          "properties": {
+            "value": { "type": "number" },
+            "direction": { "type": "string" },
+            "sqz": { "type": "string" }
+          }
+        },
+        "osc": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fast", "slow", "spread", "direction"],
+          "properties": {
+            "fast": { "type": "number" },
+            "slow": { "type": "number" },
+            "spread": { "type": "number" },
+            "direction": { "type": "string" }
+          }
+        }
+      }
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "direction",
+        "rank_level",
+        "rank_pct",
+        "regime",
+        "regime_alignement",
+        "kl",
+        "divergence",
+        "gain",
+        "pain",
+        "proposed_size"
+      ],
+      "properties": {
+        "direction": {
+          "enum": ["long", "short"]
+        },
+        "rank_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "rank_pct": {
+          "type": "number"
+        },
+        "regime": {
+          "enum": ["expansion", "pullback", "transition", "neutral"]
+        },
+        "regime_alignement": {
+          "enum": ["align", "counter", "neutral"]
+        },
+        "kl": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["has_kl", "role", "source"],
+          "properties": {
+            "has_kl": { "type": "boolean" },
+            "role": { "enum": ["support", "resistance", "none"] },
+            "source": { "type": "string" }
+          }
+        },
+        "divergence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["has_divergence"],
+          "properties": {
+            "has_divergence": { "type": "boolean" }
+          }
+        },
+        "gain": { "type": "number" },
+        "pain": { "type": "number" },
+        "proposed_size": { "type": "number" }
+      }
+    }
+  }
+}
