@@ -3,6 +3,7 @@ import type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository
 } from "@big-banana/domain";
+import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import { handleGetMarketPipelineRequest } from "../../src/markets/handle-get-market-pipeline-request.js";
 
 class InMemoryMarketPipelineReadModelRepository
@@ -29,6 +30,11 @@ function request(marketKey?: string): Request {
 
 describe("GET /api/market-pipeline", () => {
   it("returns the latest pipeline snapshot for a market key", async () => {
+    const snapshot = contractFixture("snapshot.valid.json") as Record<
+      string,
+      any
+    >;
+
     const response = await handleGetMarketPipelineRequest(
       request("BINANCE:BTCUSDT:240"),
       new InMemoryMarketPipelineReadModelRepository({
@@ -41,38 +47,7 @@ describe("GET /api/market-pipeline", () => {
             tickerid: "BINANCE:BTCUSDT",
             timeframe: "240",
             barTimeMs: 1778419200000,
-            context: {
-              market: {
-                tickerid: "BINANCE:BTCUSDT",
-                timeframe: "240",
-                bar_ts: "2026-05-09T08:00:00.000Z"
-              },
-              zones: { demand: null, supply: null },
-              indicators: {
-                ema9: null,
-                ema21: null,
-                ema200: null,
-                bb_basis: null,
-                bbw_pct: null,
-                atr: null,
-                volume_ratio: null,
-                rsi: null,
-                adx: null,
-                funding_rate: null,
-                oi_delta_pct: null
-              },
-              structure: {
-                session: null,
-                regime: null,
-                trend_bias: null
-              },
-              levels: {
-                prev_day_high: null,
-                prev_day_low: null,
-                prev_week_high: null,
-                prev_week_low: null
-              }
-            },
+            context: snapshot.context,
             createdAt: "2026-05-18T00:00:00.000Z"
           },
           tradePlanVersion: null,
