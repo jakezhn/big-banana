@@ -16,6 +16,7 @@ type SuccessResponse = {
     trade_plan_version: MarketPipelineReadModel["tradePlanVersion"];
     risk_verdict: MarketPipelineReadModel["riskVerdict"];
     execution_intent: MarketPipelineReadModel["executionIntent"];
+    latest_order: MarketPipelineReadModel["latestOrder"];
   };
 };
 
@@ -50,7 +51,8 @@ export async function handleGetMarketPipelineRequest(
         market_state: snapshot.marketState,
         trade_plan_version: snapshot.tradePlanVersion,
         risk_verdict: snapshot.riskVerdict,
-        execution_intent: snapshot.executionIntent
+        execution_intent: snapshot.executionIntent,
+        latest_order: snapshot.latestOrder
       }
     },
     200

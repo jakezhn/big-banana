@@ -1,5 +1,6 @@
 import type { StoredExecutionIntent } from "../execution/execution-intent-repository.js";
 import type { StoredMarketState } from "../market-state/market-state-repository.js";
+import type { StoredOrder } from "../orders/order-repository.js";
 import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository.js";
 import type { StoredRiskVerdict } from "../risk/risk-verdict-repository.js";
 
@@ -9,6 +10,7 @@ export type MarketPipelineReadModel = {
   tradePlanVersion: StoredTradePlanVersion | null;
   riskVerdict: StoredRiskVerdict | null;
   executionIntent: StoredExecutionIntent | null;
+  latestOrder: StoredOrder | null;
 };
 
 export interface MarketPipelineReadModelRepository {

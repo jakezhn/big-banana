@@ -48,6 +48,14 @@ export type {
   ReceivedExecutionIntent,
   StoredExecutionIntent
 } from "./execution/execution-intent-repository.js";
+export {
+  submitPaperOrderFromExecutionIntent
+} from "./orders/submit-paper-order-from-execution-intent.js";
+export type {
+  OrderRepository,
+  ReceivedOrder,
+  StoredOrder
+} from "./orders/order-repository.js";
 export type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository

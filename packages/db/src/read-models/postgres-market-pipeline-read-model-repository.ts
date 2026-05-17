@@ -3,6 +3,7 @@ import type {
   MarketPipelineReadModelRepository,
   StoredExecutionIntent,
   StoredMarketState,
+  StoredOrder,
   StoredRiskVerdict,
   StoredTradePlanVersion
 } from "@big-banana/domain";
@@ -55,6 +56,30 @@ type ExecutionIntentRow = {
   trading_account_id: string;
   payload_json: StoredExecutionIntent["payload"];
   created_at: string;
+};
+
+type OrderRow = {
+  id: string;
+  execution_intent_id: string;
+  trading_account_id: string;
+  venue: string;
+  symbol: string;
+  side: StoredOrder["side"];
+  order_type: StoredOrder["orderType"];
+  time_in_force: StoredOrder["timeInForce"];
+  reduce_only: boolean;
+  client_order_id: string;
+  exchange_order_id: string | null;
+  status: StoredOrder["status"];
+  requested_qty: StoredOrder["requestedQty"];
+  requested_price: StoredOrder["requestedPrice"];
+  stop_price: StoredOrder["stopPrice"];
+  avg_fill_price: StoredOrder["avgFillPrice"];
+  filled_qty: StoredOrder["filledQty"];
+  submitted_at: string;
+  last_exchange_update_at: string;
+  terminal_at: string | null;
+  raw_exchange_json: StoredOrder["rawExchangeJson"];
 };
 
 export class PostgresMarketPipelineReadModelRepository
@@ -110,14 +135,27 @@ export class PostgresMarketPipelineReadModelRepository
         `
       : [];
 
+    const executionIntent = executionIntentRow
+      ? mapExecutionIntentRow(executionIntentRow)
+      : null;
+
+    const [orderRow] = executionIntent
+      ? await this.sql<OrderRow[]>`
+          select *
+          from orders
+          where execution_intent_id = ${executionIntent.id}
+          order by submitted_at desc
+          limit 1
+        `
+      : [];
+
     return {
       marketKey,
       marketState: mapMarketStateRow(marketStateRow),
       tradePlanVersion,
       riskVerdict,
-      executionIntent: executionIntentRow
-        ? mapExecutionIntentRow(executionIntentRow)
-        : null
+      executionIntent,
+      latestOrder: orderRow ? mapOrderRow(orderRow) : null
     };
   }
 }
@@ -179,6 +217,32 @@ function mapExecutionIntentRow(row: ExecutionIntentRow): StoredExecutionIntent {
     tradingAccountId: row.trading_account_id,
     payload: row.payload_json,
     createdAt: row.created_at
+  };
+}
+
+function mapOrderRow(row: OrderRow): StoredOrder {
+  return {
+    id: row.id,
+    executionIntentId: row.execution_intent_id,
+    tradingAccountId: row.trading_account_id,
+    venue: row.venue,
+    symbol: row.symbol,
+    side: row.side,
+    orderType: row.order_type,
+    timeInForce: row.time_in_force,
+    reduceOnly: row.reduce_only,
+    clientOrderId: row.client_order_id,
+    exchangeOrderId: row.exchange_order_id,
+    status: row.status,
+    requestedQty: row.requested_qty,
+    requestedPrice: row.requested_price,
+    stopPrice: row.stop_price,
+    avgFillPrice: row.avg_fill_price,
+    filledQty: row.filled_qty,
+    submittedAt: row.submitted_at,
+    lastExchangeUpdateAt: row.last_exchange_update_at,
+    terminalAt: row.terminal_at,
+    rawExchangeJson: row.raw_exchange_json
   };
 }
 

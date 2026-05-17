@@ -7,6 +7,10 @@ export {
   PostgresExecutionIntentRepository
 } from "./execution/postgres-execution-intent-repository.js";
 export {
+  createOrderRepositoryFromEnv,
+  PostgresOrderRepository
+} from "./orders/postgres-order-repository.js";
+export {
   createMarketPipelineReadModelRepositoryFromEnv,
   PostgresMarketPipelineReadModelRepository
 } from "./read-models/postgres-market-pipeline-read-model-repository.js";
