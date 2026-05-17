@@ -17,6 +17,20 @@ export {
 } from "./planner/build-planner-input.js";
 export type { PlannerInput } from "./planner/build-planner-input.js";
 export {
+  recordGeneratedTradePlan
+} from "./plans/record-generated-trade-plan.js";
+export type {
+  RecordGeneratedTradePlanInput,
+  RecordGeneratedTradePlanResult
+} from "./plans/record-generated-trade-plan.js";
+export type {
+  ReceivedPlanTransition,
+  ReceivedTradePlanVersion,
+  StoredPlanTransition,
+  StoredTradePlanVersion,
+  TradePlanVersionRepository
+} from "./plans/trade-plan-version-repository.js";
+export {
   assertOrderStateTransition,
   canTransitionOrderState,
   InvalidOrderStateTransitionError,
