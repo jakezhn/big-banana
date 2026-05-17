@@ -22,6 +22,16 @@ class InMemoryTradePlanVersionRepository implements TradePlanVersionRepository {
     return versions.at(-1) ?? null;
   }
 
+  async getLatestTradePlanVersionByMarketKey(
+    marketKey: string
+  ): Promise<StoredTradePlanVersion | null> {
+    const versions = [...this.versions.values()]
+      .flat()
+      .filter((version) => version.marketKey === marketKey);
+
+    return versions.at(-1) ?? null;
+  }
+
   async recordTradePlanVersion(
     version: ReceivedTradePlanVersion
   ): Promise<StoredTradePlanVersion> {

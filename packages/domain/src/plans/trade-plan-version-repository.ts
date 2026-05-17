@@ -35,6 +35,10 @@ export type StoredPlanTransition = ReceivedPlanTransition & {
 export interface TradePlanVersionRepository {
   getLatestTradePlanVersion(planId: string): Promise<StoredTradePlanVersion | null>;
 
+  getLatestTradePlanVersionByMarketKey(
+    marketKey: string
+  ): Promise<StoredTradePlanVersion | null>;
+
   recordTradePlanVersion(
     version: ReceivedTradePlanVersion
   ): Promise<StoredTradePlanVersion>;

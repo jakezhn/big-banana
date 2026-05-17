@@ -49,3 +49,7 @@ export function assertPlanStateTransition(
     throw new InvalidPlanStateTransitionError(from, to);
   }
 }
+
+export function isTerminalPlanState(state: PlanState): boolean {
+  return state === "closed" || state === "expired";
+}

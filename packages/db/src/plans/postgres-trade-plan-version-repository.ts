@@ -51,6 +51,20 @@ export class PostgresTradePlanVersionRepository
     return row ? mapTradePlanVersionRow(row) : null;
   }
 
+  async getLatestTradePlanVersionByMarketKey(
+    marketKey: string
+  ): Promise<StoredTradePlanVersion | null> {
+    const [row] = await this.sql<TradePlanVersionRow[]>`
+      select *
+      from trade_plan_versions
+      where market_key = ${marketKey}
+      order by created_at desc, version desc
+      limit 1
+    `;
+
+    return row ? mapTradePlanVersionRow(row) : null;
+  }
+
   async recordTradePlanVersion(
     version: ReceivedTradePlanVersion
   ): Promise<StoredTradePlanVersion> {

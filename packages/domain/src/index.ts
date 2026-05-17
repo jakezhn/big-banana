@@ -17,6 +17,16 @@ export {
 } from "./planner/build-planner-input.js";
 export type { PlannerInput } from "./planner/build-planner-input.js";
 export {
+  generateAndRecordTradePlanForSignal,
+  InvalidGeneratedTradePlanError
+} from "./planner/generate-and-record-trade-plan-for-signal.js";
+export type {
+  GenerateAndRecordTradePlanForSignalResult
+} from "./planner/generate-and-record-trade-plan-for-signal.js";
+export {
+  generateDeterministicTradePlan
+} from "./planner/generate-deterministic-trade-plan.js";
+export {
   recordGeneratedTradePlan
 } from "./plans/record-generated-trade-plan.js";
 export type {
@@ -40,6 +50,7 @@ export type { OrderState } from "./state-machines/order-state-machine.js";
 export {
   assertPlanStateTransition,
   canTransitionPlanState,
+  isTerminalPlanState,
   InvalidPlanStateTransitionError,
   planStates
 } from "./state-machines/plan-state-machine.js";
