@@ -4,8 +4,17 @@ export {
 } from "./tradingview/normalize-tradingview-payload.js";
 export type { CanonicalEnvelope } from "./tradingview/normalize-tradingview-payload.js";
 export {
+  projectTradingViewMarketState
+} from "./market-state/project-tradingview-market-state.js";
+export type {
+  MarketStateRepository,
+  ReceivedMarketState,
+  StoredMarketState
+} from "./market-state/market-state-repository.js";
+export {
   ingestTradingViewPayload
 } from "./webhook-events/ingest-tradingview-payload.js";
+export type { TradingViewIngestionResult } from "./webhook-events/ingest-tradingview-payload.js";
 export type {
   ReceivedWebhookEvent,
   StoredWebhookEvent,

@@ -32,11 +32,28 @@ class InMemoryWebhookEventRepository implements WebhookEventRepository {
       id: crypto.randomUUID(),
       lastReceivedAt: event.receivedAt,
       deliveryCount: 1,
-      duplicate: false
+      duplicate: false,
+      processStatus: "received"
     };
 
     this.events.set(event.deliveryKey, stored);
     return stored;
+  }
+
+  async updateProcessStatus(
+    webhookEventId: string,
+    processStatus: string
+  ): Promise<void> {
+    for (const [deliveryKey, event] of this.events.entries()) {
+      if (event.id !== webhookEventId) {
+        continue;
+      }
+
+      this.events.set(deliveryKey, { ...event, processStatus });
+      return;
+    }
+
+    throw new Error(`Unknown webhook event: ${webhookEventId}`);
   }
 }
 

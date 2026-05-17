@@ -1,17 +1,30 @@
-import { createWebhookEventRepositoryFromEnv } from "@big-banana/db";
-import type { WebhookEventRepository } from "@big-banana/domain";
+import {
+  createMarketStateRepositoryFromEnv,
+  createWebhookEventRepositoryFromEnv
+} from "@big-banana/db";
+import type {
+  MarketStateRepository,
+  WebhookEventRepository
+} from "@big-banana/domain";
 import { handleTradingViewWebhookRequest } from "../../../../src/webhooks/tradingview/handle-tradingview-webhook-request.js";
 
-let repository: WebhookEventRepository | undefined;
+let webhookEventRepository: WebhookEventRepository | undefined;
+let marketStateRepository: MarketStateRepository | undefined;
 
 export async function POST(request: Request): Promise<Response> {
   return handleTradingViewWebhookRequest(
     request,
-    getWebhookEventRepository()
+    getWebhookEventRepository(),
+    getMarketStateRepository()
   );
 }
 
 function getWebhookEventRepository(): WebhookEventRepository {
-  repository ??= createWebhookEventRepositoryFromEnv();
-  return repository;
+  webhookEventRepository ??= createWebhookEventRepositoryFromEnv();
+  return webhookEventRepository;
+}
+
+function getMarketStateRepository(): MarketStateRepository {
+  marketStateRepository ??= createMarketStateRepositoryFromEnv();
+  return marketStateRepository;
 }

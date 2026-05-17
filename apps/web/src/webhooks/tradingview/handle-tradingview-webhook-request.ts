@@ -1,6 +1,8 @@
 import {
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
+  projectTradingViewMarketState,
+  type MarketStateRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
 
@@ -24,7 +26,8 @@ function jsonResponse(
 
 export async function handleTradingViewWebhookRequest(
   request: Request,
-  repository: WebhookEventRepository
+  webhookEventRepository: WebhookEventRepository,
+  marketStateRepository: MarketStateRepository
 ): Promise<Response> {
   const contentType = request.headers.get("content-type");
 
@@ -44,7 +47,12 @@ export async function handleTradingViewWebhookRequest(
   }
 
   try {
-    const result = await ingestTradingViewPayload(payload, repository);
+    const result = await ingestTradingViewPayload(payload, webhookEventRepository);
+    await projectTradingViewMarketState(result, marketStateRepository);
+    await webhookEventRepository.updateProcessStatus(
+      result.webhookEvent.id,
+      "normalized"
+    );
 
     return jsonResponse(
       {

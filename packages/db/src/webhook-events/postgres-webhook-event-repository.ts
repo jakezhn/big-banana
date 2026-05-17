@@ -20,6 +20,7 @@ type WebhookEventRow = {
   received_at: string;
   last_received_at: string;
   delivery_count: number;
+  process_status: string;
 };
 
 export class PostgresWebhookEventRepository implements WebhookEventRepository {
@@ -82,8 +83,20 @@ export class PostgresWebhookEventRepository implements WebhookEventRepository {
       receivedAt: row.received_at,
       lastReceivedAt: row.last_received_at,
       deliveryCount: row.delivery_count,
-      duplicate: row.delivery_count > 1
+      duplicate: row.delivery_count > 1,
+      processStatus: row.process_status
     };
+  }
+
+  async updateProcessStatus(
+    webhookEventId: string,
+    processStatus: string
+  ): Promise<void> {
+    await this.sql`
+      update webhook_events
+      set process_status = ${processStatus}
+      where id = ${webhookEventId}
+    `;
   }
 }
 

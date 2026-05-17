@@ -19,10 +19,16 @@ export type StoredWebhookEvent = ReceivedWebhookEvent & {
   lastReceivedAt: string;
   deliveryCount: number;
   duplicate: boolean;
+  processStatus: string;
 };
 
 export interface WebhookEventRepository {
   recordReceivedEvent(
     event: ReceivedWebhookEvent
   ): Promise<StoredWebhookEvent>;
+
+  updateProcessStatus(
+    webhookEventId: string,
+    processStatus: string
+  ): Promise<void>;
 }
