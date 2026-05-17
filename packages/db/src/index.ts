@@ -3,6 +3,10 @@ export {
   PostgresWebhookEventRepository
 } from "./webhook-events/postgres-webhook-event-repository.js";
 export {
+  createExecutionIntentRepositoryFromEnv,
+  PostgresExecutionIntentRepository
+} from "./execution/postgres-execution-intent-repository.js";
+export {
   createMarketStateRepositoryFromEnv,
   PostgresMarketStateRepository
 } from "./market-state/postgres-market-state-repository.js";

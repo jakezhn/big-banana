@@ -38,6 +38,22 @@ export type {
   StoredRiskVerdict
 } from "./risk/risk-verdict-repository.js";
 export {
+  buildAndRecordExecutionIntentFromRiskVerdict,
+  buildExecutionIntentFromApprovedRiskVerdict,
+  InvalidBuiltExecutionIntentError,
+  UnsupportedExecutionIntentError
+} from "./execution/build-execution-intent-from-risk-verdict.js";
+export type {
+  ExecutionIntentRepository,
+  ReceivedExecutionIntent,
+  StoredExecutionIntent
+} from "./execution/execution-intent-repository.js";
+export {
+  processDeterministicSignalPipeline,
+  type ProcessDeterministicSignalPipelineDependencies,
+  type ProcessDeterministicSignalPipelineResult
+} from "./pipeline/process-deterministic-signal-pipeline.js";
+export {
   recordGeneratedTradePlan
 } from "./plans/record-generated-trade-plan.js";
 export type {
