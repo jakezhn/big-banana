@@ -27,6 +27,17 @@ export {
   generateDeterministicTradePlan
 } from "./planner/generate-deterministic-trade-plan.js";
 export {
+  evaluateAndRecordDeterministicRiskVerdict,
+  evaluateDeterministicRiskVerdict,
+  InvalidEvaluatedRiskVerdictError
+} from "./risk/evaluate-deterministic-risk-verdict.js";
+export type { RiskPolicySnapshot } from "./risk/evaluate-deterministic-risk-verdict.js";
+export type {
+  ReceivedRiskVerdict,
+  RiskVerdictRepository,
+  StoredRiskVerdict
+} from "./risk/risk-verdict-repository.js";
+export {
   recordGeneratedTradePlan
 } from "./plans/record-generated-trade-plan.js";
 export type {
