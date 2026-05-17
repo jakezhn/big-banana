@@ -1,8 +1,13 @@
 import {
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
+  processDeterministicSignalPipeline,
   projectTradingViewMarketState,
+  type ExecutionIntentRepository,
   type MarketStateRepository,
+  type RiskPolicySnapshot,
+  type RiskVerdictRepository,
+  type TradePlanVersionRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
 
@@ -15,6 +20,16 @@ type SuccessResponse = {
   accepted: true;
   event_key: string;
   duplicate: boolean;
+  process_status: string;
+};
+
+export type TradingViewWebhookRequestDependencies = {
+  webhookEventRepository: WebhookEventRepository;
+  marketStateRepository: MarketStateRepository;
+  tradePlanVersionRepository: TradePlanVersionRepository;
+  riskVerdictRepository: RiskVerdictRepository;
+  executionIntentRepository: ExecutionIntentRepository;
+  riskPolicy: RiskPolicySnapshot;
 };
 
 function jsonResponse(
@@ -26,8 +41,7 @@ function jsonResponse(
 
 export async function handleTradingViewWebhookRequest(
   request: Request,
-  webhookEventRepository: WebhookEventRepository,
-  marketStateRepository: MarketStateRepository
+  dependencies: TradingViewWebhookRequestDependencies
 ): Promise<Response> {
   const contentType = request.headers.get("content-type");
 
@@ -47,18 +61,44 @@ export async function handleTradingViewWebhookRequest(
   }
 
   try {
-    const result = await ingestTradingViewPayload(payload, webhookEventRepository);
-    await projectTradingViewMarketState(result, marketStateRepository);
-    await webhookEventRepository.updateProcessStatus(
+    const result = await ingestTradingViewPayload(
+      payload,
+      dependencies.webhookEventRepository
+    );
+
+    if (shouldSkipProcessedDuplicate(result.webhookEvent)) {
+      return jsonResponse(
+        {
+          accepted: true,
+          event_key: result.envelope.eventKey,
+          duplicate: true,
+          process_status: result.webhookEvent.processStatus
+        },
+        200
+      );
+    }
+
+    await projectTradingViewMarketState(
+      result,
+      dependencies.marketStateRepository
+    );
+
+    const processStatus =
+      result.envelope.type === "signal"
+        ? await processSignalPipeline(result.envelope, dependencies)
+        : "normalized";
+
+    await dependencies.webhookEventRepository.updateProcessStatus(
       result.webhookEvent.id,
-      "normalized"
+      processStatus
     );
 
     return jsonResponse(
       {
         accepted: true,
         event_key: result.envelope.eventKey,
-        duplicate: result.webhookEvent.duplicate
+        duplicate: result.webhookEvent.duplicate,
+        process_status: processStatus
       },
       200
     );
@@ -69,4 +109,40 @@ export async function handleTradingViewWebhookRequest(
 
     throw error;
   }
+}
+
+function shouldSkipProcessedDuplicate(
+  webhookEvent: Awaited<ReturnType<WebhookEventRepository["recordReceivedEvent"]>>
+): boolean {
+  return webhookEvent.duplicate && webhookEvent.processStatus !== "received";
+}
+
+async function processSignalPipeline(
+  envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
+  dependencies: TradingViewWebhookRequestDependencies
+): Promise<string> {
+  const result = await processDeterministicSignalPipeline(
+    envelope,
+    dependencies.riskPolicy,
+    {
+      marketStateRepository: dependencies.marketStateRepository,
+      tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
+      riskVerdictRepository: dependencies.riskVerdictRepository,
+      executionIntentRepository: dependencies.executionIntentRepository
+    }
+  );
+
+  if (result.executionIntent) {
+    return "intent_ready";
+  }
+
+  if (result.riskVerdict.verdict === "reject") {
+    return "risk_rejected";
+  }
+
+  if (result.riskVerdict.requireHumanApproval) {
+    return "risk_review_required";
+  }
+
+  return "risk_approved";
 }
