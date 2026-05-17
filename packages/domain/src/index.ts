@@ -48,6 +48,10 @@ export type {
   ReceivedExecutionIntent,
   StoredExecutionIntent
 } from "./execution/execution-intent-repository.js";
+export type {
+  MarketPipelineReadModel,
+  MarketPipelineReadModelRepository
+} from "./read-models/market-pipeline-read-model-repository.js";
 export {
   processDeterministicSignalPipeline,
   type ProcessDeterministicSignalPipelineDependencies,
