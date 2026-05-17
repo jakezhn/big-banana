@@ -16,4 +16,6 @@ export type StoredMarketState = ReceivedMarketState & {
 
 export interface MarketStateRepository {
   recordMarketState(state: ReceivedMarketState): Promise<StoredMarketState>;
+
+  getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]>;
 }

@@ -90,6 +90,33 @@ export class PostgresMarketStateRepository implements MarketStateRepository {
       createdAt: row.created_at
     };
   }
+
+  async getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]> {
+    const rows = await this.sql<MarketStateHistoryRow[]>`
+      select
+        market_key,
+        webhook_event_id,
+        tickerid,
+        timeframe,
+        bar_time_ms,
+        context_json,
+        updated_at as created_at
+      from market_states_current
+      where tickerid = ${tickerid}
+      order by timeframe asc
+    `;
+
+    return rows.map((row) => ({
+      id: row.market_key,
+      marketKey: row.market_key,
+      webhookEventId: row.webhook_event_id,
+      tickerid: row.tickerid,
+      timeframe: row.timeframe,
+      barTimeMs: Number(row.bar_time_ms),
+      context: row.context_json,
+      createdAt: row.created_at
+    }));
+  }
 }
 
 export function createMarketStateRepositoryFromEnv(): PostgresMarketStateRepository {

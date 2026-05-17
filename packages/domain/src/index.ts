@@ -12,6 +12,11 @@ export type {
   StoredMarketState
 } from "./market-state/market-state-repository.js";
 export {
+  buildPlannerInput,
+  SignalPlannerInputError
+} from "./planner/build-planner-input.js";
+export type { PlannerInput } from "./planner/build-planner-input.js";
+export {
   ingestTradingViewPayload
 } from "./webhook-events/ingest-tradingview-payload.js";
 export type { TradingViewIngestionResult } from "./webhook-events/ingest-tradingview-payload.js";

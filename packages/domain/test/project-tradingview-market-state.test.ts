@@ -83,6 +83,10 @@ class InMemoryMarketStateRepository implements MarketStateRepository {
     this.states.set(state.marketKey, stored);
     return stored;
   }
+
+  async getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]> {
+    return [...this.states.values()].filter((state) => state.tickerid === tickerid);
+  }
 }
 
 describe("projectTradingViewMarketState", () => {
