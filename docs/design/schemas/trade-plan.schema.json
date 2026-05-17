@@ -148,6 +148,7 @@
   "allOf": [
     {
       "if": {
+        "type": "object",
         "properties": {
           "action": {
             "const": "skip"
@@ -155,8 +156,10 @@
         }
       },
       "then": {
+        "type": "object",
         "properties": {
           "execution_playbook": {
+            "type": "object",
             "properties": {
               "state": {
                 "const": "watch"

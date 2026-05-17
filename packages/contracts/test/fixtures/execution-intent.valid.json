@@ -1,0 +1,15 @@
+{
+  "action": "close",
+  "plan_version_id": "plan_v1",
+  "trading_account_id": "acct_1",
+  "symbol": "BTCUSDT",
+  "side": "sell",
+  "order_type": "market",
+  "time_in_force": "IOC",
+  "qty": 0.12,
+  "price": null,
+  "stop_price": null,
+  "reduce_only": true,
+  "client_order_id": "close-btc-001",
+  "idempotency_key": "exec-close-btc-001"
+}

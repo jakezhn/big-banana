@@ -1,0 +1,42 @@
+{
+  "action": "create",
+  "market_thesis": {
+    "bias": "long",
+    "environment": "trend",
+    "htf_bias": "bull",
+    "mtf_bias": "bull",
+    "bias_confidence": 0.82,
+    "trend_end_score": 0.14,
+    "structure_summary": "Price is holding above EMA50 with trend continuation context.",
+    "key_levels": [
+      {
+        "role": "support",
+        "price_ref": "EMA50",
+        "importance": "primary"
+      }
+    ]
+  },
+  "execution_playbook": {
+    "state": "armed",
+    "entry_style": "pullback",
+    "entry_zone": {
+      "low": 66800,
+      "high": 67100,
+      "source": "structure"
+    },
+    "allowed_triggers": ["aligned_signal", "zone_touch"],
+    "requires_signal": true,
+    "disqualifiers": ["htf_reversal"],
+    "tp_style": "ladder",
+    "update_policy": "minor_patch"
+  },
+  "risk_intent": {
+    "risk_tier": "starter",
+    "suggested_max_account_risk_pct": 0.5,
+    "stop_anchor": "swing_low",
+    "stop_buffer_atr": 0.4,
+    "rationale_codes": ["TREND_CONTINUATION"]
+  },
+  "reasoning_summary": "Long bias remains intact on pullback support.",
+  "evidence": ["ema50_support", "bull_regime"]
+}

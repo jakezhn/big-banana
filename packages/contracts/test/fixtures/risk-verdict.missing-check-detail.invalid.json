@@ -1,0 +1,15 @@
+{
+  "verdict": "reject",
+  "approved_risk_pct": 0,
+  "approved_qty": null,
+  "approved_notional": null,
+  "approved_stop_price": null,
+  "require_human_approval": true,
+  "checks": [
+    {
+      "code": "ENTRY_ZONE_READY",
+      "status": "fail"
+    }
+  ],
+  "rejection_codes": ["ENTRY_ZONE_READY"]
+}

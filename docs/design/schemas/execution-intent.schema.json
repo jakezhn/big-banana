@@ -67,6 +67,7 @@
   "allOf": [
     {
       "if": {
+        "type": "object",
         "properties": {
           "action": {
             "enum": ["reduce", "close"]
@@ -74,6 +75,7 @@
         }
       },
       "then": {
+        "type": "object",
         "properties": {
           "reduce_only": {
             "const": true

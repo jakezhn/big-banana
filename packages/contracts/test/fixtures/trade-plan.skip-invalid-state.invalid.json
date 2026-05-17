@@ -1,0 +1,36 @@
+{
+  "action": "skip",
+  "market_thesis": {
+    "bias": "neutral",
+    "environment": "range",
+    "htf_bias": "neutral",
+    "mtf_bias": "neutral",
+    "bias_confidence": 0.21,
+    "trend_end_score": 0.67,
+    "structure_summary": "No strong edge is present.",
+    "key_levels": []
+  },
+  "execution_playbook": {
+    "state": "armed",
+    "entry_style": "probe",
+    "entry_zone": {
+      "low": null,
+      "high": null,
+      "source": "structure"
+    },
+    "allowed_triggers": [],
+    "requires_signal": false,
+    "disqualifiers": [],
+    "tp_style": "range_mean_revert",
+    "update_policy": "replace_only"
+  },
+  "risk_intent": {
+    "risk_tier": "probe",
+    "suggested_max_account_risk_pct": 0,
+    "stop_anchor": "range_edge_break",
+    "stop_buffer_atr": 0,
+    "rationale_codes": []
+  },
+  "reasoning_summary": "No trade.",
+  "evidence": []
+}

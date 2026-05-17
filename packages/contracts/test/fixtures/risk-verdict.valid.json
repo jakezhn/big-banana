@@ -1,0 +1,16 @@
+{
+  "verdict": "approve_with_reduction",
+  "approved_risk_pct": 0.35,
+  "approved_qty": 0.18,
+  "approved_notional": 12132,
+  "approved_stop_price": 66240,
+  "require_human_approval": true,
+  "checks": [
+    {
+      "code": "MAX_TRADE_RISK",
+      "status": "warn",
+      "detail": "Risk reduced to fit policy."
+    }
+  ],
+  "rejection_codes": []
+}
