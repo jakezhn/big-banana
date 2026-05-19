@@ -1,6 +1,7 @@
 import type {
   OrderRepository,
   ReceivedOrder,
+  ReceivedOrderStatusUpdate,
   StoredOrder
 } from "@big-banana/domain";
 import postgres, { type Sql } from "postgres";
@@ -96,6 +97,30 @@ export class PostgresOrderRepository implements OrderRepository {
 
     if (!row) {
       throw new Error("Failed to persist order");
+    }
+
+    return mapOrderRow(row);
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    update: ReceivedOrderStatusUpdate
+  ): Promise<StoredOrder> {
+    const [row] = await this.sql<OrderRow[]>`
+      update orders
+      set
+        status = ${update.status},
+        avg_fill_price = ${update.avgFillPrice},
+        filled_qty = ${update.filledQty},
+        last_exchange_update_at = ${update.lastExchangeUpdateAt},
+        terminal_at = ${update.terminalAt},
+        raw_exchange_json = ${this.sql.json(update.rawExchangeJson)}
+      where id = ${orderId}
+      returning *
+    `;
+
+    if (!row) {
+      throw new Error("Failed to update order status");
     }
 
     return mapOrderRow(row);

@@ -49,11 +49,16 @@ export type {
   StoredExecutionIntent
 } from "./execution/execution-intent-repository.js";
 export {
+  reconcilePaperOrder,
+  UnsupportedPaperReconcileOutcomeError
+} from "./orders/reconcile-paper-order.js";
+export {
   submitPaperOrderFromExecutionIntent
 } from "./orders/submit-paper-order-from-execution-intent.js";
 export type {
   OrderRepository,
   ReceivedOrder,
+  ReceivedOrderStatusUpdate,
   StoredOrder
 } from "./orders/order-repository.js";
 export type {

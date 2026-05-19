@@ -36,10 +36,24 @@ export type StoredOrder = ReceivedOrder & {
   id: string;
 };
 
+export type ReceivedOrderStatusUpdate = {
+  status: OrderState;
+  avgFillPrice: number | null;
+  filledQty: number;
+  lastExchangeUpdateAt: string;
+  terminalAt: string | null;
+  rawExchangeJson: JsonValue;
+};
+
 export interface OrderRepository {
   getLatestOrderByExecutionIntentId(
     executionIntentId: string
   ): Promise<StoredOrder | null>;
 
   recordOrder(order: ReceivedOrder): Promise<StoredOrder>;
+
+  updateOrderStatus(
+    orderId: string,
+    update: ReceivedOrderStatusUpdate
+  ): Promise<StoredOrder>;
 }

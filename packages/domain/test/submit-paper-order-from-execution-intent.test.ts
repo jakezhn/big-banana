@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type {
   OrderRepository,
   ReceivedOrder,
+  ReceivedOrderStatusUpdate,
   StoredExecutionIntent,
   StoredOrder
 } from "../src/index.js";
@@ -17,6 +18,24 @@ class InMemoryOrderRepository implements OrderRepository {
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const stored = { ...order, id: crypto.randomUUID() };
     this.orders.push(stored);
+    return stored;
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    update: ReceivedOrderStatusUpdate
+  ): Promise<StoredOrder> {
+    const index = this.orders.findIndex((order) => order.id === orderId);
+
+    if (index < 0) {
+      throw new Error(`Unknown order: ${orderId}`);
+    }
+
+    const stored = {
+      ...this.orders[index],
+      ...update
+    };
+    this.orders[index] = stored;
     return stored;
   }
 }
