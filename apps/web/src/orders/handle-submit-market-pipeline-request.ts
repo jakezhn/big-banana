@@ -3,6 +3,7 @@ import {
   type MarketPipelineReadModelRepository,
   type OrderRepository
 } from "@big-banana/domain";
+import type { MarketPipelineStatus } from "../markets/derive-market-pipeline-status.js";
 
 type ErrorResponse = {
   ok: false;
@@ -16,6 +17,7 @@ type ErrorResponse = {
 type SuccessResponse = {
   ok: true;
   status: "submitted" | "already_submitted";
+  pipeline_status: MarketPipelineStatus;
   order_id: string;
 };
 
@@ -56,6 +58,7 @@ export async function handleSubmitMarketPipelineRequest(
       {
         ok: true,
         status: "already_submitted",
+        pipeline_status: "order_submitted",
         order_id: existingOrder.id
       },
       200
@@ -71,6 +74,7 @@ export async function handleSubmitMarketPipelineRequest(
     {
       ok: true,
       status: "submitted",
+      pipeline_status: "order_submitted",
       order_id: order.id
     },
     200

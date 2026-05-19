@@ -137,6 +137,7 @@ describe("POST /api/market-pipeline/reconcile", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "reconciled",
+      pipeline_status: "order_terminal",
       order_id: "order-1",
       order_state: "filled"
     });
@@ -158,6 +159,7 @@ describe("POST /api/market-pipeline/reconcile", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "reconciled",
+      pipeline_status: "order_terminal",
       order_id: "order-1",
       order_state: "canceled"
     });

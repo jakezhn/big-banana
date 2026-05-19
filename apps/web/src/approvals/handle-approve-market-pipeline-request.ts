@@ -3,6 +3,7 @@ import {
   type ExecutionIntentRepository,
   type MarketPipelineReadModelRepository
 } from "@big-banana/domain";
+import type { MarketPipelineStatus } from "../markets/derive-market-pipeline-status.js";
 
 type ErrorResponse = {
   ok: false;
@@ -18,6 +19,7 @@ type ErrorResponse = {
 type SuccessResponse = {
   ok: true;
   status: "intent_ready" | "already_ready";
+  pipeline_status: MarketPipelineStatus;
   execution_intent_id: string;
 };
 
@@ -50,6 +52,7 @@ export async function handleApproveMarketPipelineRequest(
       {
         ok: true,
         status: "already_ready",
+        pipeline_status: "intent_ready",
         execution_intent_id: snapshot.executionIntent.id
       },
       200
@@ -82,6 +85,7 @@ export async function handleApproveMarketPipelineRequest(
     {
       ok: true,
       status: "intent_ready",
+      pipeline_status: "intent_ready",
       execution_intent_id: executionIntent.id
     },
     200

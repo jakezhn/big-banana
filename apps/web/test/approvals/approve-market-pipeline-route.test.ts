@@ -87,7 +87,8 @@ function reviewRequiredSnapshot(): MarketPipelineReadModel {
       rejectionCodes: riskVerdict.rejection_codes,
       createdAt: "2026-05-18T00:01:00.000Z"
     },
-    executionIntent: null
+    executionIntent: null,
+    latestOrder: null
   };
 }
 
@@ -106,6 +107,7 @@ describe("POST /api/market-pipeline/approve", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "intent_ready",
+      pipeline_status: "intent_ready",
       execution_intent_id: executionIntentRepository.intents[0]?.id
     });
     expect(executionIntentRepository.intents).toHaveLength(1);
@@ -148,6 +150,7 @@ describe("POST /api/market-pipeline/approve", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "already_ready",
+      pipeline_status: "intent_ready",
       execution_intent_id: "intent-1"
     });
   });

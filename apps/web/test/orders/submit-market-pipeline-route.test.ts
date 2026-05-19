@@ -4,6 +4,7 @@ import type {
   MarketPipelineReadModelRepository,
   OrderRepository,
   ReceivedOrder,
+  ReceivedOrderStatusUpdate,
   StoredOrder
 } from "@big-banana/domain";
 import { contractFixture } from "../../../../packages/domain/test/helpers.js";
@@ -39,6 +40,24 @@ class InMemoryOrderRepository implements OrderRepository {
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const stored = { ...order, id: crypto.randomUUID() };
     this.orders.push(stored);
+    return stored;
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    update: ReceivedOrderStatusUpdate
+  ): Promise<StoredOrder> {
+    const index = this.orders.findIndex((order) => order.id === orderId);
+
+    if (index < 0) {
+      throw new Error(`Unknown order: ${orderId}`);
+    }
+
+    const stored = {
+      ...this.orders[index],
+      ...update
+    };
+    this.orders[index] = stored;
     return stored;
   }
 }
@@ -132,6 +151,7 @@ describe("POST /api/market-pipeline/submit", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "submitted",
+      pipeline_status: "order_submitted",
       order_id: orderRepository.orders[0]?.id
     });
     expect(orderRepository.orders[0]?.status).toBe("acked");
@@ -175,6 +195,7 @@ describe("POST /api/market-pipeline/submit", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       status: "already_submitted",
+      pipeline_status: "order_submitted",
       order_id: "order-1"
     });
   });

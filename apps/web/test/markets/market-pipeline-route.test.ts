@@ -63,6 +63,7 @@ describe("GET /api/market-pipeline", () => {
       ok: true,
       data: {
         market_key: "BINANCE:BTCUSDT:240",
+        pipeline_status: "normalized",
         market_state: expect.objectContaining({
           marketKey: "BINANCE:BTCUSDT:240"
         }),

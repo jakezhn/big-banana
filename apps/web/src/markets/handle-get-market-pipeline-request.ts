@@ -2,6 +2,10 @@ import type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository
 } from "@big-banana/domain";
+import {
+  deriveMarketPipelineStatus,
+  type MarketPipelineStatus
+} from "./derive-market-pipeline-status.js";
 
 type ErrorResponse = {
   ok: false;
@@ -12,6 +16,7 @@ type SuccessResponse = {
   ok: true;
   data: {
     market_key: string;
+    pipeline_status: MarketPipelineStatus;
     market_state: MarketPipelineReadModel["marketState"];
     trade_plan_version: MarketPipelineReadModel["tradePlanVersion"];
     risk_verdict: MarketPipelineReadModel["riskVerdict"];
@@ -48,6 +53,7 @@ export async function handleGetMarketPipelineRequest(
       ok: true,
       data: {
         market_key: snapshot.marketKey,
+        pipeline_status: deriveMarketPipelineStatus(snapshot),
         market_state: snapshot.marketState,
         trade_plan_version: snapshot.tradePlanVersion,
         risk_verdict: snapshot.riskVerdict,
