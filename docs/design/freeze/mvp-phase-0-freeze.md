@@ -6,11 +6,11 @@
 
 优先级如下：
 
-1. `webhook-payload-scheme.md`：外部 payload 已冻结，不再改语义。
+1. `../specs/webhook-payload-scheme.md`：外部 payload 已冻结，不再改语义。
 2. `mvp-phase-0-freeze.md`：当前实现契约。
-3. `trading-agent-design.md`：最新设计依据。
-4. `industrial-design-report.md`：工程落地说明。
-5. `mvp-feasibility-research.md`：研究背景，不再承载最终实现细节。
+3. `../research/trading-agent-design.md`：最新设计依据。
+4. `../research/industrial-design-report.md`：工程落地说明。
+5. `../research/mvp-feasibility-research.md`：研究背景，不再承载最终实现细节。
 
 ## 2. 冻结决策
 
@@ -23,7 +23,7 @@
 | 首发交易所 | Bybit `linear` |
 | 执行方式 | HTTP submit + REST reconcile |
 | private WS | Phase 2，再接入 |
-| live 开仓 | 默认人工审批 |
+| 执行主模式 | MVP 默认 `full`，自动 paper execution |
 | 计划对象 | `action + market_thesis + execution_playbook + risk_intent` |
 | Dashboard 摘要 | 先由结构化计划直接渲染，不额外调用模型 |
 

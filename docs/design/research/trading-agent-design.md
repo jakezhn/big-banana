@@ -1,6 +1,6 @@
 # Trading Agent 决策生成与风控工程设计报告
 
-> 本文是 agent 设计基线；最终实现契约以 `mvp-phase-0-freeze.md` 为准。
+> 本文是 agent 设计基线；最终实现契约以 `../freeze/mvp-phase-0-freeze.md` 为准。
 
 ## Executive summary
 

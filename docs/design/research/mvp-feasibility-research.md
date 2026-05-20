@@ -1,6 +1,6 @@
 # TradingView 到 LLM 交易执行 MVP 研究报告
 
-> 本文保留研究背景与取舍依据；最终实现契约以 `mvp-phase-0-freeze.md` 为准。
+> 本文保留研究背景与取舍依据；最终实现契约以 `../freeze/mvp-phase-0-freeze.md` 为准。
 
 ## Executive summary
 
@@ -24,7 +24,7 @@ LLM 层面，当前最稳妥的做法不是上来就堆“多 agent 编排”，
 
 这个定义有三个好处。第一，它准确反映了系统的真实职责：接收策略信号、整理市场上下文、生成计划、做审批、执行与审计，而不是“替用户判断市场真理”。第二，它天然强调 **LLM 生成的是计划，不是命令**。第三，它允许你把项目文案放在“research / decision support / execution infrastructure”上，而不是站到“投资建议”或“收益承诺”那一侧。你的当前 webhook 结构本身也支持这种定位，因为它输出的不是单一 buy/sell，而是 `summary + detail` 双层 market context。fileciteturn0file0 fileciteturn0file1
 
-冻结版实现里，外部契约以 `webhook-payload-scheme.md` 的 `context + signal` 为准。
+冻结版实现里，外部契约以 `../specs/webhook-payload-scheme.md` 的 `context + signal` 为准。
 
 从产品边界看，MVP 必须把“信号自动化”与“投资建议”分开。最好的表述是：**系统根据用户自定义 indicator 和用户自定义 risk limits，生成可审计的执行计划，并在批准条件满足时自动提交订单**。不应该写成“AI 负责判断市场并替你赚钱”，也不应该给出“高胜率”“稳赚”或“最佳点位”这样的营销语言。这不是法律意见，但从产品设计角度，越是减少“个性化建议”“收益承诺”“替客户主观判断买卖”的叙事，越能降低被误解为投顾产品的风险。
 

@@ -1,6 +1,6 @@
 # Vercel Gateway 与 Bybit 驱动的交易 MVP 工程化设计报告
 
-> 本文描述工程落地方式；最终实现契约以 `mvp-phase-0-freeze.md` 为准。
+> 本文描述工程落地方式；最终实现契约以 `../freeze/mvp-phase-0-freeze.md` 为准。
 
 ## Executive summary
 
