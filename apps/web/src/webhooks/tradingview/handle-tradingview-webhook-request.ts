@@ -1,4 +1,6 @@
 import {
+  evaluateAndRecordDeterministicRiskVerdict,
+  generateAndRecordTradePlanForSignal,
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
   processDeterministicSignalPipeline,
@@ -12,6 +14,7 @@ import {
   type TradePlanVersionRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
+import type { PipelineMode } from "../../trading/get-pipeline-mode-from-env";
 
 type ErrorResponse = {
   accepted: false;
@@ -33,6 +36,7 @@ export type TradingViewWebhookRequestDependencies = {
   executionIntentRepository: ExecutionIntentRepository;
   orderRepository: OrderRepository;
   riskPolicy: RiskPolicySnapshot;
+  pipelineMode: PipelineMode;
 };
 
 function jsonResponse(
@@ -124,6 +128,10 @@ async function processSignalPipeline(
   envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
   dependencies: TradingViewWebhookRequestDependencies
 ): Promise<string> {
+  if (dependencies.pipelineMode === "advisory") {
+    return processAdvisorySignalPipeline(envelope, dependencies);
+  }
+
   const result = await processDeterministicSignalPipeline(
     envelope,
     dependencies.riskPolicy,
@@ -152,6 +160,28 @@ async function processSignalPipeline(
   }
 
   if (result.riskVerdict.verdict === "reject") {
+    return "risk_rejected";
+  }
+
+  return "risk_approved";
+}
+
+async function processAdvisorySignalPipeline(
+  envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
+  dependencies: TradingViewWebhookRequestDependencies
+): Promise<string> {
+  const plan = await generateAndRecordTradePlanForSignal(
+    envelope,
+    dependencies.marketStateRepository,
+    dependencies.tradePlanVersionRepository
+  );
+  const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
+    plan.recordResult.tradePlanVersion,
+    dependencies.riskPolicy,
+    dependencies.riskVerdictRepository
+  );
+
+  if (riskVerdict.verdict === "reject") {
     return "risk_rejected";
   }
 

@@ -16,6 +16,10 @@ import type {
   WebhookEventRepository
 } from "@big-banana/domain";
 import { getDeterministicRiskPolicyFromEnv } from "../../../../src/trading/get-deterministic-risk-policy-from-env";
+import {
+  getPipelineModeFromEnv,
+  type PipelineMode
+} from "../../../../src/trading/get-pipeline-mode-from-env";
 import { handleTradingViewWebhookRequest } from "../../../../src/webhooks/tradingview/handle-tradingview-webhook-request";
 
 let webhookEventRepository: WebhookEventRepository | undefined;
@@ -25,6 +29,7 @@ let riskVerdictRepository: RiskVerdictRepository | undefined;
 let executionIntentRepository: ExecutionIntentRepository | undefined;
 let orderRepository: OrderRepository | undefined;
 let riskPolicy: RiskPolicySnapshot | undefined;
+let pipelineMode: PipelineMode | undefined;
 
 export async function POST(request: Request): Promise<Response> {
   return handleTradingViewWebhookRequest(request, {
@@ -34,7 +39,8 @@ export async function POST(request: Request): Promise<Response> {
     riskVerdictRepository: getRiskVerdictRepository(),
     executionIntentRepository: getExecutionIntentRepository(),
     orderRepository: getOrderRepository(),
-    riskPolicy: getRiskPolicy()
+    riskPolicy: getRiskPolicy(),
+    pipelineMode: getPipelineMode()
   });
 }
 
@@ -71,4 +77,9 @@ function getOrderRepository(): OrderRepository {
 function getRiskPolicy(): RiskPolicySnapshot {
   riskPolicy ??= getDeterministicRiskPolicyFromEnv();
   return riskPolicy;
+}
+
+function getPipelineMode(): PipelineMode {
+  pipelineMode ??= getPipelineModeFromEnv();
+  return pipelineMode;
 }

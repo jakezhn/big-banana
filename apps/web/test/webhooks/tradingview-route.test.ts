@@ -24,6 +24,7 @@ import {
   type TradePlanVersionRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
+import type { PipelineMode } from "../../src/trading/get-pipeline-mode-from-env.js";
 import { handleTradingViewWebhookRequest } from "../../src/webhooks/tradingview/handle-tradingview-webhook-request.js";
 
 function request(body: string, contentType = "application/json"): Request {
@@ -226,6 +227,7 @@ class InMemoryOrderRepository implements OrderRepository {
 function dependencies(
   overrides?: Partial<{
     riskPolicy: RiskPolicySnapshot;
+    pipelineMode: PipelineMode;
   }>
 ) {
   return {
@@ -235,7 +237,8 @@ function dependencies(
     riskVerdictRepository: new InMemoryRiskVerdictRepository(),
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
     orderRepository: new InMemoryOrderRepository(),
-    riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy
+    riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy,
+    pipelineMode: overrides?.pipelineMode ?? "full"
   };
 }
 
@@ -335,6 +338,32 @@ describe("POST /api/webhooks/tradingview", () => {
     });
     expect(deps.executionIntentRepository.intents).toHaveLength(1);
     expect(deps.orderRepository.orders).toHaveLength(1);
+  });
+
+  it("stops at risk when pipeline mode is advisory", async () => {
+    const deps = dependencies({
+      pipelineMode: "advisory"
+    });
+    await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("snapshot.valid.json"))),
+      deps
+    );
+
+    const response = await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("signal.valid.json"))),
+      deps
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      accepted: true,
+      event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
+      duplicate: false,
+      process_status: "risk_approved"
+    });
+    expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
+    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.orderRepository.orders).toHaveLength(0);
   });
 
   it("rejects non-json content types", async () => {

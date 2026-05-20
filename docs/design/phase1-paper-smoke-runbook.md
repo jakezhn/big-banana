@@ -94,6 +94,7 @@ DATABASE_URL='your-supabase-connection-string'
 NEXT_PUBLIC_SUPABASE_URL='https://your-project-ref.supabase.co'
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='your-publishable-key'
 SUPABASE_SECRET_KEY='your-secret-key'
+PIPELINE_MODE='full'
 TRADING_ACCOUNT_ID=paper-tradingview
 PIPELINE_ACCOUNT_EQUITY=20000
 PIPELINE_MAX_TRADE_RISK_PCT=0.5
@@ -162,6 +163,9 @@ At this point:
 - API routes run locally
 - all DB writes land in remote Supabase
 - Supabase SDK clients can use Auth, Storage, and server-side admin probes
+- `PIPELINE_MODE=full` means the system auto-generates intents and auto-submits paper orders
+
+Use `PIPELINE_MODE=advisory` only when you want to stop at `plan + risk` and skip execution.
 
 ## 8. Verify Supabase SDK connectivity first
 

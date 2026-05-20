@@ -9,6 +9,7 @@ const DEFAULT_RISK_POLICY: RiskPolicySnapshot = {
   dailyLossLimitBreached: false,
   consecutiveLossLimitBreached: false,
   killSwitchEnabled: false,
+  // Deprecated in runtime flow. The frozen contract still carries it.
   liveRequiresManualApproval: false
 };
 
@@ -47,10 +48,7 @@ export function getDeterministicRiskPolicyFromEnv(
       env.PIPELINE_KILL_SWITCH_ENABLED,
       DEFAULT_RISK_POLICY.killSwitchEnabled
     ),
-    liveRequiresManualApproval: readBoolean(
-      env.PIPELINE_REQUIRE_HUMAN_APPROVAL,
-      DEFAULT_RISK_POLICY.liveRequiresManualApproval
-    )
+    liveRequiresManualApproval: DEFAULT_RISK_POLICY.liveRequiresManualApproval
   };
 }
 
