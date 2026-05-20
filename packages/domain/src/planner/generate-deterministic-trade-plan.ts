@@ -1,6 +1,6 @@
 import type { TradePlan } from "@big-banana/contracts";
-import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository.js";
-import type { PlannerInput } from "./build-planner-input.js";
+import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository";
+import type { PlannerInput } from "./build-planner-input";
 
 export function generateDeterministicTradePlan(
   input: PlannerInput,

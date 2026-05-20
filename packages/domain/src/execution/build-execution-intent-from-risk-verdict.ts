@@ -3,12 +3,12 @@ import {
   type ExecutionIntent,
   type RiskVerdict
 } from "@big-banana/contracts";
-import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository.js";
+import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository";
 import type {
   ExecutionIntentRepository,
   StoredExecutionIntent
-} from "./execution-intent-repository.js";
-import type { StoredRiskVerdict } from "../risk/risk-verdict-repository.js";
+} from "./execution-intent-repository";
+import type { StoredRiskVerdict } from "../risk/risk-verdict-repository";
 
 export class UnsupportedExecutionIntentError extends Error {
   constructor(message: string) {

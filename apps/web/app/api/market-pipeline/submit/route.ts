@@ -6,7 +6,7 @@ import type {
   MarketPipelineReadModelRepository,
   OrderRepository
 } from "@big-banana/domain";
-import { handleSubmitMarketPipelineRequest } from "../../../../src/orders/handle-submit-market-pipeline-request.js";
+import { handleSubmitMarketPipelineRequest } from "../../../../src/orders/handle-submit-market-pipeline-request";
 
 let marketPipelineReadModelRepository:
   | MarketPipelineReadModelRepository

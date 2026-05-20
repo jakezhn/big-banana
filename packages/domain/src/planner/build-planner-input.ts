@@ -1,6 +1,6 @@
 import type { SignalWebhookPayloadV12 } from "@big-banana/contracts";
-import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload.js";
-import type { MarketStateRepository } from "../market-state/market-state-repository.js";
+import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
+import type { MarketStateRepository } from "../market-state/market-state-repository";
 
 export type PlannerInput = {
   signal: {

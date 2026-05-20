@@ -1,28 +1,28 @@
 export {
   createWebhookEventRepositoryFromEnv,
   PostgresWebhookEventRepository
-} from "./webhook-events/postgres-webhook-event-repository.js";
+} from "./webhook-events/postgres-webhook-event-repository";
 export {
   createExecutionIntentRepositoryFromEnv,
   PostgresExecutionIntentRepository
-} from "./execution/postgres-execution-intent-repository.js";
+} from "./execution/postgres-execution-intent-repository";
 export {
   createOrderRepositoryFromEnv,
   PostgresOrderRepository
-} from "./orders/postgres-order-repository.js";
+} from "./orders/postgres-order-repository";
 export {
   createMarketPipelineReadModelRepositoryFromEnv,
   PostgresMarketPipelineReadModelRepository
-} from "./read-models/postgres-market-pipeline-read-model-repository.js";
+} from "./read-models/postgres-market-pipeline-read-model-repository";
 export {
   createMarketStateRepositoryFromEnv,
   PostgresMarketStateRepository
-} from "./market-state/postgres-market-state-repository.js";
+} from "./market-state/postgres-market-state-repository";
 export {
   createRiskVerdictRepositoryFromEnv,
   PostgresRiskVerdictRepository
-} from "./risk/postgres-risk-verdict-repository.js";
+} from "./risk/postgres-risk-verdict-repository";
 export {
   createTradePlanVersionRepositoryFromEnv,
   PostgresTradePlanVersionRepository
-} from "./plans/postgres-trade-plan-version-repository.js";
+} from "./plans/postgres-trade-plan-version-repository";

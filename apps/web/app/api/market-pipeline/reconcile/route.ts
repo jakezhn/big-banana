@@ -6,7 +6,7 @@ import type {
   MarketPipelineReadModelRepository,
   OrderRepository
 } from "@big-banana/domain";
-import { handleReconcileMarketPipelineRequest } from "../../../../src/orders/handle-reconcile-market-pipeline-request.js";
+import { handleReconcileMarketPipelineRequest } from "../../../../src/orders/handle-reconcile-market-pipeline-request";
 
 let marketPipelineReadModelRepository:
   | MarketPipelineReadModelRepository

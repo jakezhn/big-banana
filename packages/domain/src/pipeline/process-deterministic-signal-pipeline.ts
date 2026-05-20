@@ -1,23 +1,23 @@
-import type { MarketStateRepository } from "../market-state/market-state-repository.js";
+import type { MarketStateRepository } from "../market-state/market-state-repository";
 import {
   generateAndRecordTradePlanForSignal,
   type GenerateAndRecordTradePlanForSignalResult
-} from "../planner/generate-and-record-trade-plan-for-signal.js";
+} from "../planner/generate-and-record-trade-plan-for-signal";
 import {
   evaluateAndRecordDeterministicRiskVerdict,
   type RiskPolicySnapshot
-} from "../risk/evaluate-deterministic-risk-verdict.js";
-import type { RiskVerdictRepository } from "../risk/risk-verdict-repository.js";
-import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload.js";
+} from "../risk/evaluate-deterministic-risk-verdict";
+import type { RiskVerdictRepository } from "../risk/risk-verdict-repository";
+import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
 import {
   buildAndRecordExecutionIntentFromRiskVerdict,
-} from "../execution/build-execution-intent-from-risk-verdict.js";
+} from "../execution/build-execution-intent-from-risk-verdict";
 import type {
   ExecutionIntentRepository,
   StoredExecutionIntent
-} from "../execution/execution-intent-repository.js";
-import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository.js";
-import type { StoredRiskVerdict } from "../risk/risk-verdict-repository.js";
+} from "../execution/execution-intent-repository";
+import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
+import type { StoredRiskVerdict } from "../risk/risk-verdict-repository";
 
 export type ProcessDeterministicSignalPipelineResult = {
   plan: GenerateAndRecordTradePlanForSignalResult;

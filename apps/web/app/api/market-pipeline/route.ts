@@ -1,6 +1,6 @@
 import { createMarketPipelineReadModelRepositoryFromEnv } from "@big-banana/db";
 import type { MarketPipelineReadModelRepository } from "@big-banana/domain";
-import { handleGetMarketPipelineRequest } from "../../../src/markets/handle-get-market-pipeline-request.js";
+import { handleGetMarketPipelineRequest } from "../../../src/markets/handle-get-market-pipeline-request";
 
 let marketPipelineReadModelRepository:
   | MarketPipelineReadModelRepository

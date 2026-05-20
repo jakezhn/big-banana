@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { TradePlan } from "@big-banana/contracts";
-import { assertPlanStateTransition } from "../state-machines/plan-state-machine.js";
+import { assertPlanStateTransition } from "../state-machines/plan-state-machine";
 import type {
   StoredPlanTransition,
   StoredTradePlanVersion,
   TradePlanVersionRepository
-} from "./trade-plan-version-repository.js";
+} from "./trade-plan-version-repository";
 
 export type RecordGeneratedTradePlanInput = {
   tradePlan: TradePlan;

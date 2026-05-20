@@ -3,7 +3,7 @@ import {
   type MarketPipelineReadModelRepository,
   type OrderRepository
 } from "@big-banana/domain";
-import type { MarketPipelineStatus } from "../markets/derive-market-pipeline-status.js";
+import type { MarketPipelineStatus } from "../markets/derive-market-pipeline-status";
 
 type ErrorResponse = {
   ok: false;

@@ -13,8 +13,8 @@ import type {
   TradePlanVersionRepository,
   WebhookEventRepository
 } from "@big-banana/domain";
-import { getDeterministicRiskPolicyFromEnv } from "../../../../src/trading/get-deterministic-risk-policy-from-env.js";
-import { handleTradingViewWebhookRequest } from "../../../../src/webhooks/tradingview/handle-tradingview-webhook-request.js";
+import { getDeterministicRiskPolicyFromEnv } from "../../../../src/trading/get-deterministic-risk-policy-from-env";
+import { handleTradingViewWebhookRequest } from "../../../../src/webhooks/tradingview/handle-tradingview-webhook-request";
 
 let webhookEventRepository: WebhookEventRepository | undefined;
 let marketStateRepository: MarketStateRepository | undefined;

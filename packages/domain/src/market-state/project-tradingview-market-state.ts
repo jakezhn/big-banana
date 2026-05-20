@@ -1,8 +1,8 @@
-import type { TradingViewIngestionResult } from "../webhook-events/ingest-tradingview-payload.js";
+import type { TradingViewIngestionResult } from "../webhook-events/ingest-tradingview-payload";
 import type {
   MarketStateRepository,
   StoredMarketState
-} from "./market-state-repository.js";
+} from "./market-state-repository";
 
 export type TradingViewMarketStateProjectionResult = {
   marketState: StoredMarketState;

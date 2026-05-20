@@ -5,7 +5,7 @@ import type {
 import {
   deriveMarketPipelineStatus,
   type MarketPipelineStatus
-} from "./derive-market-pipeline-status.js";
+} from "./derive-market-pipeline-status";
 
 type ErrorResponse = {
   ok: false;

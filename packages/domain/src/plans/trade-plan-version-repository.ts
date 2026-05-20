@@ -1,5 +1,5 @@
 import type { TradePlan } from "@big-banana/contracts";
-import type { PlanState } from "../state-machines/plan-state-machine.js";
+import type { PlanState } from "../state-machines/plan-state-machine";
 
 export type ReceivedTradePlanVersion = {
   planId: string;

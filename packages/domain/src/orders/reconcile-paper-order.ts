@@ -1,12 +1,12 @@
 import {
   assertOrderStateTransition,
   type OrderState
-} from "../state-machines/order-state-machine.js";
+} from "../state-machines/order-state-machine";
 import type {
   OrderRepository,
   ReceivedOrderStatusUpdate,
   StoredOrder
-} from "./order-repository.js";
+} from "./order-repository";
 
 export type PaperReconcileOutcome = "filled" | "canceled";
 

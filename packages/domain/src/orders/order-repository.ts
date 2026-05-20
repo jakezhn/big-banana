@@ -1,5 +1,5 @@
 import type { ExecutionIntent } from "@big-banana/contracts";
-import type { OrderState } from "../state-machines/order-state-machine.js";
+import type { OrderState } from "../state-machines/order-state-machine";
 
 export type JsonValue =
   | string

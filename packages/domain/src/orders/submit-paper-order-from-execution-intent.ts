@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { StoredExecutionIntent } from "../execution/execution-intent-repository.js";
-import type { OrderRepository, StoredOrder } from "./order-repository.js";
-import { assertOrderStateTransition } from "../state-machines/order-state-machine.js";
+import type { StoredExecutionIntent } from "../execution/execution-intent-repository";
+import type { OrderRepository, StoredOrder } from "./order-repository";
+import { assertOrderStateTransition } from "../state-machines/order-state-machine";
 
 export async function submitPaperOrderFromExecutionIntent(
   executionIntent: StoredExecutionIntent,

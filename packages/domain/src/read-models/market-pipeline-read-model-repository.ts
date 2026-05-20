@@ -1,8 +1,8 @@
-import type { StoredExecutionIntent } from "../execution/execution-intent-repository.js";
-import type { StoredMarketState } from "../market-state/market-state-repository.js";
-import type { StoredOrder } from "../orders/order-repository.js";
-import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository.js";
-import type { StoredRiskVerdict } from "../risk/risk-verdict-repository.js";
+import type { StoredExecutionIntent } from "../execution/execution-intent-repository";
+import type { StoredMarketState } from "../market-state/market-state-repository";
+import type { StoredOrder } from "../orders/order-repository";
+import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository";
+import type { StoredRiskVerdict } from "../risk/risk-verdict-repository";
 
 export type MarketPipelineReadModel = {
   marketKey: string;

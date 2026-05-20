@@ -1,4 +1,4 @@
-import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload.js";
+import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
 
 export type ReceivedWebhookEvent = {
   source: CanonicalEnvelope["source"];

@@ -1,10 +1,10 @@
 import { validateRiskVerdict, type RiskVerdict } from "@big-banana/contracts";
-import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository.js";
+import type { StoredTradePlanVersion } from "../plans/trade-plan-version-repository";
 import type {
   ReceivedRiskVerdict,
   RiskVerdictRepository,
   StoredRiskVerdict
-} from "./risk-verdict-repository.js";
+} from "./risk-verdict-repository";
 
 export type RiskPolicySnapshot = {
   tradingAccountId: string;

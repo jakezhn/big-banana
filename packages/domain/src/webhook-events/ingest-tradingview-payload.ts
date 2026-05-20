@@ -2,11 +2,11 @@ import { createHash } from "node:crypto";
 import {
   normalizeTradingViewPayload,
   type CanonicalEnvelope
-} from "../tradingview/normalize-tradingview-payload.js";
+} from "../tradingview/normalize-tradingview-payload";
 import type {
   StoredWebhookEvent,
   WebhookEventRepository
-} from "./webhook-event-repository.js";
+} from "./webhook-event-repository";
 
 export type TradingViewIngestionResult = {
   envelope: CanonicalEnvelope;

@@ -1,17 +1,17 @@
 import { validateTradePlan } from "@big-banana/contracts";
-import type { MarketStateRepository } from "../market-state/market-state-repository.js";
+import type { MarketStateRepository } from "../market-state/market-state-repository";
 import {
   recordGeneratedTradePlan,
   type RecordGeneratedTradePlanResult
-} from "../plans/record-generated-trade-plan.js";
-import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository.js";
-import { isTerminalPlanState } from "../state-machines/plan-state-machine.js";
-import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload.js";
+} from "../plans/record-generated-trade-plan";
+import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
+import { isTerminalPlanState } from "../state-machines/plan-state-machine";
+import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
 import {
   buildPlannerInput,
   type PlannerInput
-} from "./build-planner-input.js";
-import { generateDeterministicTradePlan } from "./generate-deterministic-trade-plan.js";
+} from "./build-planner-input";
+import { generateDeterministicTradePlan } from "./generate-deterministic-trade-plan";
 
 export class InvalidGeneratedTradePlanError extends Error {
   constructor() {

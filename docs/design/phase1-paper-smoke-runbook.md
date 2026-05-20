@@ -91,6 +91,9 @@ Suggested baseline:
 
 ```bash
 DATABASE_URL='your-supabase-connection-string'
+NEXT_PUBLIC_SUPABASE_URL='https://your-project-ref.supabase.co'
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='your-publishable-key'
+SUPABASE_SECRET_KEY='your-secret-key'
 TRADING_ACCOUNT_ID=paper-tradingview
 PIPELINE_ACCOUNT_EQUITY=20000
 PIPELINE_MAX_TRADE_RISK_PCT=0.5
@@ -159,8 +162,31 @@ At this point:
 
 - API routes run locally
 - all DB writes land in remote Supabase
+- Supabase SDK clients can use Auth, Storage, and server-side admin probes
 
-## 8. Run the paper smoke flow
+## 8. Verify Supabase SDK connectivity first
+
+Before running the paper flow, probe the SDK path:
+
+```bash
+curl --silent "http://127.0.0.1:3000/api/supabase/health"
+```
+
+Expected minimum result:
+
+- `framework = "nextjs"`
+- `sdk.browser_client_configured = true`
+- `sdk.server_client_configured = true`
+- `sdk.admin_client_configured = true`
+- `database.reachable = true`
+
+Optional but useful:
+
+- `storage.reachable = true`
+
+If this step fails, fix SDK env vars before moving on to pipeline smoke.
+
+## 9. Run the paper smoke flow
 
 Default:
 
@@ -188,7 +214,7 @@ If you just want help:
 pnpm smoke:paper --help
 ```
 
-## 9. What the smoke script does
+## 10. What the smoke script does
 
 The script performs:
 
@@ -200,7 +226,7 @@ The script performs:
 6. `POST /api/market-pipeline/reconcile?outcome=filled`
 7. `GET /api/market-pipeline`
 
-## 10. Expected pipeline_status progression
+## 11. Expected pipeline_status progression
 
 Manual-review path:
 
@@ -217,7 +243,7 @@ Auto-approval path:
 3. `order_submitted`
 4. `order_terminal`
 
-## 11. Read API verification
+## 12. Read API verification
 
 Inspect current chain state:
 
@@ -234,7 +260,7 @@ Inspect:
 - `execution_intent`
 - `latest_order`
 
-## 12. Remote DB spot checks
+## 13. Remote DB spot checks
 
 Run these against the same remote Supabase project:
 

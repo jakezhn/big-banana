@@ -6,7 +6,7 @@ import type {
   ExecutionIntentRepository,
   MarketPipelineReadModelRepository
 } from "@big-banana/domain";
-import { handleApproveMarketPipelineRequest } from "../../../../src/approvals/handle-approve-market-pipeline-request.js";
+import { handleApproveMarketPipelineRequest } from "../../../../src/approvals/handle-approve-market-pipeline-request";
 
 let marketPipelineReadModelRepository:
   | MarketPipelineReadModelRepository
