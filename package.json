@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
+    "db:migrate:remote": "bash scripts/apply-remote-migrations.sh",
     "smoke:paper": "bash scripts/run-paper-smoke.sh",
     "test": "pnpm -r --if-present test",
     "test:contracts": "pnpm --filter @big-banana/contracts test",

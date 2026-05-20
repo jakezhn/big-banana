@@ -1,47 +1,149 @@
-# Phase 1 Paper Smoke Runbook
+# Phase 1 Paper Smoke Runbook For Remote Supabase
 
-This runbook is the single shortest path for pre-live integration.
-It uses the current local pipeline only:
+This runbook is now opinionated for one path only:
 
-- TradingView webhook route
-- deterministic planner
-- deterministic risk engine
-- manual approval endpoint
-- paper submit stub
-- paper reconcile stub
+- local Next.js app
+- remote Supabase dev or staging project
+- deterministic planning/risk/execution pipeline
+- paper order submit + reconcile stubs
 
-## 1. Prerequisites
+Use this when you want a realistic hosted Postgres target without introducing Bybit yet.
 
-- PostgreSQL is reachable from `DATABASE_URL`
-- `.env.local` or equivalent app env is populated
-- all migrations are applied in order
+## 1. Recommended topology
 
-Environment baseline:
+- app runtime: local `pnpm --filter @big-banana/web dev`
+- database: remote Supabase project
+- webhook source for smoke: local fixture replay via curl/script
+
+Do not use your production Supabase project.
+Create a dedicated dev or staging project only.
+
+## 2. Create a remote Supabase project
+
+In Supabase dashboard:
+
+1. create a new project dedicated to smoke testing
+2. wait for database provisioning to complete
+3. open `Connect`
+4. copy one of these connection strings:
+
+Preferred:
+
+- Direct connection, if your machine/network supports IPv6
+
+Fallback:
+
+- Session pooler on port `5432`, if you need IPv4 compatibility
+
+Avoid for this repository:
+
+- Transaction pooler on port `6543`
+
+Reason:
+
+- this project uses `postgres.js` with default prepared statements
+- Supabase transaction pooler does not support prepared statements
+- this smoke path also uses long-lived local app connections
+
+Official references:
+
+- Supabase connection strings: https://supabase.com/docs/reference/postgres/connection-strings
+- Supabase + psql: https://supabase.com/docs/guides/database/psql
+- Supabase + postgres.js: https://supabase.com/docs/guides/database/postgres-js
+
+## 3. Choose the right DATABASE_URL
+
+### Option A: Direct connection
+
+Example shape:
+
+```text
+postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+```
+
+Use this if your environment supports IPv6.
+
+### Option B: Session pooler
+
+Example shape:
+
+```text
+postgres://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+```
+
+Use this if you need IPv4.
+
+### Do not use
+
+Anything on port `6543` for this repository's current runtime path.
+
+## 4. Local environment file
+
+Create local env for the web app:
 
 ```bash
 cp .env.example apps/web/.env.local
 ```
 
-Manual approval is enabled by default:
+Then replace `DATABASE_URL` with your remote Supabase connection string.
+
+Suggested baseline:
 
 ```bash
+DATABASE_URL='your-supabase-connection-string'
+TRADING_ACCOUNT_ID=paper-tradingview
+PIPELINE_ACCOUNT_EQUITY=20000
+PIPELINE_MAX_TRADE_RISK_PCT=0.5
+PIPELINE_MAX_NOTIONAL=100000
+PIPELINE_MAX_LEVERAGE=3
 PIPELINE_REQUIRE_HUMAN_APPROVAL=true
 ```
 
-## 2. Apply migrations
+## 5. Install psql locally
 
-Run in order:
+On macOS with Homebrew:
 
 ```bash
-psql "$DATABASE_URL" -f packages/db/migrations/0001_webhook_events.sql
-psql "$DATABASE_URL" -f packages/db/migrations/0002_market_states.sql
-psql "$DATABASE_URL" -f packages/db/migrations/0003_trade_plans.sql
-psql "$DATABASE_URL" -f packages/db/migrations/0004_risk_verdicts.sql
-psql "$DATABASE_URL" -f packages/db/migrations/0005_execution_intents.sql
-psql "$DATABASE_URL" -f packages/db/migrations/0006_orders.sql
+brew install libpq
+echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+psql --version
 ```
 
-## 3. Start the app
+If you are on Intel Mac, replace `/opt/homebrew` with `/usr/local`.
+
+## 6. Apply remote migrations
+
+Export `DATABASE_URL` in the shell you will use for migrations:
+
+```bash
+export DATABASE_URL='your-supabase-connection-string'
+```
+
+Then run:
+
+```bash
+pnpm db:migrate:remote
+```
+
+This applies:
+
+1. `0001_webhook_events.sql`
+2. `0002_market_states.sql`
+3. `0003_trade_plans.sql`
+4. `0004_risk_verdicts.sql`
+5. `0005_execution_intents.sql`
+6. `0006_orders.sql`
+
+If you want help text:
+
+```bash
+pnpm db:migrate:remote --help
+```
+
+## 7. Start the local app
+
+Run locally:
 
 ```bash
 pnpm --filter @big-banana/web dev
@@ -53,25 +155,20 @@ Default base URL:
 http://127.0.0.1:3000
 ```
 
-## 4. Run the paper smoke flow
+At this point:
 
-Default flow:
+- API routes run locally
+- all DB writes land in remote Supabase
+
+## 8. Run the paper smoke flow
+
+Default:
 
 ```bash
 pnpm smoke:paper
 ```
 
-This performs:
-
-1. snapshot webhook
-2. signal webhook
-3. read pipeline
-4. manual approve
-5. submit paper order
-6. reconcile to `filled`
-7. read final pipeline
-
-Optional flags:
+Optional:
 
 ```bash
 BASE_URL=http://127.0.0.1:3000 pnpm smoke:paper
@@ -83,11 +180,29 @@ SKIP_APPROVE=1 pnpm smoke:paper
 Use `SKIP_APPROVE=1` only when:
 
 - `PIPELINE_REQUIRE_HUMAN_APPROVAL=false`
-- or the current market already has `pipeline_status = intent_ready`
+- or the market is already at `pipeline_status = intent_ready`
 
-## 5. Expected status progression
+If you just want help:
 
-Normal manual-review path:
+```bash
+pnpm smoke:paper --help
+```
+
+## 9. What the smoke script does
+
+The script performs:
+
+1. `POST /api/webhooks/tradingview` with `snapshot.valid.json`
+2. `POST /api/webhooks/tradingview` with `signal.valid.json`
+3. `GET /api/market-pipeline`
+4. `POST /api/market-pipeline/approve`
+5. `POST /api/market-pipeline/submit`
+6. `POST /api/market-pipeline/reconcile?outcome=filled`
+7. `GET /api/market-pipeline`
+
+## 10. Expected pipeline_status progression
+
+Manual-review path:
 
 1. `normalized`
 2. `risk_review_required`
@@ -102,7 +217,7 @@ Auto-approval path:
 3. `order_submitted`
 4. `order_terminal`
 
-## 6. Read API checks
+## 11. Read API verification
 
 Inspect current chain state:
 
@@ -111,7 +226,7 @@ curl --silent \
   "http://127.0.0.1:3000/api/market-pipeline?market_key=BINANCE:BTCUSDT:240"
 ```
 
-Key fields to inspect:
+Inspect:
 
 - `pipeline_status`
 - `trade_plan_version`
@@ -119,40 +234,9 @@ Key fields to inspect:
 - `execution_intent`
 - `latest_order`
 
-## 7. Manual step-by-step alternative
+## 12. Remote DB spot checks
 
-If you do not want to use the smoke script:
-
-```bash
-curl -X POST http://127.0.0.1:3000/api/webhooks/tradingview \
-  -H 'content-type: application/json' \
-  --data @packages/contracts/test/fixtures/snapshot.valid.json
-```
-
-```bash
-curl -X POST http://127.0.0.1:3000/api/webhooks/tradingview \
-  -H 'content-type: application/json' \
-  --data @packages/contracts/test/fixtures/signal.valid.json
-```
-
-```bash
-curl -X POST \
-  "http://127.0.0.1:3000/api/market-pipeline/approve?market_key=BINANCE:BTCUSDT:240"
-```
-
-```bash
-curl -X POST \
-  "http://127.0.0.1:3000/api/market-pipeline/submit?market_key=BINANCE:BTCUSDT:240"
-```
-
-```bash
-curl -X POST \
-  "http://127.0.0.1:3000/api/market-pipeline/reconcile?market_key=BINANCE:BTCUSDT:240&outcome=filled"
-```
-
-## 8. DB spot checks
-
-Minimal spot checks:
+Run these against the same remote Supabase project:
 
 ```sql
 select event_key, delivery_count, process_status
@@ -196,21 +280,23 @@ order by submitted_at desc
 limit 10;
 ```
 
-## 9. Failure interpretation
+## 13. Failure interpretation
 
-- `risk_review_required`: signal path is healthy; approval step still required
-- `risk_rejected`: planner path is healthy; deterministic risk blocked execution
+- `risk_review_required`: webhook, planner, and risk all worked; approval still needed
+- `risk_rejected`: pipeline is healthy up to deterministic risk
 - `intent_not_ready`: approval was skipped too early
 - `already_submitted`: idempotent submit path is working
-- `already_terminal`: reconcile path was repeated after closure
+- `already_terminal`: reconcile was repeated after closure
+- connection failure before step 1: local app is not running
+- `psql` migration failure: usually wrong `DATABASE_URL`, SSL mismatch, or wrong Supabase connection mode
 
-## 10. Scope boundary
+## 14. Scope boundary
 
-This runbook intentionally does not cover:
+This runbook still does not cover:
 
-- real TradingView hosted webhook delivery
+- real hosted TradingView webhook delivery
 - Bybit HTTP submit
-- REST reconcile against a real venue
+- real exchange reconcile
 - fills
 - positions
 - portfolio state
