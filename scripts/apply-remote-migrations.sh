@@ -34,6 +34,7 @@ migrations=(
   "packages/db/migrations/0004_risk_verdicts.sql"
   "packages/db/migrations/0005_execution_intents.sql"
   "packages/db/migrations/0006_orders.sql"
+  "packages/db/migrations/0007_security_and_index_tuning.sql"
 )
 
 for migration in "${migrations[@]}"; do

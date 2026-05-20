@@ -137,6 +137,7 @@ This applies:
 4. `0004_risk_verdicts.sql`
 5. `0005_execution_intents.sql`
 6. `0006_orders.sql`
+7. `0007_security_and_index_tuning.sql`
 
 If you want help text:
 
