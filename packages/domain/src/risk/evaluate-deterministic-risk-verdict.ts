@@ -149,7 +149,9 @@ export function evaluateDeterministicRiskVerdict(
     approved_qty: failCodes.length > 0 ? null : approvedQty,
     approved_notional: failCodes.length > 0 ? null : approvedNotional,
     approved_stop_price: failCodes.length > 0 ? null : stopPrice,
-    require_human_approval: openCandidate && policy.liveRequiresManualApproval,
+    // Human approval is retired from the runtime path; keep the field frozen
+    // in the contract but always emit false.
+    require_human_approval: false,
     checks,
     rejection_codes: failCodes
   };

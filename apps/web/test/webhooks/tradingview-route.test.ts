@@ -3,6 +3,9 @@ import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import {
   type ExecutionIntentRepository,
   type MarketStateRepository,
+  type OrderRepository,
+  type ReceivedOrder,
+  type ReceivedOrderStatusUpdate,
   type ReceivedExecutionIntent,
   type ReceivedMarketState,
   type ReceivedPlanTransition,
@@ -13,6 +16,7 @@ import {
   type RiskVerdictRepository,
   type StoredExecutionIntent,
   type StoredMarketState,
+  type StoredOrder,
   type StoredPlanTransition,
   type StoredRiskVerdict,
   type StoredTradePlanVersion,
@@ -41,7 +45,7 @@ const manualReviewPolicy: RiskPolicySnapshot = {
   dailyLossLimitBreached: false,
   consecutiveLossLimitBreached: false,
   killSwitchEnabled: false,
-  liveRequiresManualApproval: true
+  liveRequiresManualApproval: false
 };
 
 class InMemoryWebhookEventRepository implements WebhookEventRepository {
@@ -181,6 +185,44 @@ class InMemoryExecutionIntentRepository implements ExecutionIntentRepository {
   }
 }
 
+class InMemoryOrderRepository implements OrderRepository {
+  readonly orders: StoredOrder[] = [];
+
+  async getLatestOrderByExecutionIntentId(
+    executionIntentId: string
+  ): Promise<StoredOrder | null> {
+    return (
+      this.orders
+        .filter((order) => order.executionIntentId === executionIntentId)
+        .at(-1) ?? null
+    );
+  }
+
+  async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
+    const stored = { ...order, id: crypto.randomUUID() };
+    this.orders.push(stored);
+    return stored;
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    update: ReceivedOrderStatusUpdate
+  ): Promise<StoredOrder> {
+    const index = this.orders.findIndex((order) => order.id === orderId);
+
+    if (index < 0) {
+      throw new Error(`Unknown order: ${orderId}`);
+    }
+
+    const stored = {
+      ...this.orders[index],
+      ...update
+    };
+    this.orders[index] = stored;
+    return stored;
+  }
+}
+
 function dependencies(
   overrides?: Partial<{
     riskPolicy: RiskPolicySnapshot;
@@ -192,6 +234,7 @@ function dependencies(
     tradePlanVersionRepository: new InMemoryTradePlanVersionRepository(),
     riskVerdictRepository: new InMemoryRiskVerdictRepository(),
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
+    orderRepository: new InMemoryOrderRepository(),
     riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy
   };
 }
@@ -217,7 +260,7 @@ describe("POST /api/webhooks/tradingview", () => {
     expect(deps.tradePlanVersionRepository.versions.size).toBe(0);
   });
 
-  it("processes a valid signal payload through plan and risk, stopping at manual review by default", async () => {
+  it("processes a valid signal payload through plan, risk, intent, and auto-submit by default", async () => {
     const deps = dependencies();
     await handleTradingViewWebhookRequest(
       request(JSON.stringify(contractFixture("snapshot.valid.json"))),
@@ -234,11 +277,12 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: false,
-      process_status: "risk_review_required"
+      process_status: "order_submitted"
     });
     expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
     expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
-    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.executionIntentRepository.intents).toHaveLength(1);
+    expect(deps.orderRepository.orders).toHaveLength(1);
   });
 
   it("marks a repeated signal delivery as duplicate without replaying downstream writes", async () => {
@@ -257,18 +301,19 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: true,
-      process_status: "risk_review_required"
+      process_status: "order_submitted"
     });
     expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
     expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
-    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.executionIntentRepository.intents).toHaveLength(1);
+    expect(deps.orderRepository.orders).toHaveLength(1);
   });
 
-  it("can auto-approve into execution intent when manual review is disabled", async () => {
+  it("ignores the deprecated manual-review flag and still auto-submits", async () => {
     const deps = dependencies({
       riskPolicy: {
         ...manualReviewPolicy,
-        liveRequiresManualApproval: false
+        liveRequiresManualApproval: true
       }
     });
     await handleTradingViewWebhookRequest(
@@ -286,9 +331,10 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: false,
-      process_status: "intent_ready"
+      process_status: "order_submitted"
     });
     expect(deps.executionIntentRepository.intents).toHaveLength(1);
+    expect(deps.orderRepository.orders).toHaveLength(1);
   });
 
   it("rejects non-json content types", async () => {

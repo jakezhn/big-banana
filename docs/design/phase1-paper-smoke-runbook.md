@@ -99,7 +99,6 @@ PIPELINE_ACCOUNT_EQUITY=20000
 PIPELINE_MAX_TRADE_RISK_PCT=0.5
 PIPELINE_MAX_NOTIONAL=100000
 PIPELINE_MAX_LEVERAGE=3
-PIPELINE_REQUIRE_HUMAN_APPROVAL=true
 ```
 
 ## 5. Install psql locally
@@ -200,13 +199,7 @@ Optional:
 BASE_URL=http://127.0.0.1:3000 pnpm smoke:paper
 MARKET_KEY=BINANCE:BTCUSDT:240 pnpm smoke:paper
 RECONCILE_OUTCOME=canceled pnpm smoke:paper
-SKIP_APPROVE=1 pnpm smoke:paper
 ```
-
-Use `SKIP_APPROVE=1` only when:
-
-- `PIPELINE_REQUIRE_HUMAN_APPROVAL=false`
-- or the market is already at `pipeline_status = intent_ready`
 
 If you just want help:
 
@@ -221,27 +214,14 @@ The script performs:
 1. `POST /api/webhooks/tradingview` with `snapshot.valid.json`
 2. `POST /api/webhooks/tradingview` with `signal.valid.json`
 3. `GET /api/market-pipeline`
-4. `POST /api/market-pipeline/approve`
-5. `POST /api/market-pipeline/submit`
-6. `POST /api/market-pipeline/reconcile?outcome=filled`
-7. `GET /api/market-pipeline`
+4. `POST /api/market-pipeline/reconcile?outcome=filled`
+5. `GET /api/market-pipeline`
 
 ## 11. Expected pipeline_status progression
 
-Manual-review path:
-
 1. `normalized`
-2. `risk_review_required`
-3. `intent_ready`
-4. `order_submitted`
-5. `order_terminal`
-
-Auto-approval path:
-
-1. `normalized`
-2. `intent_ready`
-3. `order_submitted`
-4. `order_terminal`
+2. `order_submitted`
+3. `order_terminal`
 
 ## 12. Read API verification
 
@@ -308,9 +288,8 @@ limit 10;
 
 ## 13. Failure interpretation
 
-- `risk_review_required`: webhook, planner, and risk all worked; approval still needed
 - `risk_rejected`: pipeline is healthy up to deterministic risk
-- `intent_not_ready`: approval was skipped too early
+- `intent_not_ready`: execution intent generation failed before order submission
 - `already_submitted`: idempotent submit path is working
 - `already_terminal`: reconcile was repeated after closure
 - connection failure before step 1: local app is not running

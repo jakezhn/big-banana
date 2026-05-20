@@ -1,6 +1,7 @@
 import {
   createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
+  createOrderRepositoryFromEnv,
   createRiskVerdictRepositoryFromEnv,
   createTradePlanVersionRepositoryFromEnv,
   createWebhookEventRepositoryFromEnv
@@ -8,6 +9,7 @@ import {
 import type {
   ExecutionIntentRepository,
   MarketStateRepository,
+  OrderRepository,
   RiskVerdictRepository,
   RiskPolicySnapshot,
   TradePlanVersionRepository,
@@ -21,6 +23,7 @@ let marketStateRepository: MarketStateRepository | undefined;
 let tradePlanVersionRepository: TradePlanVersionRepository | undefined;
 let riskVerdictRepository: RiskVerdictRepository | undefined;
 let executionIntentRepository: ExecutionIntentRepository | undefined;
+let orderRepository: OrderRepository | undefined;
 let riskPolicy: RiskPolicySnapshot | undefined;
 
 export async function POST(request: Request): Promise<Response> {
@@ -30,6 +33,7 @@ export async function POST(request: Request): Promise<Response> {
     tradePlanVersionRepository: getTradePlanVersionRepository(),
     riskVerdictRepository: getRiskVerdictRepository(),
     executionIntentRepository: getExecutionIntentRepository(),
+    orderRepository: getOrderRepository(),
     riskPolicy: getRiskPolicy()
   });
 }
@@ -57,6 +61,11 @@ function getRiskVerdictRepository(): RiskVerdictRepository {
 function getExecutionIntentRepository(): ExecutionIntentRepository {
   executionIntentRepository ??= createExecutionIntentRepositoryFromEnv();
   return executionIntentRepository;
+}
+
+function getOrderRepository(): OrderRepository {
+  orderRepository ??= createOrderRepositoryFromEnv();
+  return orderRepository;
 }
 
 function getRiskPolicy(): RiskPolicySnapshot {

@@ -9,7 +9,7 @@ const DEFAULT_RISK_POLICY: RiskPolicySnapshot = {
   dailyLossLimitBreached: false,
   consecutiveLossLimitBreached: false,
   killSwitchEnabled: false,
-  liveRequiresManualApproval: true
+  liveRequiresManualApproval: false
 };
 
 export function getDeterministicRiskPolicyFromEnv(

@@ -58,7 +58,7 @@ function riskVerdict(
     approvedQty: 0.12,
     approvedNotional: 8040,
     approvedStopPrice: 66800,
-    requireHumanApproval: true,
+    requireHumanApproval: false,
     checks: [],
     rejectionCodes: [],
     createdAt: "2026-05-17T11:00:00.000Z",

@@ -73,7 +73,7 @@ describe("evaluateDeterministicRiskVerdict", () => {
     expect(verdict.verdict).toBe("approve");
     expect(verdict.approved_risk_pct).toBe(0.5);
     expect(verdict.approved_qty).not.toBeNull();
-    expect(verdict.require_human_approval).toBe(true);
+    expect(verdict.require_human_approval).toBe(false);
     expect(validateRiskVerdict(verdict)).toBe(true);
   });
 

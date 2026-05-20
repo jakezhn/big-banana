@@ -188,7 +188,7 @@ describe("processDeterministicSignalPipeline", () => {
     expect(executionIntentRepository.intents).toHaveLength(1);
   });
 
-  it("stops before execution intent when manual approval is required", async () => {
+  it("continues to execution intent even when the deprecated manual-approval flag is set", async () => {
     const webhookRepository = new InMemoryWebhookEventRepository();
     const marketStateRepository = new InMemoryMarketStateRepository();
     const tradePlanVersionRepository = new InMemoryTradePlanVersionRepository();
@@ -211,8 +211,8 @@ describe("processDeterministicSignalPipeline", () => {
       }
     );
 
-    expect(result.riskVerdict.requireHumanApproval).toBe(true);
-    expect(result.executionIntent).toBeNull();
-    expect(executionIntentRepository.intents).toHaveLength(0);
+    expect(result.riskVerdict.requireHumanApproval).toBe(false);
+    expect(result.executionIntent?.payload.action).toBe("open");
+    expect(executionIntentRepository.intents).toHaveLength(1);
   });
 });

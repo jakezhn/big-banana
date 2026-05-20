@@ -43,6 +43,11 @@ export {
   InvalidBuiltExecutionIntentError,
   UnsupportedExecutionIntentError
 } from "./execution/build-execution-intent-from-risk-verdict";
+export {
+  buildAndRecordOperatorExecutionIntent,
+  buildOperatorExecutionIntent,
+  InvalidOperatorExecutionIntentError
+} from "./execution/build-operator-execution-intent";
 export type {
   ExecutionIntentRepository,
   ReceivedExecutionIntent,

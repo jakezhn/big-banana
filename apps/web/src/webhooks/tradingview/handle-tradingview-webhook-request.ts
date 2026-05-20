@@ -5,8 +5,10 @@ import {
   projectTradingViewMarketState,
   type ExecutionIntentRepository,
   type MarketStateRepository,
+  type OrderRepository,
   type RiskPolicySnapshot,
   type RiskVerdictRepository,
+  submitPaperOrderFromExecutionIntent,
   type TradePlanVersionRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
@@ -29,6 +31,7 @@ export type TradingViewWebhookRequestDependencies = {
   tradePlanVersionRepository: TradePlanVersionRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
+  orderRepository: OrderRepository;
   riskPolicy: RiskPolicySnapshot;
 };
 
@@ -133,15 +136,23 @@ async function processSignalPipeline(
   );
 
   if (result.executionIntent) {
-    return "intent_ready";
+    const existingOrder =
+      await dependencies.orderRepository.getLatestOrderByExecutionIntentId(
+        result.executionIntent.id
+      );
+
+    if (!existingOrder) {
+      await submitPaperOrderFromExecutionIntent(
+        result.executionIntent,
+        dependencies.orderRepository
+      );
+    }
+
+    return "order_submitted";
   }
 
   if (result.riskVerdict.verdict === "reject") {
     return "risk_rejected";
-  }
-
-  if (result.riskVerdict.requireHumanApproval) {
-    return "risk_review_required";
   }
 
   return "risk_approved";

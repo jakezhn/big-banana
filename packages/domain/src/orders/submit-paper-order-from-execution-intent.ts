@@ -35,7 +35,8 @@ export async function submitPaperOrderFromExecutionIntent(
     rawExchangeJson: {
       mode: "paper",
       submission: "stub",
-      acknowledged: true
+      acknowledged: true,
+      intent_action: executionIntent.payload.action
     }
   });
 }

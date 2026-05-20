@@ -4,7 +4,6 @@ export const marketPipelineStatuses = [
   "normalized",
   "plan_ready",
   "risk_approved",
-  "risk_review_required",
   "risk_rejected",
   "intent_ready",
   "order_submitted",
@@ -29,10 +28,6 @@ export function deriveMarketPipelineStatus(
   if (snapshot.riskVerdict) {
     if (snapshot.riskVerdict.verdict === "reject") {
       return "risk_rejected";
-    }
-
-    if (snapshot.riskVerdict.requireHumanApproval) {
-      return "risk_review_required";
     }
 
     return "risk_approved";

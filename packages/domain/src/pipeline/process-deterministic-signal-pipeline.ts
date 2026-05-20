@@ -69,10 +69,6 @@ async function maybeBuildAndRecordExecutionIntent(
   repository: ExecutionIntentRepository,
   createdAt: string
 ): Promise<StoredExecutionIntent | null> {
-  if (riskVerdict.requireHumanApproval) {
-    return null;
-  }
-
   if (
     riskVerdict.verdict !== "approve" &&
     riskVerdict.verdict !== "approve_with_reduction"
