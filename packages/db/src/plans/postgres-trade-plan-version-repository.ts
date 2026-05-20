@@ -5,7 +5,8 @@ import type {
   StoredTradePlanVersion,
   TradePlanVersionRepository
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type TradePlanVersionRow = {
   id: string;
@@ -162,11 +163,5 @@ function mapTradePlanVersionRow(
 }
 
 export function createTradePlanVersionRepositoryFromEnv(): PostgresTradePlanVersionRepository {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
-  }
-
-  return new PostgresTradePlanVersionRepository(postgres(databaseUrl));
+  return new PostgresTradePlanVersionRepository(getSharedSqlClientFromEnv());
 }

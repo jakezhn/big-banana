@@ -3,7 +3,8 @@ import type {
   StoredWebhookEvent,
   WebhookEventRepository
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type WebhookEventRow = {
   id: string;
@@ -101,11 +102,5 @@ export class PostgresWebhookEventRepository implements WebhookEventRepository {
 }
 
 export function createWebhookEventRepositoryFromEnv(): PostgresWebhookEventRepository {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
-  }
-
-  return new PostgresWebhookEventRepository(postgres(databaseUrl));
+  return new PostgresWebhookEventRepository(getSharedSqlClientFromEnv());
 }

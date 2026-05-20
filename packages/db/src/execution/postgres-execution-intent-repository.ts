@@ -3,7 +3,8 @@ import type {
   ReceivedExecutionIntent,
   StoredExecutionIntent
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type ExecutionIntentRow = {
   id: string;
@@ -57,11 +58,5 @@ export class PostgresExecutionIntentRepository
 }
 
 export function createExecutionIntentRepositoryFromEnv(): PostgresExecutionIntentRepository {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
-  }
-
-  return new PostgresExecutionIntentRepository(postgres(databaseUrl));
+  return new PostgresExecutionIntentRepository(getSharedSqlClientFromEnv());
 }

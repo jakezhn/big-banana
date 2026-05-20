@@ -3,7 +3,8 @@ import type {
   ReceivedMarketState,
   StoredMarketState
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type MarketStateHistoryRow = {
   id: string;
@@ -120,11 +121,5 @@ export class PostgresMarketStateRepository implements MarketStateRepository {
 }
 
 export function createMarketStateRepositoryFromEnv(): PostgresMarketStateRepository {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
-  }
-
-  return new PostgresMarketStateRepository(postgres(databaseUrl));
+  return new PostgresMarketStateRepository(getSharedSqlClientFromEnv());
 }

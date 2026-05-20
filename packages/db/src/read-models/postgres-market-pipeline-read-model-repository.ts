@@ -7,7 +7,8 @@ import type {
   StoredRiskVerdict,
   StoredTradePlanVersion
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type MarketStateRow = {
   market_key: string;
@@ -198,10 +199,10 @@ function mapRiskVerdictRow(row: RiskVerdictRow): StoredRiskVerdict {
     tradePlanVersionId: row.trade_plan_version_id,
     tradingAccountId: row.trading_account_id,
     verdict: row.verdict,
-    approvedRiskPct: row.approved_risk_pct,
-    approvedQty: row.approved_qty,
-    approvedNotional: row.approved_notional,
-    approvedStopPrice: row.approved_stop_price,
+    approvedRiskPct: toNumber(row.approved_risk_pct),
+    approvedQty: toNumberOrNull(row.approved_qty),
+    approvedNotional: toNumberOrNull(row.approved_notional),
+    approvedStopPrice: toNumberOrNull(row.approved_stop_price),
     requireHumanApproval: row.require_human_approval,
     checks: row.checks_json,
     rejectionCodes: row.rejection_codes_json,
@@ -234,11 +235,11 @@ function mapOrderRow(row: OrderRow): StoredOrder {
     clientOrderId: row.client_order_id,
     exchangeOrderId: row.exchange_order_id,
     status: row.status,
-    requestedQty: row.requested_qty,
-    requestedPrice: row.requested_price,
-    stopPrice: row.stop_price,
-    avgFillPrice: row.avg_fill_price,
-    filledQty: row.filled_qty,
+    requestedQty: toNumber(row.requested_qty),
+    requestedPrice: toNumberOrNull(row.requested_price),
+    stopPrice: toNumberOrNull(row.stop_price),
+    avgFillPrice: toNumberOrNull(row.avg_fill_price),
+    filledQty: toNumber(row.filled_qty),
     submittedAt: row.submitted_at,
     lastExchangeUpdateAt: row.last_exchange_update_at,
     terminalAt: row.terminal_at,
@@ -247,11 +248,19 @@ function mapOrderRow(row: OrderRow): StoredOrder {
 }
 
 export function createMarketPipelineReadModelRepositoryFromEnv(): PostgresMarketPipelineReadModelRepository {
-  const databaseUrl = process.env.DATABASE_URL;
+  return new PostgresMarketPipelineReadModelRepository(
+    getSharedSqlClientFromEnv()
+  );
+}
 
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
+function toNumber(value: number | string): number {
+  return typeof value === "number" ? value : Number(value);
+}
+
+function toNumberOrNull(value: number | string | null): number | null {
+  if (value === null) {
+    return null;
   }
 
-  return new PostgresMarketPipelineReadModelRepository(postgres(databaseUrl));
+  return toNumber(value);
 }

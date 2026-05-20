@@ -4,7 +4,8 @@ import type {
   ReceivedOrderStatusUpdate,
   StoredOrder
 } from "@big-banana/domain";
-import postgres, { type Sql } from "postgres";
+import { type Sql } from "postgres";
+import { getSharedSqlClientFromEnv } from "../sql/shared-sql-client";
 
 type OrderRow = {
   id: string;
@@ -141,11 +142,11 @@ function mapOrderRow(row: OrderRow): StoredOrder {
     clientOrderId: row.client_order_id,
     exchangeOrderId: row.exchange_order_id,
     status: row.status,
-    requestedQty: row.requested_qty,
-    requestedPrice: row.requested_price,
-    stopPrice: row.stop_price,
-    avgFillPrice: row.avg_fill_price,
-    filledQty: row.filled_qty,
+    requestedQty: toNumber(row.requested_qty),
+    requestedPrice: toNumberOrNull(row.requested_price),
+    stopPrice: toNumberOrNull(row.stop_price),
+    avgFillPrice: toNumberOrNull(row.avg_fill_price),
+    filledQty: toNumber(row.filled_qty),
     submittedAt: row.submitted_at,
     lastExchangeUpdateAt: row.last_exchange_update_at,
     terminalAt: row.terminal_at,
@@ -154,11 +155,17 @@ function mapOrderRow(row: OrderRow): StoredOrder {
 }
 
 export function createOrderRepositoryFromEnv(): PostgresOrderRepository {
-  const databaseUrl = process.env.DATABASE_URL;
+  return new PostgresOrderRepository(getSharedSqlClientFromEnv());
+}
 
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
+function toNumber(value: number | string): number {
+  return typeof value === "number" ? value : Number(value);
+}
+
+function toNumberOrNull(value: number | string | null): number | null {
+  if (value === null) {
+    return null;
   }
 
-  return new PostgresOrderRepository(postgres(databaseUrl));
+  return toNumber(value);
 }
