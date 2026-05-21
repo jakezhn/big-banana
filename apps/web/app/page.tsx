@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getApiBaseUrl } from "../src/api/get-api-base-url";
 import { loadDashboardOverview, loadDashboardPipelines } from "../src/dashboard/load-dashboard-data";
 
 export const dynamic = "force-dynamic";
@@ -6,6 +7,7 @@ export const dynamic = "force-dynamic";
 const numberFormatter = new Intl.NumberFormat("en-US");
 
 export default async function DashboardPage() {
+  const apiBaseUrl = getApiBaseUrl();
   const [overview, pipelines] = await Promise.all([
     loadDashboardOverview(),
     loadDashboardPipelines(12)
@@ -38,7 +40,7 @@ export default async function DashboardPage() {
           <Link href="/pipelines" className="action-link">
             Open Pipeline Monitor
           </Link>
-          <Link href="/api/dashboard/overview" className="action-link action-link-muted">
+          <Link href={`${apiBaseUrl}/api/dashboard/overview`} className="action-link action-link-muted">
             View Overview API
           </Link>
         </div>

@@ -18,11 +18,39 @@ importers:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@24.12.4)
 
-  apps/web:
+  apps/api:
     dependencies:
       '@big-banana/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@big-banana/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@supabase/ssr':
+        specifier: ^0.7.0
+        version: 0.7.0(@supabase/supabase-js@2.106.0)
+      '@supabase/supabase-js':
+        specifier: ^2.57.4
+        version: 2.106.0
+      next:
+        specifier: ^16.0.0
+        version: 16.2.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.14)
+
+  apps/web:
+    dependencies:
       '@big-banana/domain':
         specifier: workspace:*
         version: link:../../packages/domain

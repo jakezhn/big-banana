@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { loadDashboardPipelines } from "../../src/dashboard/load-dashboard-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function PipelinesPage() {
+  const apiBaseUrl = getApiBaseUrl();
   const pipelines = await loadDashboardPipelines(50);
 
   return (
@@ -20,7 +22,7 @@ export default async function PipelinesPage() {
           <Link href="/" className="action-link">
             Back to Overview
           </Link>
-          <Link href="/api/dashboard/pipelines?limit=50" className="action-link action-link-muted">
+          <Link href={`${apiBaseUrl}/api/dashboard/pipelines?limit=50`} className="action-link action-link-muted">
             View Pipelines API
           </Link>
         </div>

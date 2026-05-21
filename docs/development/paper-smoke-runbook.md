@@ -145,12 +145,12 @@ If you want help text:
 pnpm db:migrate:remote --help
 ```
 
-## 7. Start the local app
+## 7. Start the local API app
 
 Run locally:
 
 ```bash
-pnpm --filter @big-banana/web dev
+pnpm --filter @big-banana/api dev
 ```
 
 Default base URL:
@@ -161,10 +161,22 @@ http://127.0.0.1:3000
 
 At this point:
 
-- API routes run locally
+- API routes run locally from `apps/api`
 - all DB writes land in remote Supabase
 - Supabase SDK clients can use Auth, Storage, and server-side admin probes
 - `PIPELINE_MODE=full` means the system auto-generates intents and auto-submits paper orders
+
+If you also want to preview the dashboard UI, start the frontend separately:
+
+```bash
+pnpm --filter @big-banana/web dev
+```
+
+Default frontend URL:
+
+```text
+http://127.0.0.1:3001
+```
 
 Use `PIPELINE_MODE=advisory` only when you want to stop at `plan + risk` and skip execution.
 

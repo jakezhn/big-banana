@@ -7,6 +7,9 @@
     "smoke:paper": "bash scripts/run-paper-smoke.sh",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
+    "dev:api": "pnpm --filter @big-banana/api dev",
+    "dev:web": "pnpm --filter @big-banana/web dev",
+    "test:api": "pnpm --filter @big-banana/api test",
     "test:contracts": "pnpm --filter @big-banana/contracts test",
     "test:domain": "pnpm --filter @big-banana/domain test",
     "test:web": "pnpm --filter @big-banana/web test"

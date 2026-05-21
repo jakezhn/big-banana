@@ -160,6 +160,9 @@ AI 不负责：
 当前代码结构适合继续保持单仓多应用：
 
 - `apps/web`
+  - 前端页面与内容层
+- `apps/api`
+  - Next.js API routes / webhook / operator actions
 - `packages/domain`
 - `packages/contracts`
 - `packages/db`
@@ -177,10 +180,8 @@ AI 不负责：
 当前最合理的部署拓扑是：
 
 - `Vercel`
-  - Next.js dashboard
-  - API routes
-  - webhook receiver
-  - operator actions
+  - `apps/web`: dashboard / frontend
+  - `apps/api`: API routes / webhook receiver / operator actions
 
 - `Supabase`
   - Postgres
@@ -204,11 +205,15 @@ AI 不负责：
 - dashboard read APIs
 - webhook entrypoints
 
-这些与前端共栈最省成本，也最利于快速迭代。
+但现在已经把它们从 `apps/web` 中拆到 `apps/api`，这样：
 
-但要注意边界：
+- 前端和 API 可以独立部署
+- webhook 与页面渲染生命周期分离
+- 后续接 agent / exchange callback 更自然
 
-- 短请求、读 API、webhook 接收适合放在 Vercel
+仍然要注意边界：
+
+- `apps/api` 适合短请求、读 API、webhook 接收
 - 长流程、可重试、需要 durable orchestration 的 agent workflow 适合放在 Inngest
 
 ### 6.3 为什么 agent 不需要独立 repo

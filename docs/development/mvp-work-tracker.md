@@ -12,7 +12,8 @@
 
 - 后端 paper trading 主链已跑通
 - remote Supabase 联调已完成
-- dashboard 尚未开始
+- dashboard 第一阶段已完成
+- 前后端已拆分为 `apps/web` 与 `apps/api`
 - 真实 AI planner 尚未接入
 
 当前 MVP 主目标：
@@ -82,7 +83,8 @@
 
 职责：
 
-- Vercel
+- `apps/web`
+- `apps/api`
 - Supabase
 - Inngest
 - 环境变量与联调 runbook
@@ -127,6 +129,7 @@
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
+| Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
 | Platform / Deployment | Inngest integration | 未开始 | 0% | 目前仅文档设计，没有代码 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
@@ -163,6 +166,7 @@
 - remote Supabase smoke
 - Overview API / page
 - Pipeline Monitor API / page
+- `apps/web` / `apps/api` split
 - 文档体系收敛
 
 ### 当前还缺
