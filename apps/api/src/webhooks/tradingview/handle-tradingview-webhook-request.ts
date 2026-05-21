@@ -1,10 +1,12 @@
 import {
   evaluateAndRecordDeterministicRiskVerdict,
+  generateAndRecordTradePlanWithAgentRun,
   generateAndRecordTradePlanForSignal,
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
   processDeterministicSignalPipeline,
   projectTradingViewMarketState,
+  type AgentRunRepository,
   type ExecutionIntentRepository,
   type MarketStateRepository,
   type OrderRepository,
@@ -32,6 +34,7 @@ export type TradingViewWebhookRequestDependencies = {
   webhookEventRepository: WebhookEventRepository;
   marketStateRepository: MarketStateRepository;
   tradePlanVersionRepository: TradePlanVersionRepository;
+  agentRunRepository: AgentRunRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
   orderRepository: OrderRepository;
@@ -138,6 +141,7 @@ async function processSignalPipeline(
     {
       marketStateRepository: dependencies.marketStateRepository,
       tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
+      agentRunRepository: dependencies.agentRunRepository,
       riskVerdictRepository: dependencies.riskVerdictRepository,
       executionIntentRepository: dependencies.executionIntentRepository
     }
@@ -170,10 +174,11 @@ async function processAdvisorySignalPipeline(
   envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
   dependencies: TradingViewWebhookRequestDependencies
 ): Promise<string> {
-  const plan = await generateAndRecordTradePlanForSignal(
+  const { plan } = await generateAndRecordTradePlanWithAgentRun(
     envelope,
     dependencies.marketStateRepository,
-    dependencies.tradePlanVersionRepository
+    dependencies.tradePlanVersionRepository,
+    dependencies.agentRunRepository
   );
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,

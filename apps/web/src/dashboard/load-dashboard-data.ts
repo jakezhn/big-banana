@@ -1,6 +1,7 @@
 import type {
   DashboardOverviewReadModel,
   DashboardPipelineListItem,
+  DashboardAgentRunListItem,
   MarketPipelineReadModel
 } from "@big-banana/domain";
 import { getApiBaseUrl } from "../api/get-api-base-url";
@@ -88,4 +89,26 @@ export async function loadMarketPipeline(
     latestFill: body.data.latest_fill,
     currentPosition: body.data.current_position
   };
+}
+
+export async function loadDashboardAgentRuns(
+  limit: number
+): Promise<DashboardAgentRunListItem[]> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/dashboard/agent-runs?limit=${encodeURIComponent(String(limit))}`,
+    {
+      cache: "no-store"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to load dashboard agent runs: ${response.status}`);
+  }
+
+  const body = (await response.json()) as {
+    ok: true;
+    data: { agent_runs: DashboardAgentRunListItem[] };
+  };
+
+  return body.data.agent_runs;
 }

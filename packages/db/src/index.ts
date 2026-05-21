@@ -1,4 +1,8 @@
 export {
+  createAgentRunRepositoryFromEnv,
+  PostgresAgentRunRepository
+} from "./agent-runs/postgres-agent-run-repository";
+export {
   createWebhookEventRepositoryFromEnv,
   PostgresWebhookEventRepository
 } from "./webhook-events/postgres-webhook-event-repository";

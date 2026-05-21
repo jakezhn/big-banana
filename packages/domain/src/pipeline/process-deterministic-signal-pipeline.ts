@@ -1,8 +1,7 @@
+import type { AgentRunRepository } from "../agent-runs/agent-run-repository";
 import type { MarketStateRepository } from "../market-state/market-state-repository";
-import {
-  generateAndRecordTradePlanForSignal,
-  type GenerateAndRecordTradePlanForSignalResult
-} from "../planner/generate-and-record-trade-plan-for-signal";
+import { type GenerateAndRecordTradePlanForSignalResult } from "../planner/generate-and-record-trade-plan-for-signal";
+import { generateAndRecordTradePlanWithAgentRun } from "../agent-runs/generate-and-record-trade-plan-with-agent-run";
 import {
   evaluateAndRecordDeterministicRiskVerdict,
   type RiskPolicySnapshot
@@ -30,6 +29,7 @@ export type ProcessDeterministicSignalPipelineDependencies = {
   tradePlanVersionRepository: TradePlanVersionRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
+  agentRunRepository: AgentRunRepository;
 };
 
 export async function processDeterministicSignalPipeline(
@@ -38,10 +38,12 @@ export async function processDeterministicSignalPipeline(
   dependencies: ProcessDeterministicSignalPipelineDependencies,
   createdAt = new Date().toISOString()
 ): Promise<ProcessDeterministicSignalPipelineResult> {
-  const plan = await generateAndRecordTradePlanForSignal(
+  const { plan } = await generateAndRecordTradePlanWithAgentRun(
     envelope,
     dependencies.marketStateRepository,
-    dependencies.tradePlanVersionRepository
+    dependencies.tradePlanVersionRepository,
+    dependencies.agentRunRepository,
+    createdAt
   );
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,

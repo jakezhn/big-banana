@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import {
+  type AgentRunRepository,
   type ExecutionIntentRepository,
   type MarketStateRepository,
   type OrderRepository,
+  type ReceivedAgentRun,
   type ReceivedOrder,
   type ReceivedOrderStatusUpdate,
   type ReceivedExecutionIntent,
@@ -15,6 +17,7 @@ import {
   type RiskPolicySnapshot,
   type RiskVerdictRepository,
   type StoredExecutionIntent,
+  type StoredAgentRun,
   type StoredMarketState,
   type StoredOrder,
   type StoredPlanTransition,
@@ -186,6 +189,16 @@ class InMemoryExecutionIntentRepository implements ExecutionIntentRepository {
   }
 }
 
+class InMemoryAgentRunRepository implements AgentRunRepository {
+  readonly runs: StoredAgentRun[] = [];
+
+  async recordAgentRun(run: ReceivedAgentRun): Promise<StoredAgentRun> {
+    const stored = { ...run, id: crypto.randomUUID() };
+    this.runs.push(stored);
+    return stored;
+  }
+}
+
 class InMemoryOrderRepository implements OrderRepository {
   readonly orders: StoredOrder[] = [];
 
@@ -234,6 +247,7 @@ function dependencies(
     webhookEventRepository: new InMemoryWebhookEventRepository(),
     marketStateRepository: new InMemoryMarketStateRepository(),
     tradePlanVersionRepository: new InMemoryTradePlanVersionRepository(),
+    agentRunRepository: new InMemoryAgentRunRepository(),
     riskVerdictRepository: new InMemoryRiskVerdictRepository(),
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
     orderRepository: new InMemoryOrderRepository(),
@@ -283,6 +297,7 @@ describe("POST /api/webhooks/tradingview", () => {
       process_status: "order_submitted"
     });
     expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
     expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
     expect(deps.executionIntentRepository.intents).toHaveLength(1);
     expect(deps.orderRepository.orders).toHaveLength(1);
@@ -307,6 +322,7 @@ describe("POST /api/webhooks/tradingview", () => {
       process_status: "order_submitted"
     });
     expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
     expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
     expect(deps.executionIntentRepository.intents).toHaveLength(1);
     expect(deps.orderRepository.orders).toHaveLength(1);
@@ -338,6 +354,7 @@ describe("POST /api/webhooks/tradingview", () => {
     });
     expect(deps.executionIntentRepository.intents).toHaveLength(1);
     expect(deps.orderRepository.orders).toHaveLength(1);
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
   });
 
   it("stops at risk when pipeline mode is advisory", async () => {
@@ -364,6 +381,7 @@ describe("POST /api/webhooks/tradingview", () => {
     expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
     expect(deps.executionIntentRepository.intents).toHaveLength(0);
     expect(deps.orderRepository.orders).toHaveLength(0);
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
   });
 
   it("rejects non-json content types", async () => {

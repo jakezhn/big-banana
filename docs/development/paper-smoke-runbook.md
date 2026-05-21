@@ -139,6 +139,7 @@ This applies:
 6. `0006_orders.sql`
 7. `0007_security_and_index_tuning.sql`
 8. `0008_fills_and_positions.sql`
+9. `0009_agent_runs.sql`
 
 If you want help text:
 

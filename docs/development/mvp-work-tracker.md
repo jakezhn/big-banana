@@ -106,7 +106,7 @@
 | Market State | current/history projection | 已完成 | 100% | `market_states_current/history` 已落地 |
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
 | Planner / Agent | real AI planner 接入 | 未开始 | 0% | 当前还未接模型调用 |
-| Planner / Agent | `agent_runs` 审计 | 未开始 | 0% | 需要为真实 AI planner 补齐 |
+| Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
 | Execution | paper submit | 已完成 | 100% | 已支持自动 paper order submit |
@@ -121,11 +121,11 @@
 | Read Models / Dashboard | Overview read API | 已完成 | 100% | `/api/dashboard/overview` 已可用 |
 | Read Models / Dashboard | Pipeline Monitor list API | 已完成 | 100% | `/api/dashboard/pipelines` 已可用 |
 | Read Models / Dashboard | Market Detail API | 已完成 | 100% | 当前 market snapshot 已扩到 fill / position |
-| Read Models / Dashboard | Agent Runs API | 未开始 | 0% | 依赖 `agent_runs` |
+| Read Models / Dashboard | Agent Runs API | 已完成 | 100% | `/api/dashboard/agent-runs` 已可用 |
 | Frontend | Overview page | 已完成 | 100% | `/` 已提供 overview cards 和 recent pipelines |
 | Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
 | Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路 |
-| Frontend | Agent Runs page | 未开始 | 0% | 尚无 dashboard 页面 |
+| Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已可查看 planner runs |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
@@ -168,31 +168,31 @@
 - Pipeline Monitor API / page
 - fills / positions current/history
 - Market Detail API / page
+- agent_runs audit
+- Agent Runs API / page
 - `apps/web` / `apps/api` split
 - 文档体系收敛
 
 ### 当前还缺
 
-- `agent_runs`
 - real AI planner
 
 ## 6. 当前建议的下一轮开发顺序
 
 严格按下面顺序推进：
 
-1. `agent_runs`
-2. Agent Runs API + page
-3. real AI planner integration
-4. AI plan evaluation / paper validation loop
-5. advanced interventions
+1. real AI planner integration
+2. AI plan evaluation / paper validation loop
+3. advanced interventions
+4. Inngest integration
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. dashboard 页面最小手工 QA
 2. 页面接入 remote Supabase 的 smoke test
 3. `Market Detail` 手工验证
-4. `agent_runs` route / page tests
-5. real AI planner 接入后的 paper validation
+4. real AI planner 接入后的 paper validation
+5. remote Supabase rerun with `0009_agent_runs.sql`
 
 ## 8. 本轮状态快照
 
@@ -201,10 +201,11 @@
 本轮结论：
 
 - 后端和 Supabase 联调已经达到“可验证主链”阶段
-- dashboard 第二阶段已落地：`Market Detail` 可用
+- dashboard 第三阶段已落地：`Agent Runs` 可用
 - 执行结果真值层已补齐：`fills`、`positions_current`、`positions_history`
-- 当前最大缺口转为 `agent_runs` 与 real AI planner
-- 下一轮应开始补 AI trace，而不是继续扩 deterministic 执行骨架
+- planner 审计层已补齐：`agent_runs` 已落地
+- 当前最大缺口转为 real AI planner 本体接入
+- 下一轮应开始替换 deterministic planner，而不是继续扩 dashboard 骨架
 
 ## 9. 更新规则
 

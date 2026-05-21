@@ -11,6 +11,15 @@ export type {
   ReceivedMarketState,
   StoredMarketState
 } from "./market-state/market-state-repository";
+export type {
+  AgentRunRepository,
+  AgentRunStatus,
+  ReceivedAgentRun,
+  StoredAgentRun
+} from "./agent-runs/agent-run-repository";
+export {
+  generateAndRecordTradePlanWithAgentRun
+} from "./agent-runs/generate-and-record-trade-plan-with-agent-run";
 export {
   buildPlannerInput,
   SignalPlannerInputError
@@ -88,6 +97,7 @@ export type {
   MarketPipelineReadModelRepository
 } from "./read-models/market-pipeline-read-model-repository";
 export type {
+  DashboardAgentRunListItem,
   DashboardOverviewReadModel,
   DashboardPipelineListItem,
   DashboardReadModelRepository

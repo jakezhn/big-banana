@@ -33,8 +33,25 @@ export type DashboardPipelineListItem = {
   latestOrderStatus: string | null;
 };
 
+export type DashboardAgentRunListItem = {
+  id: string;
+  marketKey: string;
+  sourceEventKey: string;
+  operation: string;
+  runnerKind: string;
+  model: string | null;
+  status: "success" | "invalid_output" | "failed";
+  tradePlanVersionId: string | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string;
+  latencyMs: number;
+};
+
 export interface DashboardReadModelRepository {
   getOverview(): Promise<DashboardOverviewReadModel>;
 
   listRecentPipelines(limit: number): Promise<DashboardPipelineListItem[]>;
+
+  listRecentAgentRuns(limit: number): Promise<DashboardAgentRunListItem[]>;
 }

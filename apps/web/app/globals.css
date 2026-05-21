@@ -207,7 +207,18 @@ a {
   color: var(--bad);
 }
 
+.status-failed,
+.status-invalid_output {
+  background: rgba(154, 61, 42, 0.12);
+  color: var(--bad);
+}
+
 .status-order_terminal {
+  background: rgba(45, 122, 79, 0.12);
+  color: var(--good);
+}
+
+.status-success {
   background: rgba(45, 122, 79, 0.12);
   color: var(--good);
 }

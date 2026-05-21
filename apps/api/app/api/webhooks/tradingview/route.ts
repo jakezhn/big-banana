@@ -1,4 +1,5 @@
 import {
+  createAgentRunRepositoryFromEnv,
   createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
@@ -7,6 +8,7 @@ import {
   createWebhookEventRepositoryFromEnv
 } from "@big-banana/db";
 import type {
+  AgentRunRepository,
   ExecutionIntentRepository,
   MarketStateRepository,
   OrderRepository,
@@ -25,6 +27,7 @@ import { handleTradingViewWebhookRequest } from "../../../../src/webhooks/tradin
 let webhookEventRepository: WebhookEventRepository | undefined;
 let marketStateRepository: MarketStateRepository | undefined;
 let tradePlanVersionRepository: TradePlanVersionRepository | undefined;
+let agentRunRepository: AgentRunRepository | undefined;
 let riskVerdictRepository: RiskVerdictRepository | undefined;
 let executionIntentRepository: ExecutionIntentRepository | undefined;
 let orderRepository: OrderRepository | undefined;
@@ -36,6 +39,7 @@ export async function POST(request: Request): Promise<Response> {
     webhookEventRepository: getWebhookEventRepository(),
     marketStateRepository: getMarketStateRepository(),
     tradePlanVersionRepository: getTradePlanVersionRepository(),
+    agentRunRepository: getAgentRunRepository(),
     riskVerdictRepository: getRiskVerdictRepository(),
     executionIntentRepository: getExecutionIntentRepository(),
     orderRepository: getOrderRepository(),
@@ -57,6 +61,11 @@ function getMarketStateRepository(): MarketStateRepository {
 function getTradePlanVersionRepository(): TradePlanVersionRepository {
   tradePlanVersionRepository ??= createTradePlanVersionRepositoryFromEnv();
   return tradePlanVersionRepository;
+}
+
+function getAgentRunRepository(): AgentRunRepository {
+  agentRunRepository ??= createAgentRunRepositoryFromEnv();
+  return agentRunRepository;
 }
 
 function getRiskVerdictRepository(): RiskVerdictRepository {

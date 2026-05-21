@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   ingestTradingViewPayload,
   processDeterministicSignalPipeline,
+  type AgentRunRepository,
+  type ReceivedAgentRun,
   type ExecutionIntentRepository,
   type MarketStateRepository,
   type ReceivedExecutionIntent,
@@ -13,6 +15,7 @@ import {
   type RiskPolicySnapshot,
   type RiskVerdictRepository,
   type StoredExecutionIntent,
+  type StoredAgentRun,
   type StoredMarketState,
   type StoredPlanTransition,
   type StoredRiskVerdict,
@@ -57,6 +60,16 @@ class InMemoryMarketStateRepository implements MarketStateRepository {
 
   async getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]> {
     return [...this.states.values()].filter((state) => state.tickerid === tickerid);
+  }
+}
+
+class InMemoryAgentRunRepository implements AgentRunRepository {
+  readonly runs: StoredAgentRun[] = [];
+
+  async recordAgentRun(run: ReceivedAgentRun): Promise<StoredAgentRun> {
+    const stored = { ...run, id: crypto.randomUUID() };
+    this.runs.push(stored);
+    return stored;
   }
 }
 
@@ -164,6 +177,7 @@ describe("processDeterministicSignalPipeline", () => {
     const webhookRepository = new InMemoryWebhookEventRepository();
     const marketStateRepository = new InMemoryMarketStateRepository();
     const tradePlanVersionRepository = new InMemoryTradePlanVersionRepository();
+    const agentRunRepository = new InMemoryAgentRunRepository();
     const riskVerdictRepository = new InMemoryRiskVerdictRepository();
     const executionIntentRepository = new InMemoryExecutionIntentRepository();
     await seedMarketState(marketStateRepository);
@@ -175,6 +189,7 @@ describe("processDeterministicSignalPipeline", () => {
       {
         marketStateRepository,
         tradePlanVersionRepository,
+        agentRunRepository,
         riskVerdictRepository,
         executionIntentRepository
       },
@@ -184,6 +199,8 @@ describe("processDeterministicSignalPipeline", () => {
     expect(result.plan.recordResult.tradePlanVersion.version).toBe(1);
     expect(result.riskVerdict.verdict).toBe("approve_with_reduction");
     expect(result.executionIntent?.payload.action).toBe("open");
+    expect(agentRunRepository.runs).toHaveLength(1);
+    expect(agentRunRepository.runs[0]?.status).toBe("success");
     expect(riskVerdictRepository.verdicts).toHaveLength(1);
     expect(executionIntentRepository.intents).toHaveLength(1);
   });
@@ -192,6 +209,7 @@ describe("processDeterministicSignalPipeline", () => {
     const webhookRepository = new InMemoryWebhookEventRepository();
     const marketStateRepository = new InMemoryMarketStateRepository();
     const tradePlanVersionRepository = new InMemoryTradePlanVersionRepository();
+    const agentRunRepository = new InMemoryAgentRunRepository();
     const riskVerdictRepository = new InMemoryRiskVerdictRepository();
     const executionIntentRepository = new InMemoryExecutionIntentRepository();
     await seedMarketState(marketStateRepository);
@@ -206,6 +224,7 @@ describe("processDeterministicSignalPipeline", () => {
       {
         marketStateRepository,
         tradePlanVersionRepository,
+        agentRunRepository,
         riskVerdictRepository,
         executionIntentRepository
       }
@@ -213,6 +232,7 @@ describe("processDeterministicSignalPipeline", () => {
 
     expect(result.riskVerdict.requireHumanApproval).toBe(false);
     expect(result.executionIntent?.payload.action).toBe("open");
+    expect(agentRunRepository.runs).toHaveLength(1);
     expect(executionIntentRepository.intents).toHaveLength(1);
   });
 });

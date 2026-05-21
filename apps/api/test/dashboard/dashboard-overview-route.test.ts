@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type {
+  DashboardAgentRunListItem,
   DashboardOverviewReadModel,
   DashboardReadModelRepository
 } from "@big-banana/domain";
@@ -19,6 +20,10 @@ class InMemoryDashboardReadModelRepository
 
   async listRecentPipelines(): Promise<[]> {
     return this.pipelines as [];
+  }
+
+  async listRecentAgentRuns(): Promise<DashboardAgentRunListItem[]> {
+    return [];
   }
 }
 

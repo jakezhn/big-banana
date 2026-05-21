@@ -1,4 +1,5 @@
 import type {
+  DashboardAgentRunListItem,
   DashboardOverviewReadModel,
   DashboardPipelineListItem,
   DashboardReadModelRepository
@@ -19,6 +20,21 @@ type PipelineListRow = {
   trade_plan_action: DashboardPipelineListItem["tradePlanAction"];
   risk_verdict: DashboardPipelineListItem["riskVerdict"];
   latest_order_status: string | null;
+};
+
+type AgentRunListRow = {
+  id: string;
+  market_key: string;
+  source_event_key: string;
+  operation: string;
+  runner_kind: string;
+  model: string | null;
+  status: DashboardAgentRunListItem["status"];
+  trade_plan_version_id: string | null;
+  error_message: string | null;
+  started_at: string;
+  completed_at: string;
+  latency_ms: number;
 };
 
 export class PostgresDashboardReadModelRepository
@@ -134,6 +150,46 @@ export class PostgresDashboardReadModelRepository
       tradePlanAction: row.trade_plan_action,
       riskVerdict: row.risk_verdict,
       latestOrderStatus: row.latest_order_status
+    }));
+  }
+
+  async listRecentAgentRuns(limit: number): Promise<DashboardAgentRunListItem[]> {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(Math.max(Math.trunc(limit), 1), 100)
+      : 20;
+
+    const rows = await this.sql<AgentRunListRow[]>`
+      select
+        id,
+        market_key,
+        source_event_key,
+        operation,
+        runner_kind,
+        model,
+        status,
+        trade_plan_version_id,
+        error_message,
+        started_at,
+        completed_at,
+        latency_ms
+      from agent_runs
+      order by started_at desc
+      limit ${safeLimit}
+    `;
+
+    return rows.map((row) => ({
+      id: row.id,
+      marketKey: row.market_key,
+      sourceEventKey: row.source_event_key,
+      operation: row.operation,
+      runnerKind: row.runner_kind,
+      model: row.model,
+      status: row.status,
+      tradePlanVersionId: row.trade_plan_version_id,
+      errorMessage: row.error_message,
+      startedAt: row.started_at,
+      completedAt: row.completed_at,
+      latencyMs: row.latency_ms
     }));
   }
 

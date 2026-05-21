@@ -5,13 +5,13 @@ import type {
   DashboardPipelineListItem,
   DashboardReadModelRepository
 } from "@big-banana/domain";
-import { handleListDashboardPipelinesRequest } from "../../src/dashboard/handle-list-dashboard-pipelines-request";
+import { handleListDashboardAgentRunsRequest } from "../../src/dashboard/handle-list-dashboard-agent-runs-request";
 
 class InMemoryDashboardReadModelRepository
   implements DashboardReadModelRepository
 {
   constructor(
-    private readonly pipelines: DashboardPipelineListItem[],
+    private readonly agentRuns: DashboardAgentRunListItem[],
     private readonly overview: DashboardOverviewReadModel = {
       signalsTodayCount: 0,
       plansTodayCount: 0,
@@ -21,7 +21,8 @@ class InMemoryDashboardReadModelRepository
       ordersCanceledTodayCount: 0,
       openPositionsCount: 0,
       interventionsTodayCount: 0
-    }
+    },
+    private readonly pipelines: DashboardPipelineListItem[] = []
   ) {}
 
   async getOverview(): Promise<DashboardOverviewReadModel> {
@@ -32,32 +33,36 @@ class InMemoryDashboardReadModelRepository
     return this.pipelines.slice(0, limit);
   }
 
-  async listRecentAgentRuns(): Promise<DashboardAgentRunListItem[]> {
-    return [];
+  async listRecentAgentRuns(limit: number): Promise<DashboardAgentRunListItem[]> {
+    return this.agentRuns.slice(0, limit);
   }
 }
 
 function request(limit?: string): Request {
   const suffix = limit ? `?limit=${encodeURIComponent(limit)}` : "";
-  return new Request(`http://localhost/api/dashboard/pipelines${suffix}`);
+  return new Request(`http://localhost/api/dashboard/agent-runs${suffix}`);
 }
 
-describe("GET /api/dashboard/pipelines", () => {
-  it("returns recent pipelines using the provided limit", async () => {
+describe("GET /api/dashboard/agent-runs", () => {
+  it("returns recent agent runs using the provided limit", async () => {
     const repository = new InMemoryDashboardReadModelRepository([
       {
+        id: "run-1",
         marketKey: "BINANCE:BTCUSDT:240",
-        tickerid: "BINANCE:BTCUSDT",
-        timeframe: "240",
-        updatedAt: "2026-05-21T00:00:00.000Z",
-        pipelineStatus: "order_submitted",
-        tradePlanAction: "create",
-        riskVerdict: "approve",
-        latestOrderStatus: "acked"
+        sourceEventKey: "event-1",
+        operation: "plan.generate",
+        runnerKind: "deterministic",
+        model: null,
+        status: "success",
+        tradePlanVersionId: "plan-version-1",
+        errorMessage: null,
+        startedAt: "2026-05-21T00:00:00.000Z",
+        completedAt: "2026-05-21T00:00:01.000Z",
+        latencyMs: 1000
       }
     ]);
 
-    const response = await handleListDashboardPipelinesRequest(
+    const response = await handleListDashboardAgentRunsRequest(
       request("10"),
       repository
     );
@@ -67,40 +72,28 @@ describe("GET /api/dashboard/pipelines", () => {
       ok: true,
       data: {
         limit: 10,
-        pipelines: [
+        agent_runs: [
           {
+            id: "run-1",
             marketKey: "BINANCE:BTCUSDT:240",
-            tickerid: "BINANCE:BTCUSDT",
-            timeframe: "240",
-            updatedAt: "2026-05-21T00:00:00.000Z",
-            pipelineStatus: "order_submitted",
-            tradePlanAction: "create",
-            riskVerdict: "approve",
-            latestOrderStatus: "acked"
+            sourceEventKey: "event-1",
+            operation: "plan.generate",
+            runnerKind: "deterministic",
+            model: null,
+            status: "success",
+            tradePlanVersionId: "plan-version-1",
+            errorMessage: null,
+            startedAt: "2026-05-21T00:00:00.000Z",
+            completedAt: "2026-05-21T00:00:01.000Z",
+            latencyMs: 1000
           }
         ]
       }
     });
   });
 
-  it("uses a default limit of 20", async () => {
-    const response = await handleListDashboardPipelinesRequest(
-      request(),
-      new InMemoryDashboardReadModelRepository([])
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      ok: true,
-      data: {
-        limit: 20,
-        pipelines: []
-      }
-    });
-  });
-
   it("rejects invalid limit", async () => {
-    const response = await handleListDashboardPipelinesRequest(
+    const response = await handleListDashboardAgentRunsRequest(
       request("0"),
       new InMemoryDashboardReadModelRepository([])
     );

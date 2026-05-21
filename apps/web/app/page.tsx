@@ -40,6 +40,9 @@ export default async function DashboardPage() {
           <Link href="/pipelines" className="action-link">
             Open Pipeline Monitor
           </Link>
+          <Link href="/agent-runs" className="action-link action-link-muted">
+            Open Agent Runs
+          </Link>
           <Link href={`${apiBaseUrl}/api/dashboard/overview`} className="action-link action-link-muted">
             View Overview API
           </Link>
