@@ -1,4 +1,4 @@
-# MVP Phase 0 Freeze
+# MVP Freeze
 
 ## 1. 文档地位
 
@@ -6,11 +6,10 @@
 
 优先级如下：
 
-1. `../specs/webhook-payload-scheme.md`：外部 payload 已冻结，不再改语义。
-2. `mvp-phase-0-freeze.md`：当前实现契约。
-3. `../research/trading-agent-design.md`：最新设计依据。
-4. `../research/industrial-design-report.md`：工程落地说明。
-5. `../research/mvp-feasibility-research.md`：研究背景，不再承载最终实现细节。
+1. `webhook-payload-spec.md`：外部 payload 已冻结，不再改语义。
+2. `mvp-freeze.md`：当前实现契约。
+3. `mvp-architecture.md`：系统设计、部署与工程边界。
+4. `mvp-validation-and-dashboard.md`：MVP 验证目标与 dashboard 路线。
 
 ## 2. 冻结决策
 

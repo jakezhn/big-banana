@@ -1,4 +1,4 @@
-# Bitpunk Webhook Payload Spec
+# Webhook Payload Spec
 
 ## 1. 用途
 

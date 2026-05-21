@@ -1,4 +1,4 @@
-# Phase 1 Paper Smoke Runbook For Remote Supabase
+# Paper Smoke Runbook For Remote Supabase
 
 This runbook is now opinionated for one path only:
 
