@@ -70,6 +70,11 @@ export type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository
 } from "./read-models/market-pipeline-read-model-repository";
+export type {
+  DashboardOverviewReadModel,
+  DashboardPipelineListItem,
+  DashboardReadModelRepository
+} from "./read-models/dashboard-read-model-repository";
 export {
   processDeterministicSignalPipeline,
   type ProcessDeterministicSignalPipelineDependencies,

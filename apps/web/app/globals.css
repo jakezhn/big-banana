@@ -1,0 +1,255 @@
+:root {
+  --bg: #f4efe6;
+  --panel: rgba(255, 251, 243, 0.84);
+  --panel-strong: #fff9ef;
+  --ink: #221d16;
+  --muted: #6b6257;
+  --line: rgba(34, 29, 22, 0.12);
+  --accent: #b95f2d;
+  --accent-soft: rgba(185, 95, 45, 0.12);
+  --good: #2d7a4f;
+  --warn: #9f6d14;
+  --bad: #9a3d2a;
+  --shadow: 0 24px 60px rgba(58, 40, 18, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(185, 95, 45, 0.14), transparent 28rem),
+    radial-gradient(circle at top right, rgba(45, 122, 79, 0.1), transparent 26rem),
+    linear-gradient(180deg, #fbf6ec 0%, var(--bg) 100%);
+  color: var(--ink);
+  font-family: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dashboard-shell {
+  width: min(1180px, calc(100vw - 3rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.hero-panel,
+.section-block,
+.metric-card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.hero-panel {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 2rem;
+  border-radius: 28px;
+}
+
+.hero-panel-compact {
+  align-items: start;
+}
+
+.eyebrow,
+.section-kicker,
+.metric-label {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.hero-panel h1,
+.section-heading h2 {
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.hero-panel h1 {
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  max-width: 12ch;
+}
+
+.hero-copy {
+  max-width: 56rem;
+  margin: 1rem 0 0;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 220px;
+}
+
+.action-link,
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+.action-link {
+  padding: 0.8rem 1.05rem;
+  background: var(--ink);
+  color: #f8f4ec;
+}
+
+.action-link:hover,
+.text-link:hover {
+  transform: translateY(-1px);
+}
+
+.action-link-muted {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.section-block {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.text-link {
+  color: var(--accent);
+  padding: 0.4rem 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 20px;
+  background: var(--panel-strong);
+}
+
+.metric-value {
+  margin: 0.4rem 0 0;
+  font-size: clamp(1.7rem, 2.4vw, 2.6rem);
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 0.95rem 0.8rem;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.data-table thead th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: none;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.34rem 0.68rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  background: rgba(34, 29, 22, 0.06);
+}
+
+.status-risk_rejected {
+  background: rgba(154, 61, 42, 0.12);
+  color: var(--bad);
+}
+
+.status-order_terminal {
+  background: rgba(45, 122, 79, 0.12);
+  color: var(--good);
+}
+
+.status-order_submitted,
+.status-intent_ready {
+  background: rgba(185, 95, 45, 0.12);
+  color: var(--accent);
+}
+
+.status-risk_approved,
+.status-plan_ready,
+.status-normalized {
+  background: rgba(159, 109, 20, 0.12);
+  color: var(--warn);
+}
+
+.empty-cell {
+  color: var(--muted);
+}
+
+@media (max-width: 980px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-shell {
+    width: min(100vw - 1.25rem, 100%);
+    padding: 1rem 0 2rem;
+  }
+
+  .hero-panel,
+  .section-block {
+    padding: 1.1rem;
+    border-radius: 20px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}

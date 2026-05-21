@@ -15,6 +15,10 @@ export {
   PostgresMarketPipelineReadModelRepository
 } from "./read-models/postgres-market-pipeline-read-model-repository";
 export {
+  createDashboardReadModelRepositoryFromEnv,
+  PostgresDashboardReadModelRepository
+} from "./read-models/postgres-dashboard-read-model-repository";
+export {
   createMarketStateRepositoryFromEnv,
   PostgresMarketStateRepository
 } from "./market-state/postgres-market-state-repository";

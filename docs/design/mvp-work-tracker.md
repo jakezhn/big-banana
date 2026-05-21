@@ -116,12 +116,12 @@
 | Execution | `positions_history` | 未开始 | 0% | 当前没有仓位变化历史 |
 | Execution | advanced interventions | 未开始 | 0% | `reduce_position` / `move_stop_loss` / `move_take_profit` 未做 |
 | Read Models / Dashboard | `GET /api/market-pipeline` 单 market 快照 | 已完成 | 100% | 当前唯一主要 read API |
-| Read Models / Dashboard | Overview read API | 未开始 | 0% | 需要新增聚合接口 |
-| Read Models / Dashboard | Pipeline Monitor list API | 未开始 | 0% | 需要新增列表接口 |
+| Read Models / Dashboard | Overview read API | 已完成 | 100% | `/api/dashboard/overview` 已可用 |
+| Read Models / Dashboard | Pipeline Monitor list API | 已完成 | 100% | `/api/dashboard/pipelines` 已可用 |
 | Read Models / Dashboard | Market Detail API | 未开始 | 0% | 需要扩当前单 market snapshot |
 | Read Models / Dashboard | Agent Runs API | 未开始 | 0% | 依赖 `agent_runs` |
-| Frontend | Overview page | 未开始 | 0% | 尚无 dashboard 页面 |
-| Frontend | Pipeline Monitor page | 未开始 | 0% | 尚无 dashboard 页面 |
+| Frontend | Overview page | 已完成 | 100% | `/` 已提供 overview cards 和 recent pipelines |
+| Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
 | Frontend | Market Detail page | 未开始 | 0% | 尚无 dashboard 页面 |
 | Frontend | Agent Runs page | 未开始 | 0% | 尚无 dashboard 页面 |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
@@ -137,7 +137,7 @@
 |---|---|---:|---:|---|
 | Contracts | webhook / trade-plan / risk-verdict / execution-intent schema tests | 已完成 | 100% | 已有 runtime validator 和 fixtures |
 | Domain | ingestion / planner / risk / execution / state machine tests | 已完成 | 100% | 当前核心领域逻辑已有单测 |
-| Web | API routes tests | 已完成 | 100% | webhook / market-pipeline / intervene / reconcile 已覆盖主路径 |
+| Web | API routes tests | 已完成 | 100% | 已覆盖 webhook / market-pipeline / dashboard / intervene / reconcile 主路径 |
 | Build | `web` build / typecheck | 已完成 | 100% | 当前构建通过 |
 | Integration | remote Supabase health | 已完成 | 100% | 已验证 SDK + DB reachability |
 | Integration | remote migrations | 已完成 | 100% | 已执行到 `0007` |
@@ -146,7 +146,7 @@
 | Integration | `cancel_pending_entry` smoke | 已完成 | 100% | 已联调通过 |
 | Integration | advisory mode remote test | 未开始 | 0% | 当前 MVP 默认 full，可后置 |
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
-| Integration | dashboard manual QA | 未开始 | 0% | 需等页面完成后执行 |
+| Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
 | Integration | real AI planner paper validation | 未开始 | 0% | 依赖 AI planner 接入 |
 
 ## 5. 当前已完成的主要里程碑
@@ -161,14 +161,15 @@
 - paper submit / reconcile
 - minimal interventions
 - remote Supabase smoke
+- Overview API / page
+- Pipeline Monitor API / page
 - 文档体系收敛
 
 ### 当前还缺
 
-- dashboard read models
-- dashboard 页面
 - `fills`
 - `positions_current / positions_history`
+- Market Detail
 - `agent_runs`
 - real AI planner
 
@@ -176,23 +177,19 @@
 
 严格按下面顺序推进：
 
-1. Overview read API
-2. Pipeline Monitor list API
-3. `fills`
-4. `positions_current / positions_history`
-5. Overview page
-6. Pipeline Monitor page
-7. Market Detail API + page
-8. `agent_runs`
-9. Agent Runs page
-10. real AI planner integration
+1. `fills`
+2. `positions_current / positions_history`
+3. Market Detail API + page
+4. `agent_runs`
+5. Agent Runs page
+6. real AI planner integration
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. 新增 read API 的 route tests
-2. `fills` / `positions` 的 domain + db tests
-3. dashboard 页面最小手工 QA
-4. 页面接入 remote Supabase 的 smoke test
+1. `fills` / `positions` 的 domain + db tests
+2. dashboard 页面最小手工 QA
+3. 页面接入 remote Supabase 的 smoke test
+4. Market Detail 相关 route / page tests
 5. real AI planner 接入后的 paper validation
 
 ## 8. 本轮状态快照
@@ -202,8 +199,9 @@
 本轮结论：
 
 - 后端和 Supabase 联调已经达到“可验证主链”阶段
-- 当前最大缺口是 dashboard 和 AI trace，而不是更多底层交易逻辑
-- 下一轮应当优先补“可观察性”，不是优先补更复杂的 agent
+- dashboard 第一阶段已经落地：Overview 与 Pipeline Monitor 可用
+- 当前最大缺口转为 `fills`、`positions`、Market Detail 和 AI trace
+- 下一轮应继续补执行结果真值层，而不是先接更复杂的 agent
 
 ## 9. 更新规则
 
