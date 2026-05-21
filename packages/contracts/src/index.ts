@@ -11,6 +11,7 @@ export {
 } from "./risk-verdict";
 export type { RiskVerdict } from "./risk-verdict";
 export {
+  getTradePlanJsonSchema,
   getTradePlanValidationErrors,
   tradePlanSchemaVersion,
   validateTradePlan

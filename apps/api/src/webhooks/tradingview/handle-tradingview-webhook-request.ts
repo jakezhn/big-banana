@@ -1,11 +1,13 @@
 import {
   evaluateAndRecordDeterministicRiskVerdict,
-  generateAndRecordTradePlanWithAgentRun,
-  generateAndRecordTradePlanForSignal,
+  generateAndRecordTradePlanWithGenerator,
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
-  processDeterministicSignalPipeline,
+  processSignalPipelineWithGenerator,
   projectTradingViewMarketState,
+  type CanonicalEnvelope,
+  type PlannerRunnerInfo,
+  type TradePlanGenerator,
   type AgentRunRepository,
   type ExecutionIntentRepository,
   type MarketStateRepository,
@@ -40,6 +42,8 @@ export type TradingViewWebhookRequestDependencies = {
   orderRepository: OrderRepository;
   riskPolicy: RiskPolicySnapshot;
   pipelineMode: PipelineMode;
+  tradePlanGenerator: TradePlanGenerator;
+  plannerRunner: PlannerRunnerInfo;
 };
 
 function jsonResponse(
@@ -128,14 +132,14 @@ function shouldSkipProcessedDuplicate(
 }
 
 async function processSignalPipeline(
-  envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
+  envelope: CanonicalEnvelope,
   dependencies: TradingViewWebhookRequestDependencies
 ): Promise<string> {
   if (dependencies.pipelineMode === "advisory") {
     return processAdvisorySignalPipeline(envelope, dependencies);
   }
 
-  const result = await processDeterministicSignalPipeline(
+  const result = await processSignalPipelineWithGenerator(
     envelope,
     dependencies.riskPolicy,
     {
@@ -144,7 +148,9 @@ async function processSignalPipeline(
       agentRunRepository: dependencies.agentRunRepository,
       riskVerdictRepository: dependencies.riskVerdictRepository,
       executionIntentRepository: dependencies.executionIntentRepository
-    }
+    },
+    dependencies.tradePlanGenerator,
+    dependencies.plannerRunner
   );
 
   if (result.executionIntent) {
@@ -171,14 +177,16 @@ async function processSignalPipeline(
 }
 
 async function processAdvisorySignalPipeline(
-  envelope: Parameters<typeof processDeterministicSignalPipeline>[0],
+  envelope: CanonicalEnvelope,
   dependencies: TradingViewWebhookRequestDependencies
 ): Promise<string> {
-  const { plan } = await generateAndRecordTradePlanWithAgentRun(
+  const plan = await generateAndRecordTradePlanWithGenerator(
     envelope,
     dependencies.marketStateRepository,
     dependencies.tradePlanVersionRepository,
-    dependencies.agentRunRepository
+    dependencies.agentRunRepository,
+    dependencies.tradePlanGenerator,
+    dependencies.plannerRunner
   );
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,

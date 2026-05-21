@@ -12,11 +12,14 @@ import type {
   ExecutionIntentRepository,
   MarketStateRepository,
   OrderRepository,
+  PlannerRunnerInfo,
+  TradePlanGenerator,
   RiskVerdictRepository,
   RiskPolicySnapshot,
   TradePlanVersionRepository,
   WebhookEventRepository
 } from "@big-banana/domain";
+import { createTradePlanGeneratorFromEnv } from "../../../../src/planner/create-trade-plan-generator-from-env";
 import { getDeterministicRiskPolicyFromEnv } from "../../../../src/trading/get-deterministic-risk-policy-from-env";
 import {
   getPipelineModeFromEnv,
@@ -33,6 +36,9 @@ let executionIntentRepository: ExecutionIntentRepository | undefined;
 let orderRepository: OrderRepository | undefined;
 let riskPolicy: RiskPolicySnapshot | undefined;
 let pipelineMode: PipelineMode | undefined;
+let configuredTradePlanGenerator:
+  | ReturnType<typeof createTradePlanGeneratorFromEnv>
+  | undefined;
 
 export async function POST(request: Request): Promise<Response> {
   return handleTradingViewWebhookRequest(request, {
@@ -44,7 +50,9 @@ export async function POST(request: Request): Promise<Response> {
     executionIntentRepository: getExecutionIntentRepository(),
     orderRepository: getOrderRepository(),
     riskPolicy: getRiskPolicy(),
-    pipelineMode: getPipelineMode()
+    pipelineMode: getPipelineMode(),
+    tradePlanGenerator: getTradePlanGenerator(),
+    plannerRunner: getPlannerRunner()
   });
 }
 
@@ -91,4 +99,14 @@ function getRiskPolicy(): RiskPolicySnapshot {
 function getPipelineMode(): PipelineMode {
   pipelineMode ??= getPipelineModeFromEnv();
   return pipelineMode;
+}
+
+function getTradePlanGenerator(): TradePlanGenerator {
+  configuredTradePlanGenerator ??= createTradePlanGeneratorFromEnv();
+  return configuredTradePlanGenerator.generator;
+}
+
+function getPlannerRunner(): PlannerRunnerInfo {
+  configuredTradePlanGenerator ??= createTradePlanGeneratorFromEnv();
+  return configuredTradePlanGenerator.runner;
 }

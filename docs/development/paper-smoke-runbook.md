@@ -95,6 +95,10 @@ NEXT_PUBLIC_SUPABASE_URL='https://your-project-ref.supabase.co'
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='your-publishable-key'
 SUPABASE_SECRET_KEY='your-secret-key'
 PIPELINE_MODE='full'
+PLANNER_RUNTIME='deterministic'
+OPENAI_BASE_URL=''
+OPENAI_API_KEY=''
+OPENAI_PLANNER_MODEL='gpt-5.4-mini'
 TRADING_ACCOUNT_ID=paper-tradingview
 PIPELINE_ACCOUNT_EQUITY=20000
 PIPELINE_MAX_TRADE_RISK_PCT=0.5
@@ -181,6 +185,19 @@ http://127.0.0.1:3001
 ```
 
 Use `PIPELINE_MODE=advisory` only when you want to stop at `plan + risk` and skip execution.
+
+To validate the real planner path later, switch:
+
+```bash
+PLANNER_RUNTIME=openai
+OPENAI_API_KEY=your-api-key
+```
+
+If you are routing through Vercel AI Gateway, also set:
+
+```bash
+OPENAI_BASE_URL=your-gateway-base-url
+```
 
 ## 8. Verify Supabase SDK connectivity first
 

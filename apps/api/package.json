@@ -10,11 +10,13 @@
     "typecheck": "next build"
   },
   "dependencies": {
+    "@big-banana/contracts": "workspace:*",
     "@big-banana/db": "workspace:*",
     "@big-banana/domain": "workspace:*",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
     "next": "^16.0.0",
+    "openai": "^6.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -105,7 +105,7 @@
 | Ingestion | webhook ledger / duplicate handling | 已完成 | 100% | `webhook_events` 已落地 |
 | Market State | current/history projection | 已完成 | 100% | `market_states_current/history` 已落地 |
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
-| Planner / Agent | real AI planner 接入 | 未开始 | 0% | 当前还未接模型调用 |
+| Planner / Agent | real AI planner 接入 | 进行中 | 50% | 已接入 `deterministic | openai` runtime，待真实模型联调 |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
@@ -150,7 +150,7 @@
 | Integration | advisory mode remote test | 未开始 | 0% | 当前 MVP 默认 full，可后置 |
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
 | Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
-| Integration | real AI planner paper validation | 未开始 | 0% | 依赖 AI planner 接入 |
+| Integration | real AI planner paper validation | 未开始 | 0% | 现已具备代码路径，待配置 API key 与云端验证 |
 
 ## 5. 当前已完成的主要里程碑
 
@@ -175,16 +175,15 @@
 
 ### 当前还缺
 
-- real AI planner
+- real AI planner 联调验证
 
 ## 6. 当前建议的下一轮开发顺序
 
 严格按下面顺序推进：
 
-1. real AI planner integration
-2. AI plan evaluation / paper validation loop
-3. advanced interventions
-4. Inngest integration
+1. real AI planner paper validation loop
+2. advanced interventions
+3. Inngest integration
 
 ## 7. 当前建议的下一轮测试顺序
 
@@ -204,8 +203,9 @@
 - dashboard 第三阶段已落地：`Agent Runs` 可用
 - 执行结果真值层已补齐：`fills`、`positions_current`、`positions_history`
 - planner 审计层已补齐：`agent_runs` 已落地
-- 当前最大缺口转为 real AI planner 本体接入
-- 下一轮应开始替换 deterministic planner，而不是继续扩 dashboard 骨架
+- real AI planner 代码接入面已落地：支持 `PLANNER_RUNTIME=openai`
+- 当前最大缺口转为真实模型 API 联调与 paper validation
+- 下一轮应开始验证真实 planner 输出质量，而不是继续扩 dashboard 骨架
 
 ## 9. 更新规则
 

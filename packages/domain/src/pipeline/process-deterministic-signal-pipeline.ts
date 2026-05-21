@@ -1,7 +1,13 @@
 import type { AgentRunRepository } from "../agent-runs/agent-run-repository";
 import type { MarketStateRepository } from "../market-state/market-state-repository";
 import { type GenerateAndRecordTradePlanForSignalResult } from "../planner/generate-and-record-trade-plan-for-signal";
-import { generateAndRecordTradePlanWithAgentRun } from "../agent-runs/generate-and-record-trade-plan-with-agent-run";
+import { generateDeterministicTradePlan } from "../planner/generate-deterministic-trade-plan";
+import {
+  generateAndRecordTradePlanWithGenerator,
+  type GenerateAndRecordTradePlanWithGeneratorResult,
+  type PlannerRunnerInfo,
+  type TradePlanGenerator
+} from "../planner/generate-and-record-trade-plan-with-generator";
 import {
   evaluateAndRecordDeterministicRiskVerdict,
   type RiskPolicySnapshot
@@ -32,19 +38,47 @@ export type ProcessDeterministicSignalPipelineDependencies = {
   agentRunRepository: AgentRunRepository;
 };
 
+export type ProcessSignalPipelineWithGeneratorDependencies =
+  ProcessDeterministicSignalPipelineDependencies;
+
 export async function processDeterministicSignalPipeline(
   envelope: CanonicalEnvelope,
   riskPolicy: RiskPolicySnapshot,
   dependencies: ProcessDeterministicSignalPipelineDependencies,
   createdAt = new Date().toISOString()
 ): Promise<ProcessDeterministicSignalPipelineResult> {
-  const { plan } = await generateAndRecordTradePlanWithAgentRun(
+  return processSignalPipelineWithGenerator(
     envelope,
-    dependencies.marketStateRepository,
-    dependencies.tradePlanVersionRepository,
-    dependencies.agentRunRepository,
+    riskPolicy,
+    dependencies,
+    ({ plannerInput, reusablePlan }) =>
+      generateDeterministicTradePlan(plannerInput, reusablePlan),
+    {
+      runnerKind: "deterministic",
+      model: null
+    },
     createdAt
   );
+}
+
+export async function processSignalPipelineWithGenerator(
+  envelope: CanonicalEnvelope,
+  riskPolicy: RiskPolicySnapshot,
+  dependencies: ProcessSignalPipelineWithGeneratorDependencies,
+  generator: TradePlanGenerator,
+  runner: PlannerRunnerInfo,
+  createdAt = new Date().toISOString()
+): Promise<ProcessDeterministicSignalPipelineResult> {
+  const plan =
+    await generateAndRecordTradePlanWithGenerator(
+      envelope,
+      dependencies.marketStateRepository,
+      dependencies.tradePlanVersionRepository,
+      dependencies.agentRunRepository,
+      generator,
+      runner,
+      createdAt
+    );
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,
     riskPolicy,

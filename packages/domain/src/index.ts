@@ -36,6 +36,15 @@ export {
   generateDeterministicTradePlan
 } from "./planner/generate-deterministic-trade-plan";
 export {
+  generateAndRecordTradePlanWithGenerator
+} from "./planner/generate-and-record-trade-plan-with-generator";
+export type {
+  GenerateAndRecordTradePlanWithGeneratorResult,
+  PlannerRunnerInfo,
+  TradePlanGenerator,
+  TradePlanGeneratorContext
+} from "./planner/generate-and-record-trade-plan-with-generator";
+export {
   evaluateAndRecordDeterministicRiskVerdict,
   evaluateDeterministicRiskVerdict,
   InvalidEvaluatedRiskVerdictError
@@ -104,8 +113,10 @@ export type {
 } from "./read-models/dashboard-read-model-repository";
 export {
   processDeterministicSignalPipeline,
+  processSignalPipelineWithGenerator,
   type ProcessDeterministicSignalPipelineDependencies,
-  type ProcessDeterministicSignalPipelineResult
+  type ProcessDeterministicSignalPipelineResult,
+  type ProcessSignalPipelineWithGeneratorDependencies
 } from "./pipeline/process-deterministic-signal-pipeline";
 export {
   recordGeneratedTradePlan

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  type AgentRunRepository,
   generateAndRecordTradePlanForSignal,
   type MarketStateRepository,
+  type ReceivedAgentRun,
   type ReceivedMarketState,
   type ReceivedPlanTransition,
   type ReceivedTradePlanVersion,
   type StoredMarketState,
+  type StoredAgentRun,
   type StoredPlanTransition,
   type StoredTradePlanVersion,
   type TradePlanVersionRepository,
@@ -92,11 +95,22 @@ class InMemoryTradePlanVersionRepository implements TradePlanVersionRepository {
   }
 }
 
+class InMemoryAgentRunRepository implements AgentRunRepository {
+  readonly runs: StoredAgentRun[] = [];
+
+  async recordAgentRun(run: ReceivedAgentRun): Promise<StoredAgentRun> {
+    const stored = { ...run, id: crypto.randomUUID() };
+    this.runs.push(stored);
+    return stored;
+  }
+}
+
 describe("generateAndRecordTradePlanForSignal", () => {
   it("builds planner input, generates a plan, and persists the first version", async () => {
     const webhookRepository = new InMemoryWebhookEventRepository();
     const marketStateRepository = new InMemoryMarketStateRepository();
     const planRepository = new InMemoryTradePlanVersionRepository();
+    const agentRunRepository = new InMemoryAgentRunRepository();
     const snapshot = contractFixture("snapshot.valid.json") as {
       context: ReceivedMarketState["context"];
     };
@@ -120,18 +134,21 @@ describe("generateAndRecordTradePlanForSignal", () => {
     const result = await generateAndRecordTradePlanForSignal(
       ingestion.envelope,
       marketStateRepository,
-      planRepository
+      planRepository,
+      agentRunRepository
     );
 
     expect(result.tradePlan.action).toBe("create");
     expect(result.recordResult.tradePlanVersion.version).toBe(1);
     expect(result.recordResult.planTransition?.toState).toBe("armed");
+    expect(agentRunRepository.runs).toHaveLength(1);
   });
 
   it("reuses the active plan id and emits a patch on subsequent aligned signals", async () => {
     const webhookRepository = new InMemoryWebhookEventRepository();
     const marketStateRepository = new InMemoryMarketStateRepository();
     const planRepository = new InMemoryTradePlanVersionRepository();
+    const agentRunRepository = new InMemoryAgentRunRepository();
     const snapshot = contractFixture("snapshot.valid.json") as {
       context: ReceivedMarketState["context"];
     };
@@ -153,7 +170,8 @@ describe("generateAndRecordTradePlanForSignal", () => {
     const firstResult = await generateAndRecordTradePlanForSignal(
       first.envelope,
       marketStateRepository,
-      planRepository
+      planRepository,
+      agentRunRepository
     );
 
     const second = await ingestTradingViewPayload(
@@ -163,7 +181,8 @@ describe("generateAndRecordTradePlanForSignal", () => {
     const secondResult = await generateAndRecordTradePlanForSignal(
       second.envelope,
       marketStateRepository,
-      planRepository
+      planRepository,
+      agentRunRepository
     );
 
     expect(secondResult.tradePlan.action).toBe("patch");
@@ -171,5 +190,6 @@ describe("generateAndRecordTradePlanForSignal", () => {
       firstResult.recordResult.tradePlanVersion.planId
     );
     expect(secondResult.recordResult.tradePlanVersion.version).toBe(2);
+    expect(agentRunRepository.runs).toHaveLength(2);
   });
 });

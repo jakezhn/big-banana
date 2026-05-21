@@ -1,64 +1,40 @@
-import { validateTradePlan } from "@big-banana/contracts";
+import type { AgentRunRepository } from "../agent-runs/agent-run-repository";
 import type { MarketStateRepository } from "../market-state/market-state-repository";
-import {
-  recordGeneratedTradePlan,
-  type RecordGeneratedTradePlanResult
-} from "../plans/record-generated-trade-plan";
 import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
-import { isTerminalPlanState } from "../state-machines/plan-state-machine";
 import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
-import {
-  buildPlannerInput,
-  type PlannerInput
-} from "./build-planner-input";
+import { type PlannerInput } from "./build-planner-input";
 import { generateDeterministicTradePlan } from "./generate-deterministic-trade-plan";
+import {
+  generateAndRecordTradePlanWithGenerator,
+  type GenerateAndRecordTradePlanWithGeneratorResult
+} from "./generate-and-record-trade-plan-with-generator";
 
-export class InvalidGeneratedTradePlanError extends Error {
-  constructor() {
-    super("Generated trade plan does not satisfy the frozen schema");
-    this.name = "InvalidGeneratedTradePlanError";
-  }
-}
+export { InvalidGeneratedTradePlanError } from "./generate-and-record-trade-plan-with-generator";
 
-export type GenerateAndRecordTradePlanForSignalResult = {
-  plannerInput: PlannerInput;
-  tradePlan: ReturnType<typeof generateDeterministicTradePlan>;
-  recordResult: RecordGeneratedTradePlanResult;
-};
+export type GenerateAndRecordTradePlanForSignalResult =
+  GenerateAndRecordTradePlanWithGeneratorResult & {
+    plannerInput: PlannerInput;
+    tradePlan: ReturnType<typeof generateDeterministicTradePlan>;
+  };
 
 export async function generateAndRecordTradePlanForSignal(
   envelope: CanonicalEnvelope,
   marketStateRepository: MarketStateRepository,
-  tradePlanVersionRepository: TradePlanVersionRepository
+  tradePlanVersionRepository: TradePlanVersionRepository,
+  agentRunRepository: AgentRunRepository,
+  startedAt = new Date().toISOString()
 ): Promise<GenerateAndRecordTradePlanForSignalResult> {
-  const plannerInput = await buildPlannerInput(envelope, marketStateRepository);
-  const activePlan =
-    await tradePlanVersionRepository.getLatestTradePlanVersionByMarketKey(
-      envelope.marketKey
-    );
-  const reusablePlan =
-    activePlan && !isTerminalPlanState(activePlan.executionPlaybook.state)
-      ? activePlan
-      : null;
-  const tradePlan = generateDeterministicTradePlan(plannerInput, reusablePlan);
-
-  if (!validateTradePlan(tradePlan)) {
-    throw new InvalidGeneratedTradePlanError();
-  }
-
-  const recordResult = await recordGeneratedTradePlan(
+  return generateAndRecordTradePlanWithGenerator(
+    envelope,
+    marketStateRepository,
+    tradePlanVersionRepository,
+    agentRunRepository,
+    ({ plannerInput, reusablePlan }) =>
+      generateDeterministicTradePlan(plannerInput, reusablePlan),
     {
-      tradePlan,
-      marketKey: envelope.marketKey,
-      sourceEventKey: envelope.eventKey,
-      planId: reusablePlan?.planId
+      runnerKind: "deterministic",
+      model: null
     },
-    tradePlanVersionRepository
+    startedAt
   );
-
-  return {
-    plannerInput,
-    tradePlan,
-    recordResult
-  };
 }

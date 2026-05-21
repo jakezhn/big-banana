@@ -3,8 +3,10 @@ import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import {
   type AgentRunRepository,
   type ExecutionIntentRepository,
+  generateDeterministicTradePlan,
   type MarketStateRepository,
   type OrderRepository,
+  type PlannerRunnerInfo,
   type ReceivedAgentRun,
   type ReceivedOrder,
   type ReceivedOrderStatusUpdate,
@@ -252,7 +254,13 @@ function dependencies(
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
     orderRepository: new InMemoryOrderRepository(),
     riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy,
-    pipelineMode: overrides?.pipelineMode ?? "full"
+    pipelineMode: overrides?.pipelineMode ?? "full",
+    tradePlanGenerator: ({ plannerInput, reusablePlan }) =>
+      generateDeterministicTradePlan(plannerInput, reusablePlan),
+    plannerRunner: {
+      runnerKind: "deterministic",
+      model: null
+    } satisfies PlannerRunnerInfo
   };
 }
 

@@ -71,3 +71,7 @@ export function validateTradePlan(payload: unknown): payload is TradePlan {
 export function getTradePlanValidationErrors(): ErrorObject[] {
   return validate.errors ?? [];
 }
+
+export function getTradePlanJsonSchema(): object {
+  return schema;
+}
