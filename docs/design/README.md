@@ -27,6 +27,11 @@
   - dashboard 信息架构
   - agent 评估与 paper validation 路线
   - 下一阶段开发顺序
+- `mvp-work-tracker.md`
+  - 开发任务拆分
+  - 测试任务拆分
+  - 各模块完成度
+  - 每轮开发/测试后的进度更新入口
 
 ### 4. 操作手册
 
@@ -46,7 +51,8 @@
 2. `webhook-payload-spec.md`
 3. `mvp-architecture.md`
 4. `mvp-validation-and-dashboard.md`
-5. `paper-smoke-runbook.md`
+5. `mvp-work-tracker.md`
+6. `paper-smoke-runbook.md`
 
 ## 合并说明
 
