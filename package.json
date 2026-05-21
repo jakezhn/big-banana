@@ -6,6 +6,7 @@
     "db:migrate:remote": "bash scripts/apply-remote-migrations.sh",
     "smoke:paper": "bash scripts/run-paper-smoke.sh",
     "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
     "test:contracts": "pnpm --filter @big-banana/contracts test",
     "test:domain": "pnpm --filter @big-banana/domain test",
     "test:web": "pnpm --filter @big-banana/web test"
