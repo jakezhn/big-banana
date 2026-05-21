@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/risk-verdict.schema.json",
+  "title": "Risk Verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "approved_risk_pct",
+    "approved_qty",
+    "approved_notional",
+    "approved_stop_price",
+    "require_human_approval",
+    "checks",
+    "rejection_codes"
+  ],
+  "properties": {
+    "verdict": {
+      "enum": ["approve", "approve_with_reduction", "reject"]
+    },
+    "approved_risk_pct": {
+      "type": "number",
+      "minimum": 0
+    },
+    "approved_qty": {
+      "type": ["number", "null"]
+    },
+    "approved_notional": {
+      "type": ["number", "null"]
+    },
+    "approved_stop_price": {
+      "type": ["number", "null"]
+    },
+    "require_human_approval": {
+      "type": "boolean"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "status", "detail"],
+        "properties": {
+          "code": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "warn"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "rejection_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

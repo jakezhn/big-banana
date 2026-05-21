@@ -21,7 +21,7 @@ export type ExecutionIntent = {
 };
 
 const schemaUrl = new URL(
-  "../../../docs/design/schemas/execution-intent.schema.json",
+  "../../../docs/development/schemas/execution-intent.schema.json",
   import.meta.url
 );
 const schema = JSON.parse(readFileSync(schemaUrl, "utf8")) as object;

@@ -17,7 +17,7 @@ const implementationSchema = readJson(
   resolve(packageDir, "schemas/webhook-payload-v12.schema.json"),
 ) as AnySchema;
 const frozenDesignSchema = readJson(
-  resolve(repoRoot, "docs/design/schemas/webhook-payload-v12.schema.json"),
+  resolve(repoRoot, "docs/development/schemas/webhook-payload-v12.schema.json"),
 );
 
 const ajv = new Ajv2020({ allErrors: true, strict: true });

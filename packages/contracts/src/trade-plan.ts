@@ -57,7 +57,7 @@ export type TradePlan = {
 };
 
 const schemaUrl = new URL(
-  "../../../docs/design/schemas/trade-plan.schema.json",
+  "../../../docs/development/schemas/trade-plan.schema.json",
   import.meta.url
 );
 const schema = JSON.parse(readFileSync(schemaUrl, "utf8")) as object;

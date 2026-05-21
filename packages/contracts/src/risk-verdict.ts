@@ -20,7 +20,7 @@ export type RiskVerdict = {
 };
 
 const schemaUrl = new URL(
-  "../../../docs/design/schemas/risk-verdict.schema.json",
+  "../../../docs/development/schemas/risk-verdict.schema.json",
   import.meta.url
 );
 const schema = JSON.parse(readFileSync(schemaUrl, "utf8")) as object;
