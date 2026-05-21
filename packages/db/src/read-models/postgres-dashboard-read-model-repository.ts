@@ -139,20 +139,9 @@ export class PostgresDashboardReadModelRepository
 
   private async countOpenPositions(): Promise<number> {
     const [row] = await this.sql<CountRow[]>`
-      with latest_orders as (
-        select distinct on (tp.market_key)
-          tp.market_key,
-          o.status,
-          ei.payload_json ->> 'action' as intent_action
-        from orders o
-        join execution_intents ei on ei.id = o.execution_intent_id
-        join trade_plan_versions tp on tp.id = ei.trade_plan_version_id
-        order by tp.market_key, o.submitted_at desc
-      )
       select count(*)::text as count
-      from latest_orders
-      where intent_action = 'open'
-        and status = 'filled'
+      from positions_current
+      where signed_qty <> 0
     `;
 
     return toCount(row);

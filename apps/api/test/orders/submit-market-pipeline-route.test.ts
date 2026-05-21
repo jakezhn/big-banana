@@ -132,7 +132,9 @@ function intentReadySnapshot(): MarketPipelineReadModel {
       },
       createdAt: "2026-05-18T00:02:00.000Z"
     },
-    latestOrder: null
+    latestOrder: null,
+    latestFill: null,
+    currentPosition: null
   };
 }
 

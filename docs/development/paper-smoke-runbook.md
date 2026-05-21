@@ -138,6 +138,7 @@ This applies:
 5. `0005_execution_intents.sql`
 6. `0006_orders.sql`
 7. `0007_security_and_index_tuning.sql`
+8. `0008_fills_and_positions.sql`
 
 If you want help text:
 
@@ -256,6 +257,8 @@ Inspect:
 - `risk_verdict`
 - `execution_intent`
 - `latest_order`
+- `latest_fill`
+- `current_position`
 
 ## 13. Remote DB spot checks
 

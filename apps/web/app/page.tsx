@@ -108,7 +108,11 @@ function PipelinesTable({
           ) : (
             pipelines.map(pipeline => (
               <tr key={pipeline.marketKey}>
-                <td>{pipeline.tickerid}</td>
+                <td>
+                  <Link href={`/markets/${encodeURIComponent(pipeline.marketKey)}`}>
+                    {pipeline.tickerid}
+                  </Link>
+                </td>
                 <td>{pipeline.timeframe}</td>
                 <td>
                   <span className={`status-pill status-${pipeline.pipelineStatus}`}>

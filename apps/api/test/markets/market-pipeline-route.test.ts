@@ -53,7 +53,9 @@ describe("GET /api/market-pipeline", () => {
           tradePlanVersion: null,
           riskVerdict: null,
           executionIntent: null,
-          latestOrder: null
+          latestOrder: null,
+          latestFill: null,
+          currentPosition: null
         }
       })
     );
@@ -70,7 +72,9 @@ describe("GET /api/market-pipeline", () => {
         trade_plan_version: null,
         risk_verdict: null,
         execution_intent: null,
-        latest_order: null
+        latest_order: null,
+        latest_fill: null,
+        current_position: null
       }
     });
   });

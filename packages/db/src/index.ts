@@ -7,9 +7,17 @@ export {
   PostgresExecutionIntentRepository
 } from "./execution/postgres-execution-intent-repository";
 export {
+  createFillRepositoryFromEnv,
+  PostgresFillRepository
+} from "./fills/postgres-fill-repository";
+export {
   createOrderRepositoryFromEnv,
   PostgresOrderRepository
 } from "./orders/postgres-order-repository";
+export {
+  createPositionRepositoryFromEnv,
+  PostgresPositionRepository
+} from "./positions/postgres-position-repository";
 export {
   createMarketPipelineReadModelRepositoryFromEnv,
   PostgresMarketPipelineReadModelRepository

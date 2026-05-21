@@ -1,9 +1,11 @@
 import type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository,
+  StoredFill,
   StoredExecutionIntent,
   StoredMarketState,
   StoredOrder,
+  StoredPositionSnapshot,
   StoredRiskVerdict,
   StoredTradePlanVersion
 } from "@big-banana/domain";
@@ -83,6 +85,35 @@ type OrderRow = {
   raw_exchange_json: StoredOrder["rawExchangeJson"];
 };
 
+type FillRow = {
+  id: string;
+  order_id: string;
+  execution_intent_id: string;
+  trading_account_id: string;
+  venue: string;
+  symbol: string;
+  side: StoredFill["side"];
+  qty: string | number;
+  price: string | number;
+  filled_at: string;
+  exchange_fill_id: string;
+  raw_exchange_json: StoredFill["rawExchangeJson"];
+};
+
+type PositionCurrentRow = {
+  id: string;
+  trading_account_id: string;
+  symbol: string;
+  market_key: string;
+  position_side: StoredPositionSnapshot["positionSide"];
+  signed_qty: string | number;
+  avg_entry_price: string | number | null;
+  opened_at: string | null;
+  closed_at: string | null;
+  updated_at: string;
+  last_fill_id: string;
+};
+
 export class PostgresMarketPipelineReadModelRepository
   implements MarketPipelineReadModelRepository
 {
@@ -150,13 +181,35 @@ export class PostgresMarketPipelineReadModelRepository
         `
       : [];
 
+    const [fillRow] = orderRow
+      ? await this.sql<FillRow[]>`
+          select *
+          from fills
+          where order_id = ${orderRow.id}
+          order by filled_at desc
+          limit 1
+        `
+      : [];
+
+    const [positionRow] = orderRow
+      ? await this.sql<PositionCurrentRow[]>`
+          select *
+          from positions_current
+          where trading_account_id = ${orderRow.trading_account_id}
+            and symbol = ${orderRow.symbol}
+          limit 1
+        `
+      : [];
+
     return {
       marketKey,
       marketState: mapMarketStateRow(marketStateRow),
       tradePlanVersion,
       riskVerdict,
       executionIntent,
-      latestOrder: orderRow ? mapOrderRow(orderRow) : null
+      latestOrder: orderRow ? mapOrderRow(orderRow) : null,
+      latestFill: fillRow ? mapFillRow(fillRow) : null,
+      currentPosition: positionRow ? mapPositionCurrentRow(positionRow) : null
     };
   }
 }
@@ -244,6 +297,41 @@ function mapOrderRow(row: OrderRow): StoredOrder {
     lastExchangeUpdateAt: row.last_exchange_update_at,
     terminalAt: row.terminal_at,
     rawExchangeJson: row.raw_exchange_json
+  };
+}
+
+function mapFillRow(row: FillRow): StoredFill {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    executionIntentId: row.execution_intent_id,
+    tradingAccountId: row.trading_account_id,
+    venue: row.venue,
+    symbol: row.symbol,
+    side: row.side,
+    qty: toNumber(row.qty),
+    price: toNumber(row.price),
+    filledAt: row.filled_at,
+    exchangeFillId: row.exchange_fill_id,
+    rawExchangeJson: row.raw_exchange_json
+  };
+}
+
+function mapPositionCurrentRow(
+  row: PositionCurrentRow
+): StoredPositionSnapshot {
+  return {
+    id: row.id,
+    tradingAccountId: row.trading_account_id,
+    symbol: row.symbol,
+    marketKey: row.market_key,
+    positionSide: row.position_side,
+    signedQty: toNumber(row.signed_qty),
+    avgEntryPrice: toNumberOrNull(row.avg_entry_price),
+    openedAt: row.opened_at,
+    closedAt: row.closed_at,
+    updatedAt: row.updated_at,
+    lastFillId: row.last_fill_id
   };
 }
 

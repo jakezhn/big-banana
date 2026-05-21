@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type {
+  FillRepository,
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository,
   OrderRepository,
+  PositionRepository,
+  ReceivedFill,
   ReceivedOrder,
+  ReceivedPositionHistoryEntry,
+  ReceivedPositionSnapshot,
   ReceivedOrderStatusUpdate,
+  StoredFill,
   StoredOrder
 } from "@big-banana/domain";
 import { handleReconcileMarketPipelineRequest } from "../../src/orders/handle-reconcile-market-pipeline-request.js";
@@ -67,6 +73,55 @@ class InMemoryOrderRepository implements OrderRepository {
   }
 }
 
+class InMemoryFillRepository implements FillRepository {
+  readonly fills = new Map<string, StoredFill>();
+
+  async recordFill(fill: ReceivedFill): Promise<StoredFill> {
+    const stored = { ...fill, id: crypto.randomUUID() };
+    this.fills.set(stored.id, stored);
+    return stored;
+  }
+
+  async getLatestFillByOrderId(orderId: string): Promise<StoredFill | null> {
+    return (
+      [...this.fills.values()]
+        .filter((fill) => fill.orderId === orderId)
+        .sort((a, b) => a.filledAt.localeCompare(b.filledAt))
+        .at(-1) ?? null
+    );
+  }
+}
+
+class InMemoryPositionRepository implements PositionRepository {
+  readonly current = new Map<string, Awaited<ReturnType<PositionRepository["upsertCurrentPosition"]>>>();
+  readonly history: Awaited<ReturnType<PositionRepository["recordPositionHistory"]>>[] = [];
+
+  async getCurrentPosition(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<Awaited<ReturnType<PositionRepository["upsertCurrentPosition"]>> | null> {
+    return this.current.get(`${tradingAccountId}:${symbol}`) ?? null;
+  }
+
+  async upsertCurrentPosition(
+    position: ReceivedPositionSnapshot
+  ): Promise<Awaited<ReturnType<PositionRepository["upsertCurrentPosition"]>>> {
+    const key = `${position.tradingAccountId}:${position.symbol}`;
+    const existing = this.current.get(key);
+    const stored = { ...position, id: existing?.id ?? crypto.randomUUID() };
+    this.current.set(key, stored);
+    return stored;
+  }
+
+  async recordPositionHistory(
+    entry: ReceivedPositionHistoryEntry
+  ): Promise<Awaited<ReturnType<PositionRepository["recordPositionHistory"]>>> {
+    const stored = { ...entry, id: crypto.randomUUID() };
+    this.history.push(stored);
+    return stored;
+  }
+}
+
 function request(
   marketKey?: string,
   outcome?: "filled" | "canceled" | "bogus"
@@ -117,7 +172,9 @@ function snapshotWithOrder(order: StoredOrder): MarketPipelineReadModel {
     tradePlanVersion: null,
     riskVerdict: null,
     executionIntent: null,
-    latestOrder: order
+    latestOrder: order,
+    latestFill: null,
+    currentPosition: null
   };
 }
 
@@ -125,12 +182,16 @@ describe("POST /api/market-pipeline/reconcile", () => {
   it("reconciles an acked paper order to filled", async () => {
     const order = ackedOrder();
     const orderRepository = new InMemoryOrderRepository([order]);
+    const fillRepository = new InMemoryFillRepository();
+    const positionRepository = new InMemoryPositionRepository();
     const response = await handleReconcileMarketPipelineRequest(
       request("BINANCE:BTCUSDT:240", "filled"),
       new InMemoryMarketPipelineReadModelRepository({
         "BINANCE:BTCUSDT:240": snapshotWithOrder(order)
       }),
-      orderRepository
+      orderRepository,
+      fillRepository,
+      positionRepository
     );
 
     expect(response.status).toBe(200);
@@ -142,17 +203,25 @@ describe("POST /api/market-pipeline/reconcile", () => {
       order_state: "filled"
     });
     expect(orderRepository.orders.get("order-1")?.status).toBe("filled");
+    expect(fillRepository.fills.size).toBe(1);
+    expect(positionRepository.current.get("acct-1:BTCUSDT")?.positionSide).toBe(
+      "long"
+    );
   });
 
   it("reconciles an acked paper order to canceled", async () => {
     const order = ackedOrder();
     const orderRepository = new InMemoryOrderRepository([order]);
+    const fillRepository = new InMemoryFillRepository();
+    const positionRepository = new InMemoryPositionRepository();
     const response = await handleReconcileMarketPipelineRequest(
       request("BINANCE:BTCUSDT:240", "canceled"),
       new InMemoryMarketPipelineReadModelRepository({
         "BINANCE:BTCUSDT:240": snapshotWithOrder(order)
       }),
-      orderRepository
+      orderRepository,
+      fillRepository,
+      positionRepository
     );
 
     expect(response.status).toBe(200);
@@ -163,6 +232,8 @@ describe("POST /api/market-pipeline/reconcile", () => {
       order_id: "order-1",
       order_state: "canceled"
     });
+    expect(fillRepository.fills.size).toBe(0);
+    expect(positionRepository.current.size).toBe(0);
   });
 
   it("rejects invalid outcomes", async () => {
@@ -172,7 +243,9 @@ describe("POST /api/market-pipeline/reconcile", () => {
       new InMemoryMarketPipelineReadModelRepository({
         "BINANCE:BTCUSDT:240": snapshotWithOrder(order)
       }),
-      new InMemoryOrderRepository([order])
+      new InMemoryOrderRepository([order]),
+      new InMemoryFillRepository(),
+      new InMemoryPositionRepository()
     );
 
     expect(response.status).toBe(400);
@@ -193,7 +266,9 @@ describe("POST /api/market-pipeline/reconcile", () => {
       new InMemoryMarketPipelineReadModelRepository({
         "BINANCE:BTCUSDT:240": snapshotWithOrder(order)
       }),
-      new InMemoryOrderRepository([order])
+      new InMemoryOrderRepository([order]),
+      new InMemoryFillRepository(),
+      new InMemoryPositionRepository()
     );
 
     expect(response.status).toBe(409);

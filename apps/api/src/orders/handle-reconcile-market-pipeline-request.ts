@@ -1,8 +1,10 @@
 import {
-  reconcilePaperOrder,
+  reconcilePaperOrderAndRecordFill,
   UnsupportedPaperReconcileOutcomeError,
+  type FillRepository,
   type MarketPipelineReadModelRepository,
-  type OrderRepository
+  type OrderRepository,
+  type PositionRepository
 } from "@big-banana/domain";
 import type { MarketPipelineStatus } from "../markets/derive-market-pipeline-status";
 
@@ -35,7 +37,9 @@ function jsonResponse(
 export async function handleReconcileMarketPipelineRequest(
   request: Request,
   readModelRepository: MarketPipelineReadModelRepository,
-  orderRepository: OrderRepository
+  orderRepository: OrderRepository,
+  fillRepository: FillRepository,
+  positionRepository: PositionRepository
 ): Promise<Response> {
   const url = new URL(request.url);
   const marketKey = url.searchParams.get("market_key");
@@ -67,10 +71,13 @@ export async function handleReconcileMarketPipelineRequest(
   }
 
   try {
-    const order = await reconcilePaperOrder(
+    const result = await reconcilePaperOrderAndRecordFill(
+      marketKey,
       snapshot.latestOrder,
       outcome as "filled" | "canceled",
-      orderRepository
+      orderRepository,
+      fillRepository,
+      positionRepository
     );
 
     return jsonResponse(
@@ -78,8 +85,8 @@ export async function handleReconcileMarketPipelineRequest(
         ok: true,
         status: "reconciled",
         pipeline_status: "order_terminal",
-        order_id: order.id,
-        order_state: order.status as "filled" | "canceled"
+        order_id: result.order.id,
+        order_state: result.order.status as "filled" | "canceled"
       },
       200
     );

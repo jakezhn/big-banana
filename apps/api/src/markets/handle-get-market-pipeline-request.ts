@@ -22,6 +22,8 @@ type SuccessResponse = {
     risk_verdict: MarketPipelineReadModel["riskVerdict"];
     execution_intent: MarketPipelineReadModel["executionIntent"];
     latest_order: MarketPipelineReadModel["latestOrder"];
+    latest_fill: MarketPipelineReadModel["latestFill"];
+    current_position: MarketPipelineReadModel["currentPosition"];
   };
 };
 
@@ -58,7 +60,9 @@ export async function handleGetMarketPipelineRequest(
         trade_plan_version: snapshot.tradePlanVersion,
         risk_verdict: snapshot.riskVerdict,
         execution_intent: snapshot.executionIntent,
-        latest_order: snapshot.latestOrder
+        latest_order: snapshot.latestOrder,
+        latest_fill: snapshot.latestFill,
+        current_position: snapshot.currentPosition
       }
     },
     200

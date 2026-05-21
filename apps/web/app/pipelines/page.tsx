@@ -53,7 +53,11 @@ export default async function PipelinesPage() {
               ) : (
                 pipelines.map(pipeline => (
                   <tr key={pipeline.marketKey}>
-                    <td>{pipeline.marketKey}</td>
+                    <td>
+                      <Link href={`/markets/${encodeURIComponent(pipeline.marketKey)}`}>
+                        {pipeline.marketKey}
+                      </Link>
+                    </td>
                     <td>{pipeline.tickerid}</td>
                     <td>{pipeline.timeframe}</td>
                     <td>

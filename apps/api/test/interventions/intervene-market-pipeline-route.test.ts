@@ -156,7 +156,9 @@ function baseSnapshot(order: StoredOrder): MarketPipelineReadModel {
       },
       createdAt: "2026-05-18T00:02:00.000Z"
     },
-    latestOrder: order
+    latestOrder: order,
+    latestFill: null,
+    currentPosition: null
   };
 }
 

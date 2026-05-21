@@ -43,6 +43,7 @@ export {
   InvalidBuiltExecutionIntentError,
   UnsupportedExecutionIntentError
 } from "./execution/build-execution-intent-from-risk-verdict";
+export type { FillRepository, ReceivedFill, StoredFill } from "./fills/fill-repository";
 export {
   buildAndRecordOperatorExecutionIntent,
   buildOperatorExecutionIntent,
@@ -53,6 +54,9 @@ export type {
   ReceivedExecutionIntent,
   StoredExecutionIntent
 } from "./execution/execution-intent-repository";
+export {
+  reconcilePaperOrderAndRecordFill
+} from "./orders/reconcile-paper-order-and-record-fill";
 export {
   reconcilePaperOrder,
   UnsupportedPaperReconcileOutcomeError
@@ -66,6 +70,19 @@ export type {
   ReceivedOrderStatusUpdate,
   StoredOrder
 } from "./orders/order-repository";
+export {
+  applyFillToPosition
+} from "./positions/apply-fill-to-position";
+export type {
+  PositionHistoryEventType,
+  PositionRepository,
+  PositionSide,
+  PositionUpdateFromFillResult,
+  ReceivedPositionHistoryEntry,
+  ReceivedPositionSnapshot,
+  StoredPositionHistoryEntry,
+  StoredPositionSnapshot
+} from "./positions/position-repository";
 export type {
   MarketPipelineReadModel,
   MarketPipelineReadModelRepository
