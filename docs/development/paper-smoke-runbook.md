@@ -79,15 +79,16 @@ Anything on port `6543` for this repository's current runtime path.
 
 ## 4. Local environment file
 
-Create local env for the web app:
+Create local env files for both apps:
 
 ```bash
-cp .env.example apps/web/.env.local
+cp apps/api/.env.example apps/api/.env.local
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-Then replace `DATABASE_URL` with your remote Supabase connection string.
+Then replace `DATABASE_URL` in `apps/api/.env.local` with your remote Supabase connection string.
 
-Suggested baseline:
+Suggested baseline for `apps/api/.env.local`:
 
 ```bash
 DATABASE_URL='your-supabase-connection-string'
@@ -104,6 +105,14 @@ PIPELINE_ACCOUNT_EQUITY=20000
 PIPELINE_MAX_TRADE_RISK_PCT=0.5
 PIPELINE_MAX_NOTIONAL=100000
 PIPELINE_MAX_LEVERAGE=3
+```
+
+Suggested baseline for `apps/web/.env.local`:
+
+```bash
+API_BASE_URL='http://127.0.0.1:3000'
+NEXT_PUBLIC_SUPABASE_URL='https://your-project-ref.supabase.co'
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='your-publishable-key'
 ```
 
 ## 5. Install psql locally
