@@ -51,7 +51,9 @@ This is not a rewrite of the pipeline. It is a role shift:
 - The LLM path is still one-stage `plan.generate`.
 - There are no persisted market analysis, signal analysis, plan revision, post-plan review, or lesson candidate records.
 - There is no replay/evaluation harness for prompt and context iteration.
-- There is no `apps/agent` Inngest runtime yet.
+- There is no `apps/hermes` Docker worker runtime yet.
+- There is no Supabase-backed `agent_jobs` queue yet.
+- There is no worker lock/idempotency layer yet.
 
 ## 3. Target Architecture
 
@@ -61,6 +63,9 @@ Data / Context Layer
 
 Workflow / Orchestration Layer
   intake, dedupe, context loading, agent invocation, validation, persistence
+
+Queue / Worker Layer
+  job routing, polling, locks, retries, idempotency, timeout recovery
 
 Agent Reasoning Layer
   Hermes analysis, planning, revision, review
@@ -75,7 +80,7 @@ Guardrail / Execution Layer
   deterministic risk, execution permission, order and position state machines
 ```
 
-The first implementation should not physically split into many agents. It should introduce agent roles as structured operations and skills, then later move orchestration into `apps/agent`.
+The first implementation should not physically split into many agents. It should introduce agent roles as structured operations and skills, then later move orchestration into `apps/hermes`.
 
 ## 4. Affected Modules
 
@@ -124,6 +129,8 @@ Do not move LLM-specific API client code into domain.
 Required changes:
 
 - extend market state repository with recent history query by market key
+- add `agent_jobs` queue repository
+- add lock helpers for symbol, plan, account, and execution scopes
 - expand `agent_runs` or add linked tables for:
   - prompt version
   - skill name
@@ -145,24 +152,31 @@ Later:
 Required changes:
 
 - keep webhook and HTTP harness thin
+- enqueue agent jobs when work becomes long-running
 - move planner-specific code from `apps/api/src/planner` toward a shared agent module as it grows
 - add APIs for replay and agent review if dashboard needs them
 - continue serving current dashboard read models
 
 API should not become the durable workflow runtime.
 
-### Future `apps/agent`
+### Future `apps/hermes`
 
 Add when async orchestration starts:
 
-- Inngest functions
+- Dockerfile and worker entrypoint
+- Supabase-backed job polling
+- market/job router
+- lock management
+- retry and timeout handling
 - `plan.generate`
 - `plan.revise`
 - `plan.review`
 - `memory.curate`
 - replay/evaluation jobs
 
-This app should share `packages/contracts`, `packages/domain`, and `packages/db`.
+This app should share `packages/contracts`, `packages/domain`, `packages/db`, and `packages/agent`.
+
+Inngest remains an optional alternative if the project later prefers managed workflow orchestration over a VPS worker.
 
 ### `apps/web`
 
@@ -192,11 +206,11 @@ It should not be split into separate repos.
 Needed additions:
 
 ```text
-apps/agent
+apps/hermes
 packages/agent
 ```
 
-`apps/agent` should own runtime wiring and Inngest functions.
+`apps/hermes` should own Docker runtime wiring, worker loops, job polling, and deployment config.
 
 `packages/agent` should own reusable Hermes prompt builders, model adapters, skill implementations, and agent output validation helpers. This avoids keeping growing LLM-specific code under `apps/api/src/planner`.
 
@@ -205,7 +219,7 @@ Recommended future structure:
 ```text
 apps/web              # frontend dashboard
 apps/api              # HTTP harness and read APIs
-apps/agent            # Inngest/durable agent workflows
+apps/hermes           # Dockerized Hermes worker service
 packages/contracts    # schemas and runtime validators
 packages/domain       # deterministic trading domain
 packages/db           # Supabase/Postgres repositories
@@ -244,7 +258,46 @@ Validation:
 - OpenAI planner paper smoke still reaches at least `risk_approved`
 - strong signal scenario can still reach `order_terminal`
 
-### Stage 2: Agent Run Evaluation Metadata
+### Stage 2: Supabase Job Queue And Worker Harness
+
+Goal: establish durable orchestration without relying on Vercel API routes for long-running Hermes work.
+
+Changes:
+
+- add `agent_jobs`
+- add job statuses:
+  - `pending`
+  - `running`
+  - `completed`
+  - `failed`
+  - `cancelled`
+  - `timeout`
+- add fields:
+  - `job_type`
+  - `market`
+  - `symbol`
+  - `timeframe`
+  - `priority`
+  - `idempotency_key`
+  - `payload_json`
+  - `result_ref`
+  - `locked_by`
+  - `locked_until`
+  - `attempt_count`
+  - `max_attempts`
+  - `run_after`
+  - `last_error`
+- add claim/retry helpers using `FOR UPDATE SKIP LOCKED` or advisory locks
+- create `apps/hermes` with a minimal worker loop
+
+Validation:
+
+- duplicate enqueue is idempotent
+- one worker claims one job once
+- failed job can retry
+- stale running job can recover
+
+### Stage 3: Agent Run Evaluation Metadata
 
 Goal: make planner quality observable.
 
@@ -262,7 +315,7 @@ Validation:
 - dashboard Agent Runs can compare model/prompt versions
 - replay can show action/state distribution and schema failures
 
-### Stage 3: Planner Quality Loop
+### Stage 4: Planner Quality Loop
 
 Goal: iterate the Hermes planner without touching execution.
 
@@ -282,7 +335,27 @@ Validation:
 - repeated replay shows fewer non-executable create plans
 - risk rejection and execution-eligible rates are visible
 
-### Stage 4: Plan Revision Agent
+### Stage 5: Multi-Hermes Router
+
+Goal: route jobs to scoped Hermes roles without physically over-splitting too early.
+
+Changes:
+
+- add market/job router:
+  - `global_scan` -> Global Market Hermes
+  - `market=crypto` -> Crypto Hermes
+  - `market=us_equity` -> US Equity Hermes
+  - `market=cn_equity` -> CN Equity Hermes
+  - `market=commodity` -> Commodity Hermes
+- keep all roles in one Docker service initially
+- add market scope to memory/replay metadata
+
+Validation:
+
+- crypto jobs do not retrieve equity-specific lessons
+- global summary can be attached to market-specific planning
+
+### Stage 6: Plan Revision Agent
 
 Goal: turn plans into living objects.
 
@@ -299,7 +372,7 @@ Validation:
 - active plan can be suggested as keep/tighten/downgrade/invalidate
 - dashboard shows revision timeline
 
-### Stage 5: Post-Plan Review
+### Stage 7: Post-Plan Review
 
 Goal: create review data before memory.
 
@@ -315,7 +388,7 @@ Validation:
 - completed paper trades can produce structured reviews
 - review is visible from Market Detail
 
-### Stage 6: Scoped Memory Candidates
+### Stage 8: Scoped Memory Candidates
 
 Goal: add learning without memory pollution.
 
@@ -339,26 +412,29 @@ Validation:
 - no raw facts are stored as memory
 - lessons can be reviewed and rejected
 
-### Stage 7: Inngest Agent Runtime
+### Stage 9: Worker Pool Split
 
-Goal: move long-running agent work out of HTTP routes.
+Goal: split workers only after the single Hermes worker proves the job model.
 
-Changes:
+Potential workers:
 
-- add `apps/agent`
-- add Inngest functions for:
-  - `plan.generate`
-  - `plan.revise`
-  - `plan.review`
-  - `memory.curate`
-  - replay jobs
-- API routes enqueue work instead of running all agent calls inline where appropriate
+- analysis-worker
+- planning-worker
+- revision-worker
+- review-worker
+- memory-worker
+- risk-worker
+- execution-worker
 
-Validation:
+Concurrency policy:
 
-- retries are visible
-- failed agent calls persist trace records
-- HTTP webhook route remains short and reliable
+- analysis: high concurrency
+- planning: symbol lock
+- revision: plan lock
+- risk: account lock
+- execution: account lock
+
+Risk and execution remain deterministic services, not agents.
 
 ## 7. What Not To Change Yet
 
@@ -371,6 +447,7 @@ Do not:
 - replace Supabase as fact source
 - split into multiple repos
 - connect live exchange execution before agent quality and guardrails are measurable
+- build Kubernetes-scale infrastructure before the Supabase queue and Docker worker model is validated
 
 ## 8. Migration Summary
 
@@ -382,3 +459,12 @@ PlannerInput v2 = current signal + current context + latestSnapshots + recentSna
 
 This is the highest-leverage change because it improves Hermes reasoning while preserving the current working workflow, risk, execution, and dashboard harness.
 
+After Stage 1, the next infrastructure step is Stage 2:
+
+```text
+Vercel API enqueues agent_jobs
+VPS apps/hermes polls and locks jobs
+Hermes produces structured outputs
+workers validate and persist results
+dashboard reads Supabase facts
+```

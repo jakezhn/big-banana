@@ -131,5 +131,4 @@ Still out of scope for this MVP phase:
 - fully autonomous memory writes
 - Hermes as final execution permission source
 - live exchange execution
-- multi-agent distributed runtime unless a single `apps/agent` workflow needs it
-
+- multi-agent distributed runtime unless the single `apps/hermes` Docker worker model has been validated first

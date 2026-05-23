@@ -88,9 +88,9 @@
 
 - `apps/web`
 - `apps/api`
-- future `apps/agent`
+- future `apps/hermes`
 - Supabase
-- Inngest
+- VPS / Docker worker
 - 环境变量与联调 runbook
 
 ## 3. 开发任务总表
@@ -117,6 +117,7 @@
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
 | Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
+| Planner / Agent | multi-Hermes router | 未开始 | 0% | 待按 market/job type 路由 Global/Crypto/US Equity/CN Equity/Commodity Hermes |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
 | Execution | paper submit | 已完成 | 100% | 已支持自动 paper order submit |
@@ -142,7 +143,10 @@
 | Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
 | Platform / Deployment | `packages/agent` extraction | 未开始 | 0% | 待把 LLM prompt/model/skill 代码从 `apps/api` 中抽出 |
-| Platform / Deployment | Inngest integration | 未开始 | 0% | 目前仅文档设计，没有代码 |
+| Platform / Deployment | Supabase `agent_jobs` queue | 未开始 | 0% | 待补 job table、idempotency、retry、timeout recovery |
+| Platform / Deployment | worker lock helpers | 未开始 | 0% | 待补 symbol / plan / account / execution lock |
+| Platform / Deployment | `apps/hermes` Docker worker | 未开始 | 0% | 待补 VPS worker runtime、polling loop、job router |
+| Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
 
 ## 4. 测试任务总表
@@ -196,28 +200,34 @@
 - post-plan review agent
 - scoped lesson candidates
 - advanced interventions
-- Inngest integration
+- Supabase `agent_jobs` queue and worker locks
+- `apps/hermes` Docker worker
+- optional Inngest fallback
 
 ## 6. 当前建议的下一轮开发顺序
 
 严格按下面顺序推进：
 
 1. `PlannerInput` context v2: `recentSnapshots` + `windowSummary` + position/order context
-2. agent run evaluation metadata and replay harness
-3. planner quality iteration loop
-4. plan revision agent
-5. post-plan review agent
-6. scoped lesson candidates
-7. `packages/agent` extraction and `apps/agent` / Inngest integration
+2. Supabase `agent_jobs` queue + worker lock helpers
+3. `apps/hermes` Docker worker baseline
+4. agent run evaluation metadata and replay harness
+5. planner quality iteration loop
+6. multi-Hermes router
+7. plan revision agent
+8. post-plan review agent
+9. scoped lesson candidates
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. `PlannerInput` context v2 unit tests
-2. multi-market AI replay smoke
-3. dashboard Agent Runs / Market Detail manual QA
-4. plan revision smoke
-5. post-plan review smoke
-6. real TradingView external webhook
+2. agent job enqueue / claim / retry tests
+3. `apps/hermes` worker local smoke
+4. multi-market AI replay smoke
+5. dashboard Agent Runs / Market Detail manual QA
+6. plan revision smoke
+7. post-plan review smoke
+8. real TradingView external webhook
 
 ## 8. 本轮状态快照
 
@@ -234,7 +244,8 @@
 - 已验证 `runnerKind=openai` 成功落库，并完成 `plan -> risk -> intent -> order -> reconcile` 闭环
 - 额外修复了“AI plan 合法但暂不可执行时 route 返回 500”的降级问题
 - 当前已完成 agent-first 文档收口：旧 workflow-first 主文档已归档，新主架构和 staged refactor plan 已建立
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“context v2、策略质量迭代、plan revision、post-plan review、异步 agent 编排”
+- 当前部署主路径更新为 `Vercel + Supabase + VPS Hermes Docker`；Inngest 降级为可选备选方案
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“context v2、Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
 

@@ -86,15 +86,17 @@ HTTP and webhook harness:
 
 In the agent-first phase, API routes should remain thin. They should load facts, validate requests, call workflow/agent services, and return structured state.
 
-### Future `apps/agent`
+### Future `apps/hermes`
 
-Recommended next application boundary:
+Recommended next application boundary when agent work moves out of HTTP routes:
 
-- Inngest functions
+- Dockerized Hermes worker service
+- Supabase-backed job polling
 - async planner workflow
 - replay workflow
 - post-plan review workflow
 - memory curation workflow
+- future exchange/reconcile worker hooks
 
 This should remain in the same repo because it shares contracts, domain logic, migrations, and dashboard read models.
 
@@ -159,6 +161,8 @@ Already implemented:
 Next MVP phase additions:
 
 - expanded `agent_runs` metadata: prompt version, model provider, raw prompt/output capture policy, token usage when available
+- `agent_jobs`: Supabase-backed durable queue for Hermes jobs
+- `agent_locks` or DB advisory-lock backed lock helpers for symbol/plan/account/execution concurrency
 - planner context v2 read model: `recentSnapshots`, `windowSummary`, open position, open orders, active plan
 - plan review records
 - plan revision suggestions
@@ -199,31 +203,93 @@ This remains true even when Hermes later suggests stop movement, partial reducti
 
 ## 8. Deployment
 
-MVP deployment remains:
+MVP deployment should move toward:
 
 - Vercel: `apps/web`
 - Vercel: `apps/api`
 - Supabase: Postgres, Storage, SDK health
 - Vercel AI Gateway: OpenAI-compatible planner runtime
-- Inngest: future async agent and replay workflows
+- VPS / Docker Compose: Hermes workers and controlled long-running jobs
 
 The agent-first refactor does not require a separate repo.
+
+Inngest is optional, not the primary path, if a VPS is available. It remains a reasonable fallback when the project wants managed retries and hosted durable workflows without running worker infrastructure.
+
+### 8.1 Runtime split
+
+```text
+Vercel apps/web
+  dashboard frontend
+
+Vercel apps/api
+  webhook receiver
+  dashboard read APIs
+  operator APIs
+  agent job enqueue APIs
+
+Supabase
+  facts
+  read models
+  agent_jobs
+  agent_runs
+  later: pgvector memory
+
+VPS apps/hermes
+  job polling
+  lock management
+  Hermes invocation
+  schema validation
+  result persistence
+  replay/review/memory jobs
+```
+
+### 8.2 Multi-Hermes shape
+
+Hermes should not become one global trading brain. Use scoped roles and route jobs by market and task:
+
+- Global Market Hermes: risk-on/risk-off and cross-market summaries
+- Crypto Hermes: BTC/ETH/altcoin planning, revision, review, scoped crypto lessons
+- US Equity Hermes: sector/index/earnings-aware equity plans
+- CN Equity Hermes: policy/theme/liquidity-aware CN/HK plans
+- Commodity Hermes: macro/commodity-driver plans
+
+MVP can run these as logical roles in one Docker service first. Physical process splitting can wait until throughput or isolation requires it.
+
+### 8.3 Queue and locks
+
+Use Supabase/Postgres as the initial queue:
+
+- `agent_jobs` for durable work
+- `idempotency_key` for duplicate prevention
+- `FOR UPDATE SKIP LOCKED` or advisory locks for worker claiming
+- retry and timeout fields for recovery
+
+Concurrency rules:
+
+- analysis jobs: high concurrency
+- planning jobs: symbol-level lock
+- revision jobs: plan-level lock
+- risk review: account-level lock
+- execution: account-level lock first, symbol-level later if needed
+
+Risk and execution do not need to be agents. They should remain deterministic skills/services that workers call after Hermes proposes a plan or revision.
 
 ## 9. Current Architectural Gaps
 
 The current repo supports the refactor direction, but these gaps must be closed:
 
 - `PlannerInput` lacks `recentSnapshots` and `windowSummary`
+- no `agent_jobs` queue exists
+- no worker lock/idempotency helper exists
 - `agent_runs` stores summaries but not enough evaluation metadata
 - planner prompt and schemas are still a single-stage planner shape
 - no replay/evaluation dataset exists
 - no plan revision model exists
 - no post-plan review or lesson candidate table exists
-- no `apps/agent` runtime exists for durable async workflows
+- no `apps/hermes` Docker worker exists for durable async workflows
 
 ## 10. Active Reference
 
 The detailed staged refactor plan lives in:
 
 - `mvp-agent-first-refactor.md`
-
