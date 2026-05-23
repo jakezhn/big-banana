@@ -8,8 +8,9 @@
 
 1. `webhook-payload-spec.md`：外部 payload 已冻结，不再改语义。
 2. `mvp-freeze.md`：当前实现契约。
-3. `mvp-architecture.md`：系统设计、部署与工程边界。
-4. `mvp-validation-and-dashboard.md`：MVP 验证目标与 dashboard 路线。
+3. `mvp-architecture.md`：当前 agent-first 系统设计、部署与工程边界。
+4. `mvp-agent-first-refactor.md`：本轮 MVP 新阶段的重构方案与 staged 计划。
+5. `mvp-validation-and-dashboard.md`：MVP 验证目标与 dashboard 路线。
 
 ## 2. 冻结决策
 
@@ -25,6 +26,7 @@
 | 执行主模式 | MVP 默认 `full`，自动 paper execution |
 | 计划对象 | `action + market_thesis + execution_playbook + risk_intent` |
 | Dashboard 摘要 | 先由结构化计划直接渲染，不额外调用模型 |
+| Agent-first 方向 | Hermes/LLM 负责解释、计划、修正和复盘；workflow、Supabase 和 deterministic guardrail 仍保留事实源与执行权限 |
 
 ## 3. 冻结契约
 

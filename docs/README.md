@@ -47,6 +47,7 @@
 1. `development/mvp-freeze.md`
 2. `development/webhook-payload-spec.md`
 3. `development/mvp-architecture.md`
-4. `development/mvp-validation-and-dashboard.md`
-5. `development/mvp-work-tracker.md`
-6. `development/paper-smoke-runbook.md`
+4. `development/mvp-agent-first-refactor.md`
+5. `development/mvp-validation-and-dashboard.md`
+6. `development/mvp-work-tracker.md`
+7. `development/paper-smoke-runbook.md`

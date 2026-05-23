@@ -4,14 +4,16 @@ This runbook is now opinionated for one path only:
 
 - local Next.js app
 - remote Supabase dev or staging project
-- deterministic planning/risk/execution pipeline
+- deterministic or OpenAI/Vercel AI Gateway planner runtime
+- deterministic risk and execution pipeline
 - paper order submit + reconcile stubs
 
 Use this when you want a realistic hosted Postgres target without introducing Bybit yet.
 
 ## 1. Recommended topology
 
-- app runtime: local `pnpm --filter @big-banana/web dev`
+- API runtime: local `pnpm --filter @big-banana/api dev`
+- optional frontend runtime: local `pnpm --filter @big-banana/web dev`
 - database: remote Supabase project
 - webhook source for smoke: local fixture replay via curl/script
 

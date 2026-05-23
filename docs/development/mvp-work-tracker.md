@@ -12,14 +12,16 @@
 
 - 后端 paper trading 主链已跑通
 - remote Supabase 联调已完成
-- dashboard 第一阶段已完成
+- dashboard 核心监控页已完成
 - 前后端已拆分为 `apps/web` 与 `apps/api`
-- 真实 AI planner 尚未接入
+- 真实 AI planner 已通过 Vercel AI Gateway 完成 paper validation
+- MVP 新阶段切换为 agent-first refactor
 
 当前 MVP 主目标：
 
-- 尽快验证 AI 交易策略、风控和执行链的有效性
-- 尽快做出可监控、可复盘、可干预的 dashboard
+- 最大化 Hermes/LLM 在分析、计划、修正、复盘中的作用
+- 保留 workflow、Supabase、deterministic guardrail 作为可靠 harness
+- 建立可 replay、可评估、可复盘的 agent quality loop
 
 当前不作为 MVP 主目标：
 
@@ -27,6 +29,7 @@
 - 订阅等级
 - 多租户权限
 - 真实 live execution
+- 自动写入长期 vector memory
 
 ## 2. 架构拆分
 
@@ -51,8 +54,8 @@
 
 职责：
 
-- 基于 market state 和 signal 生成 `trade_plan`
-- 后续替换为真实 AI planner
+- 基于 market state、signal、recent context、active plan 和 position/order context 生成 `trade_plan`
+- 后续扩展为 Hermes analysis / planning / revision / review / memory curation
 
 ### 2.4 Risk
 
@@ -85,6 +88,7 @@
 
 - `apps/web`
 - `apps/api`
+- future `apps/agent`
 - Supabase
 - Inngest
 - 环境变量与联调 runbook
@@ -107,6 +111,12 @@
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
 | Planner / Agent | real AI planner 接入 | 已完成 | 100% | 已接入 `deterministic | openai` runtime，并完成 Vercel AI Gateway paper validation |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
+| Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
+| Planner / Agent | `PlannerInput` context v2 | 未开始 | 0% | 待补 `recentSnapshots`、`windowSummary`、active plan、position/order context |
+| Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
+| Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
+| Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
+| Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
 | Execution | paper submit | 已完成 | 100% | 已支持自动 paper order submit |
@@ -131,6 +141,7 @@
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
 | Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
+| Platform / Deployment | `packages/agent` extraction | 未开始 | 0% | 待把 LLM prompt/model/skill 代码从 `apps/api` 中抽出 |
 | Platform / Deployment | Inngest integration | 未开始 | 0% | 目前仅文档设计，没有代码 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
 
@@ -151,6 +162,9 @@
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
 | Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
 | Integration | real AI planner paper validation | 已完成 | 100% | 已完成 Vercel AI Gateway -> plan -> risk -> intent -> order -> reconcile 闭环验证 |
+| Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
+| Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
+| Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
 
 ## 5. 当前已完成的主要里程碑
 
@@ -172,9 +186,15 @@
 - Agent Runs API / page
 - `apps/web` / `apps/api` split
 - 文档体系收敛
+- agent-first 文档与归档结构
 
 ### 当前还缺
 
+- `PlannerInput` context v2
+- planner quality iteration loop
+- plan revision agent
+- post-plan review agent
+- scoped lesson candidates
 - advanced interventions
 - Inngest integration
 
@@ -182,16 +202,22 @@
 
 严格按下面顺序推进：
 
-1. advanced interventions
-2. dashboard 页面最小手工 QA
-3. Inngest integration
+1. `PlannerInput` context v2: `recentSnapshots` + `windowSummary` + position/order context
+2. agent run evaluation metadata and replay harness
+3. planner quality iteration loop
+4. plan revision agent
+5. post-plan review agent
+6. scoped lesson candidates
+7. `packages/agent` extraction and `apps/agent` / Inngest integration
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. dashboard 页面最小手工 QA
-2. 页面接入 remote Supabase 的 smoke test
-3. `Market Detail` 手工验证
-4. advanced intervention smoke
+1. `PlannerInput` context v2 unit tests
+2. multi-market AI replay smoke
+3. dashboard Agent Runs / Market Detail manual QA
+4. plan revision smoke
+5. post-plan review smoke
+6. real TradingView external webhook
 
 ## 8. 本轮状态快照
 
@@ -207,7 +233,8 @@
 - 本轮已完成 Vercel AI Gateway 真实联调，修复了 Responses JSON Schema 兼容层
 - 已验证 `runnerKind=openai` 成功落库，并完成 `plan -> risk -> intent -> order -> reconcile` 闭环
 - 额外修复了“AI plan 合法但暂不可执行时 route 返回 500”的降级问题
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“策略质量迭代、advanced interventions、异步 agent 编排”
+- 当前已完成 agent-first 文档收口：旧 workflow-first 主文档已归档，新主架构和 staged refactor plan 已建立
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“context v2、策略质量迭代、plan revision、post-plan review、异步 agent 编排”
 
 ## 9. 更新规则
 
