@@ -105,7 +105,7 @@
 | Ingestion | webhook ledger / duplicate handling | 已完成 | 100% | `webhook_events` 已落地 |
 | Market State | current/history projection | 已完成 | 100% | `market_states_current/history` 已落地 |
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
-| Planner / Agent | real AI planner 接入 | 进行中 | 50% | 已接入 `deterministic | openai` runtime，待真实模型联调 |
+| Planner / Agent | real AI planner 接入 | 进行中 | 75% | 已接入 `deterministic | openai` runtime，Vercel AI Gateway 实测已通到模型调用，当前阻塞在 `trade-plan` schema 兼容性 |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
@@ -150,7 +150,7 @@
 | Integration | advisory mode remote test | 未开始 | 0% | 当前 MVP 默认 full，可后置 |
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
 | Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
-| Integration | real AI planner paper validation | 未开始 | 0% | 现已具备代码路径，待配置 API key 与云端验证 |
+| Integration | real AI planner paper validation | 进行中 | 50% | 已完成真实 API key / Gateway 联调，当前失败点是 Responses JSON Schema 不接受根级 `allOf` |
 
 ## 5. 当前已完成的主要里程碑
 
@@ -175,27 +175,28 @@
 
 ### 当前还缺
 
-- real AI planner 联调验证
+- real AI planner schema 兼容修复与再次联调验证
 
 ## 6. 当前建议的下一轮开发顺序
 
 严格按下面顺序推进：
 
-1. real AI planner paper validation loop
-2. advanced interventions
-3. Inngest integration
+1. flatten `trade-plan` JSON Schema 以兼容 Vercel AI Gateway / OpenAI Responses
+2. real AI planner paper validation rerun
+3. advanced interventions
+4. Inngest integration
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. dashboard 页面最小手工 QA
 2. 页面接入 remote Supabase 的 smoke test
 3. `Market Detail` 手工验证
-4. real AI planner 接入后的 paper validation
-5. remote Supabase rerun with `0009_agent_runs.sql`
+4. real AI planner 接入后的 paper validation rerun
+5. dashboard 手工核对 `agent_runs failed` 与 `market pipeline normalized` 失败态
 
 ## 8. 本轮状态快照
 
-更新时间：`2026-05-21`
+更新时间：`2026-05-23`
 
 本轮结论：
 
@@ -204,8 +205,9 @@
 - 执行结果真值层已补齐：`fills`、`positions_current`、`positions_history`
 - planner 审计层已补齐：`agent_runs` 已落地
 - real AI planner 代码接入面已落地：支持 `PLANNER_RUNTIME=openai`
-- 当前最大缺口转为真实模型 API 联调与 paper validation
-- 下一轮应开始验证真实 planner 输出质量，而不是继续扩 dashboard 骨架
+- 本轮已完成 Vercel AI Gateway 真实联调，`runnerKind=openai` 和失败审计已验证
+- 当前阻塞已经收敛到单点：`trade-plan` frozen schema 在 Responses JSON Schema 下使用了不被接受的根级 `allOf`
+- 下一轮应优先修复 schema compatibility，再重跑 paper validation
 
 ## 9. 更新规则
 
