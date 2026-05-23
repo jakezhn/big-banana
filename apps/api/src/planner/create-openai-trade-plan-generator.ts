@@ -6,6 +6,7 @@ import {
 import type { TradePlanGenerator } from "@big-banana/domain";
 import OpenAI from "openai";
 import { buildOpenAiTradePlanSystemPrompt, buildOpenAiTradePlanUserPrompt } from "./build-openai-trade-plan-prompt";
+import { createOpenAiCompatibleSchema } from "./create-openai-compatible-schema";
 import type { OpenAiPlannerConfig } from "./get-openai-planner-config-from-env";
 
 export class MissingOpenAiPlannerApiKeyError extends Error {
@@ -33,7 +34,7 @@ export function createOpenAiTradePlanGenerator(
     apiKey: config.apiKey,
     baseURL: config.baseUrl ?? undefined
   });
-  const schema = getTradePlanJsonSchema();
+  const schema = createOpenAiCompatibleSchema(getTradePlanJsonSchema());
 
   return async ({ plannerInput, reusablePlan }) => {
     const response = await client.responses.create({

@@ -16,6 +16,7 @@ import type { RiskVerdictRepository } from "../risk/risk-verdict-repository";
 import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
 import {
   buildAndRecordExecutionIntentFromRiskVerdict,
+  UnsupportedExecutionIntentError,
 } from "../execution/build-execution-intent-from-risk-verdict";
 import type {
   ExecutionIntentRepository,
@@ -112,10 +113,21 @@ async function maybeBuildAndRecordExecutionIntent(
     return null;
   }
 
-  return buildAndRecordExecutionIntentFromRiskVerdict(
-    tradePlanVersion,
-    riskVerdict,
-    repository,
-    createdAt
-  );
+  try {
+    return await buildAndRecordExecutionIntentFromRiskVerdict(
+      tradePlanVersion,
+      riskVerdict,
+      repository,
+      createdAt
+    );
+  } catch (error) {
+    if (
+      error instanceof UnsupportedExecutionIntentError ||
+      (error instanceof Error && error.name === "UnsupportedExecutionIntentError")
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import {
+  type TradePlan,
   type AgentRunRepository,
   type ExecutionIntentRepository,
   generateDeterministicTradePlan,
@@ -243,6 +244,13 @@ function dependencies(
   overrides?: Partial<{
     riskPolicy: RiskPolicySnapshot;
     pipelineMode: PipelineMode;
+    tradePlanGenerator: (
+      args: {
+        plannerInput: Parameters<typeof generateDeterministicTradePlan>[0];
+        reusablePlan: Parameters<typeof generateDeterministicTradePlan>[1];
+      }
+    ) => Promise<TradePlan> | TradePlan;
+    plannerRunner: PlannerRunnerInfo;
   }>
 ) {
   return {
@@ -255,12 +263,16 @@ function dependencies(
     orderRepository: new InMemoryOrderRepository(),
     riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy,
     pipelineMode: overrides?.pipelineMode ?? "full",
-    tradePlanGenerator: ({ plannerInput, reusablePlan }) =>
-      generateDeterministicTradePlan(plannerInput, reusablePlan),
-    plannerRunner: {
-      runnerKind: "deterministic",
-      model: null
-    } satisfies PlannerRunnerInfo
+    tradePlanGenerator:
+      overrides?.tradePlanGenerator ??
+      (({ plannerInput, reusablePlan }) =>
+        generateDeterministicTradePlan(plannerInput, reusablePlan)),
+    plannerRunner:
+      overrides?.plannerRunner ??
+      ({
+        runnerKind: "deterministic",
+        model: null
+      } satisfies PlannerRunnerInfo)
   };
 }
 
@@ -390,6 +402,78 @@ describe("POST /api/webhooks/tradingview", () => {
     expect(deps.executionIntentRepository.intents).toHaveLength(0);
     expect(deps.orderRepository.orders).toHaveLength(0);
     expect(deps.agentRunRepository.runs).toHaveLength(1);
+  });
+
+  it("degrades to risk-approved when the planner returns a non-executable watch-state create plan", async () => {
+    const deps = dependencies({
+      tradePlanGenerator: async () =>
+        ({
+          action: "create",
+          market_thesis: {
+            bias: "long",
+            environment: "transition",
+            htf_bias: "bull",
+            mtf_bias: "bull",
+            bias_confidence: 0.78,
+            trend_end_score: 0.24,
+            structure_summary: "Bullish context but not yet executable.",
+            key_levels: [
+              {
+                role: "support",
+                price_ref: "EMA50",
+                importance: "primary"
+              }
+            ]
+          },
+          execution_playbook: {
+            state: "watch",
+            entry_style: "pullback",
+            entry_zone: {
+              low: 66800,
+              high: 67650,
+              source: "structure"
+            },
+            allowed_triggers: ["aligned_signal", "zone_touch"],
+            requires_signal: true,
+            disqualifiers: ["needs_confirmation"],
+            tp_style: "ladder",
+            update_policy: "minor_patch"
+          },
+          risk_intent: {
+            risk_tier: "standard",
+            suggested_max_account_risk_pct: 0.75,
+            stop_anchor: "swing_low",
+            stop_buffer_atr: 0.35,
+            rationale_codes: ["needs_confirmation"]
+          },
+          reasoning_summary: "Setup is valid but still waiting for confirmation.",
+          evidence: ["bullish_structure", "ranked_signal"]
+        }) satisfies TradePlan,
+      plannerRunner: {
+        runnerKind: "openai",
+        model: "gpt-5.4-mini"
+      }
+    });
+    await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("snapshot.valid.json"))),
+      deps
+    );
+
+    const response = await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("signal.valid.json"))),
+      deps
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      accepted: true,
+      event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
+      duplicate: false,
+      process_status: "risk_approved"
+    });
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
+    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.orderRepository.orders).toHaveLength(0);
   });
 
   it("rejects non-json content types", async () => {
