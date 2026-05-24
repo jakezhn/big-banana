@@ -1,5 +1,6 @@
 import type { AgentRunRepository } from "../agent-runs/agent-run-repository";
 import type { MarketStateRepository } from "../market-state/market-state-repository";
+import type { OrderRepository } from "../orders/order-repository";
 import { type GenerateAndRecordTradePlanForSignalResult } from "../planner/generate-and-record-trade-plan-for-signal";
 import { generateDeterministicTradePlan } from "../planner/generate-deterministic-trade-plan";
 import {
@@ -23,6 +24,7 @@ import type {
   StoredExecutionIntent
 } from "../execution/execution-intent-repository";
 import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
+import type { PositionRepository } from "../positions/position-repository";
 import type { StoredRiskVerdict } from "../risk/risk-verdict-repository";
 
 export type ProcessDeterministicSignalPipelineResult = {
@@ -34,6 +36,9 @@ export type ProcessDeterministicSignalPipelineResult = {
 export type ProcessDeterministicSignalPipelineDependencies = {
   marketStateRepository: MarketStateRepository;
   tradePlanVersionRepository: TradePlanVersionRepository;
+  orderRepository: OrderRepository;
+  positionRepository: PositionRepository;
+  tradingAccountId: string;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
   agentRunRepository: AgentRunRepository;
@@ -73,7 +78,13 @@ export async function processSignalPipelineWithGenerator(
   const plan =
     await generateAndRecordTradePlanWithGenerator(
       envelope,
-      dependencies.marketStateRepository,
+      {
+        marketStateRepository: dependencies.marketStateRepository,
+        tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
+        orderRepository: dependencies.orderRepository,
+        positionRepository: dependencies.positionRepository,
+        tradingAccountId: dependencies.tradingAccountId
+      },
       dependencies.tradePlanVersionRepository,
       dependencies.agentRunRepository,
       generator,

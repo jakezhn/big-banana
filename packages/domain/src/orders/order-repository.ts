@@ -50,6 +50,11 @@ export interface OrderRepository {
     executionIntentId: string
   ): Promise<StoredOrder | null>;
 
+  getOpenOrdersByTradingAccountIdAndSymbol(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<StoredOrder[]>;
+
   recordOrder(order: ReceivedOrder): Promise<StoredOrder>;
 
   updateOrderStatus(

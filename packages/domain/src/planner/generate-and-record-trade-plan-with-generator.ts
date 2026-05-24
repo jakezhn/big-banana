@@ -3,7 +3,6 @@ import type {
   AgentRunRepository,
   StoredAgentRun
 } from "../agent-runs/agent-run-repository";
-import type { MarketStateRepository } from "../market-state/market-state-repository";
 import type { JsonValue } from "../orders/order-repository";
 import {
   recordGeneratedTradePlan,
@@ -13,11 +12,11 @@ import type {
   StoredTradePlanVersion,
   TradePlanVersionRepository
 } from "../plans/trade-plan-version-repository";
-import { isTerminalPlanState } from "../state-machines/plan-state-machine";
 import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
 import {
   buildPlannerInput,
-  type PlannerInput
+  type PlannerInput,
+  type PlannerInputBuildDependencies
 } from "./build-planner-input";
 
 export class InvalidGeneratedTradePlanError extends Error {
@@ -50,7 +49,7 @@ export type GenerateAndRecordTradePlanWithGeneratorResult = {
 
 export async function generateAndRecordTradePlanWithGenerator(
   envelope: CanonicalEnvelope,
-  marketStateRepository: MarketStateRepository,
+  plannerInputDependencies: PlannerInputBuildDependencies,
   tradePlanVersionRepository: TradePlanVersionRepository,
   agentRunRepository: AgentRunRepository,
   generator: TradePlanGenerator,
@@ -60,15 +59,11 @@ export async function generateAndRecordTradePlanWithGenerator(
   const startedAtMs = Date.parse(startedAt);
 
   try {
-    const plannerInput = await buildPlannerInput(envelope, marketStateRepository);
-    const activePlan =
-      await tradePlanVersionRepository.getLatestTradePlanVersionByMarketKey(
-        envelope.marketKey
-      );
-    const reusablePlan =
-      activePlan && !isTerminalPlanState(activePlan.executionPlaybook.state)
-        ? activePlan
-        : null;
+    const plannerInput = await buildPlannerInput(
+      envelope,
+      plannerInputDependencies
+    );
+    const reusablePlan = plannerInput.state.activePlan;
     const tradePlan = await generator({ plannerInput, reusablePlan });
 
     if (!validateTradePlan(tradePlan)) {
@@ -152,6 +147,12 @@ function buildInputSummary(
     market_key: marketKey,
     signal: plannerInput.signal,
     snapshot_count: Object.keys(plannerInput.state.latestSnapshots).length,
+    recent_snapshot_count: plannerInput.state.recentSnapshots.length,
+    window_summary: {
+      net_direction: plannerInput.state.windowSummary.netDirection,
+      close_change_pct: plannerInput.state.windowSummary.closeChangePct
+    },
+    has_active_plan: plannerInput.state.activePlan !== null,
     open_orders_count: plannerInput.state.openOrders.length,
     open_position: plannerInput.state.openPosition ?? null
   };

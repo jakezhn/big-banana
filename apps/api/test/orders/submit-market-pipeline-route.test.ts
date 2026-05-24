@@ -37,6 +37,20 @@ class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
+  async getOpenOrdersByTradingAccountIdAndSymbol(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<StoredOrder[]> {
+    return this.orders.filter(
+      (order) =>
+        order.tradingAccountId === tradingAccountId &&
+        order.symbol === symbol &&
+        order.terminalAt === null &&
+        order.status !== "preflight_failed" &&
+        order.status !== "rejected"
+    );
+  }
+
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const stored = { ...order, id: crypto.randomUUID() };
     this.orders.push(stored);

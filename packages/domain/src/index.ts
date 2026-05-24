@@ -24,7 +24,12 @@ export {
   buildPlannerInput,
   SignalPlannerInputError
 } from "./planner/build-planner-input";
-export type { PlannerInput } from "./planner/build-planner-input";
+export type {
+  PlannerInput,
+  PlannerInputBuildDependencies,
+  RecentPlannerSnapshot,
+  SnapshotWindowSummary
+} from "./planner/build-planner-input";
 export {
   generateAndRecordTradePlanForSignal,
   InvalidGeneratedTradePlanError

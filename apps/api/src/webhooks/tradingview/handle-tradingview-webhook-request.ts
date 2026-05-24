@@ -12,6 +12,7 @@ import {
   type ExecutionIntentRepository,
   type MarketStateRepository,
   type OrderRepository,
+  type PositionRepository,
   type RiskPolicySnapshot,
   type RiskVerdictRepository,
   submitPaperOrderFromExecutionIntent,
@@ -40,6 +41,7 @@ export type TradingViewWebhookRequestDependencies = {
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
   orderRepository: OrderRepository;
+  positionRepository: PositionRepository;
   riskPolicy: RiskPolicySnapshot;
   pipelineMode: PipelineMode;
   tradePlanGenerator: TradePlanGenerator;
@@ -145,6 +147,9 @@ async function processSignalPipeline(
     {
       marketStateRepository: dependencies.marketStateRepository,
       tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
+      orderRepository: dependencies.orderRepository,
+      positionRepository: dependencies.positionRepository,
+      tradingAccountId: dependencies.riskPolicy.tradingAccountId,
       agentRunRepository: dependencies.agentRunRepository,
       riskVerdictRepository: dependencies.riskVerdictRepository,
       executionIntentRepository: dependencies.executionIntentRepository
@@ -182,7 +187,13 @@ async function processAdvisorySignalPipeline(
 ): Promise<string> {
   const plan = await generateAndRecordTradePlanWithGenerator(
     envelope,
-    dependencies.marketStateRepository,
+    {
+      marketStateRepository: dependencies.marketStateRepository,
+      tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
+      orderRepository: dependencies.orderRepository,
+      positionRepository: dependencies.positionRepository,
+      tradingAccountId: dependencies.riskPolicy.tradingAccountId
+    },
     dependencies.tradePlanVersionRepository,
     dependencies.agentRunRepository,
     dependencies.tradePlanGenerator,

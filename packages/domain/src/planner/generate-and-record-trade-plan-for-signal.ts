@@ -1,8 +1,10 @@
 import type { AgentRunRepository } from "../agent-runs/agent-run-repository";
-import type { MarketStateRepository } from "../market-state/market-state-repository";
 import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
 import type { CanonicalEnvelope } from "../tradingview/normalize-tradingview-payload";
-import { type PlannerInput } from "./build-planner-input";
+import {
+  type PlannerInput,
+  type PlannerInputBuildDependencies
+} from "./build-planner-input";
 import { generateDeterministicTradePlan } from "./generate-deterministic-trade-plan";
 import {
   generateAndRecordTradePlanWithGenerator,
@@ -19,14 +21,14 @@ export type GenerateAndRecordTradePlanForSignalResult =
 
 export async function generateAndRecordTradePlanForSignal(
   envelope: CanonicalEnvelope,
-  marketStateRepository: MarketStateRepository,
+  plannerInputDependencies: PlannerInputBuildDependencies,
   tradePlanVersionRepository: TradePlanVersionRepository,
   agentRunRepository: AgentRunRepository,
   startedAt = new Date().toISOString()
 ): Promise<GenerateAndRecordTradePlanForSignalResult> {
   return generateAndRecordTradePlanWithGenerator(
     envelope,
-    marketStateRepository,
+    plannerInputDependencies,
     tradePlanVersionRepository,
     agentRunRepository,
     ({ plannerInput, reusablePlan }) =>

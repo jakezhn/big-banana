@@ -118,6 +118,32 @@ export class PostgresMarketStateRepository implements MarketStateRepository {
       createdAt: row.created_at
     }));
   }
+
+  async getRecentMarketStatesByMarketKey(
+    marketKey: string,
+    limit: number
+  ): Promise<StoredMarketState[]> {
+    const rows = await this.sql<MarketStateHistoryRow[]>`
+      select *
+      from market_states_history
+      where market_key = ${marketKey}
+      order by bar_time_ms desc
+      limit ${limit}
+    `;
+
+    return rows
+      .map((row) => ({
+        id: row.id,
+        marketKey: row.market_key,
+        webhookEventId: row.webhook_event_id,
+        tickerid: row.tickerid,
+        timeframe: row.timeframe,
+        barTimeMs: Number(row.bar_time_ms),
+        context: row.context_json,
+        createdAt: row.created_at
+      }))
+      .reverse();
+  }
 }
 
 export function createMarketStateRepositoryFromEnv(): PostgresMarketStateRepository {

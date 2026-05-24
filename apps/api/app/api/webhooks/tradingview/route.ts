@@ -3,6 +3,7 @@ import {
   createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
+  createPositionRepositoryFromEnv,
   createRiskVerdictRepositoryFromEnv,
   createTradePlanVersionRepositoryFromEnv,
   createWebhookEventRepositoryFromEnv
@@ -12,6 +13,7 @@ import type {
   ExecutionIntentRepository,
   MarketStateRepository,
   OrderRepository,
+  PositionRepository,
   PlannerRunnerInfo,
   TradePlanGenerator,
   RiskVerdictRepository,
@@ -34,6 +36,7 @@ let agentRunRepository: AgentRunRepository | undefined;
 let riskVerdictRepository: RiskVerdictRepository | undefined;
 let executionIntentRepository: ExecutionIntentRepository | undefined;
 let orderRepository: OrderRepository | undefined;
+let positionRepository: PositionRepository | undefined;
 let riskPolicy: RiskPolicySnapshot | undefined;
 let pipelineMode: PipelineMode | undefined;
 let configuredTradePlanGenerator:
@@ -49,6 +52,7 @@ export async function POST(request: Request): Promise<Response> {
     riskVerdictRepository: getRiskVerdictRepository(),
     executionIntentRepository: getExecutionIntentRepository(),
     orderRepository: getOrderRepository(),
+    positionRepository: getPositionRepository(),
     riskPolicy: getRiskPolicy(),
     pipelineMode: getPipelineMode(),
     tradePlanGenerator: getTradePlanGenerator(),
@@ -89,6 +93,11 @@ function getExecutionIntentRepository(): ExecutionIntentRepository {
 function getOrderRepository(): OrderRepository {
   orderRepository ??= createOrderRepositoryFromEnv();
   return orderRepository;
+}
+
+function getPositionRepository(): PositionRepository {
+  positionRepository ??= createPositionRepositoryFromEnv();
+  return positionRepository;
 }
 
 function getRiskPolicy(): RiskPolicySnapshot {

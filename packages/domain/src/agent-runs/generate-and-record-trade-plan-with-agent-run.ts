@@ -3,12 +3,12 @@ import {
   generateAndRecordTradePlanForSignal,
   type GenerateAndRecordTradePlanForSignalResult
 } from "../planner/generate-and-record-trade-plan-for-signal";
-import type { MarketStateRepository } from "../market-state/market-state-repository";
 import type { TradePlanVersionRepository } from "../plans/trade-plan-version-repository";
 import type {
   AgentRunRepository,
   StoredAgentRun
 } from "./agent-run-repository";
+import type { PlannerInputBuildDependencies } from "../planner/build-planner-input";
 
 export type GenerateAndRecordTradePlanWithAgentRunResult = {
   plan: GenerateAndRecordTradePlanForSignalResult;
@@ -17,14 +17,14 @@ export type GenerateAndRecordTradePlanWithAgentRunResult = {
 
 export async function generateAndRecordTradePlanWithAgentRun(
   envelope: CanonicalEnvelope,
-  marketStateRepository: MarketStateRepository,
+  plannerInputDependencies: PlannerInputBuildDependencies,
   tradePlanVersionRepository: TradePlanVersionRepository,
   agentRunRepository: AgentRunRepository,
   startedAt = new Date().toISOString()
 ): Promise<GenerateAndRecordTradePlanWithAgentRunResult> {
   const plan = await generateAndRecordTradePlanForSignal(
     envelope,
-    marketStateRepository,
+    plannerInputDependencies,
     tradePlanVersionRepository,
     agentRunRepository,
     startedAt

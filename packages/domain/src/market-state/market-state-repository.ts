@@ -18,4 +18,9 @@ export interface MarketStateRepository {
   recordMarketState(state: ReceivedMarketState): Promise<StoredMarketState>;
 
   getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]>;
+
+  getRecentMarketStatesByMarketKey(
+    marketKey: string,
+    limit: number
+  ): Promise<StoredMarketState[]>;
 }

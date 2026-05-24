@@ -18,6 +18,10 @@ class InMemoryOrderRepository implements OrderRepository {
     return this.order;
   }
 
+  async getOpenOrdersByTradingAccountIdAndSymbol(): Promise<StoredOrder[]> {
+    return this.order.terminalAt === null ? [this.order] : [];
+  }
+
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const stored = { ...order, id: crypto.randomUUID() };
     this.order = stored;

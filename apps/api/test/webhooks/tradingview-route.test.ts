@@ -7,6 +7,7 @@ import {
   generateDeterministicTradePlan,
   type MarketStateRepository,
   type OrderRepository,
+  type PositionRepository,
   type PlannerRunnerInfo,
   type ReceivedAgentRun,
   type ReceivedOrder,
@@ -14,6 +15,8 @@ import {
   type ReceivedExecutionIntent,
   type ReceivedMarketState,
   type ReceivedPlanTransition,
+  type ReceivedPositionHistoryEntry,
+  type ReceivedPositionSnapshot,
   type ReceivedRiskVerdict,
   type ReceivedTradePlanVersion,
   type ReceivedWebhookEvent,
@@ -24,6 +27,8 @@ import {
   type StoredMarketState,
   type StoredOrder,
   type StoredPlanTransition,
+  type StoredPositionHistoryEntry,
+  type StoredPositionSnapshot,
   type StoredRiskVerdict,
   type StoredTradePlanVersion,
   type StoredWebhookEvent,
@@ -106,26 +111,43 @@ class InMemoryWebhookEventRepository implements WebhookEventRepository {
 }
 
 class InMemoryMarketStateRepository implements MarketStateRepository {
-  readonly states = new Map<string, StoredMarketState>();
+  readonly states: StoredMarketState[] = [];
 
   async recordMarketState(
     state: ReceivedMarketState
   ): Promise<StoredMarketState> {
-    const existing = this.states.get(state.marketKey);
+    const existing = this.states.find(
+      (candidate) => candidate.marketKey === state.marketKey
+    );
     const stored = {
       ...state,
       id: existing?.id ?? crypto.randomUUID()
     };
 
     if (!existing || state.barTimeMs >= existing.barTimeMs) {
-      this.states.set(state.marketKey, stored);
+      const index = this.states.findIndex(
+        (candidate) => candidate.marketKey === state.marketKey
+      );
+
+      if (index >= 0) {
+        this.states[index] = stored;
+      } else {
+        this.states.push(stored);
+      }
     }
 
-    return this.states.get(state.marketKey) as StoredMarketState;
+    return this.states.find((candidate) => candidate.marketKey === state.marketKey) as StoredMarketState;
   }
 
   async getLatestStatesByTickerid(tickerid: string): Promise<StoredMarketState[]> {
-    return [...this.states.values()].filter((state) => state.tickerid === tickerid);
+    return this.states.filter((state) => state.tickerid === tickerid);
+  }
+
+  async getRecentMarketStatesByMarketKey(
+    marketKey: string,
+    limit: number
+  ): Promise<StoredMarketState[]> {
+    return this.states.filter((state) => state.marketKey === marketKey).slice(-limit);
   }
 }
 
@@ -215,6 +237,20 @@ class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
+  async getOpenOrdersByTradingAccountIdAndSymbol(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<StoredOrder[]> {
+    return this.orders.filter(
+      (order) =>
+        order.tradingAccountId === tradingAccountId &&
+        order.symbol === symbol &&
+        order.terminalAt === null &&
+        order.status !== "preflight_failed" &&
+        order.status !== "rejected"
+    );
+  }
+
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const stored = { ...order, id: crypto.randomUUID() };
     this.orders.push(stored);
@@ -240,6 +276,35 @@ class InMemoryOrderRepository implements OrderRepository {
   }
 }
 
+class InMemoryPositionRepository implements PositionRepository {
+  readonly current = new Map<string, StoredPositionSnapshot>();
+
+  async getCurrentPosition(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<StoredPositionSnapshot | null> {
+    return this.current.get(`${tradingAccountId}:${symbol}`) ?? null;
+  }
+
+  async upsertCurrentPosition(
+    position: ReceivedPositionSnapshot
+  ): Promise<StoredPositionSnapshot> {
+    const stored = {
+      ...position,
+      id: this.current.get(`${position.tradingAccountId}:${position.symbol}`)?.id ??
+        crypto.randomUUID()
+    };
+    this.current.set(`${position.tradingAccountId}:${position.symbol}`, stored);
+    return stored;
+  }
+
+  async recordPositionHistory(
+    entry: ReceivedPositionHistoryEntry
+  ): Promise<StoredPositionHistoryEntry> {
+    return { ...entry, id: crypto.randomUUID() };
+  }
+}
+
 function dependencies(
   overrides?: Partial<{
     riskPolicy: RiskPolicySnapshot;
@@ -261,6 +326,7 @@ function dependencies(
     riskVerdictRepository: new InMemoryRiskVerdictRepository(),
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
     orderRepository: new InMemoryOrderRepository(),
+    positionRepository: new InMemoryPositionRepository(),
     riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy,
     pipelineMode: overrides?.pipelineMode ?? "full",
     tradePlanGenerator:

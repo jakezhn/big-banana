@@ -53,9 +53,25 @@ function plannerInput(overrides?: Partial<PlannerInput>): PlannerInput {
       latestSnapshots: {
         "BINANCE:BTCUSDT:240": signalPayload.context
       },
-      activePlan: undefined,
+      recentSnapshots: [],
+      windowSummary: {
+        snapshotCount: 0,
+        firstBarTimeMs: null,
+        lastBarTimeMs: null,
+        closeChangePct: null,
+        rangeHigh: null,
+        rangeLow: null,
+        netDirection: "unknown",
+        latestAboveEma20: null,
+        latestAboveEma50: null,
+        latestAboveEma200: null,
+        momentumBias: "unknown",
+        oscBias: "unknown",
+        regimeSequence: []
+      },
+      activePlan: null,
       openOrders: [],
-      openPosition: undefined
+      openPosition: null
     },
     ...overrides
   };

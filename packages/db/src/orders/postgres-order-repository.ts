@@ -48,6 +48,23 @@ export class PostgresOrderRepository implements OrderRepository {
     return row ? mapOrderRow(row) : null;
   }
 
+  async getOpenOrdersByTradingAccountIdAndSymbol(
+    tradingAccountId: string,
+    symbol: string
+  ): Promise<StoredOrder[]> {
+    const rows = await this.sql<OrderRow[]>`
+      select *
+      from orders
+      where trading_account_id = ${tradingAccountId}
+        and symbol = ${symbol}
+        and terminal_at is null
+        and status not in ('preflight_failed', 'rejected')
+      order by submitted_at asc
+    `;
+
+    return rows.map(mapOrderRow);
+  }
+
   async recordOrder(order: ReceivedOrder): Promise<StoredOrder> {
     const [row] = await this.sql<OrderRow[]>`
       insert into orders (

@@ -112,7 +112,7 @@
 | Planner / Agent | real AI planner 接入 | 已完成 | 100% | 已接入 `deterministic | openai` runtime，并完成 Vercel AI Gateway paper validation |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
-| Planner / Agent | `PlannerInput` context v2 | 未开始 | 0% | 待补 `recentSnapshots`、`windowSummary`、active plan、position/order context |
+| Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并接入 planner 主链 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
@@ -167,6 +167,7 @@
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
 | Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
 | Integration | real AI planner paper validation | 已完成 | 100% | 已完成 Vercel AI Gateway -> plan -> risk -> intent -> order -> reconcile 闭环验证 |
+| Integration | `PlannerInput` context v2 unit / route regression | 已完成 | 100% | domain/api test 与 `typecheck` 已通过 |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -195,7 +196,6 @@
 
 ### 当前还缺
 
-- `PlannerInput` context v2
 - planner quality iteration loop
 - plan revision agent
 - post-plan review agent
@@ -210,26 +210,24 @@
 
 严格按下面顺序推进：
 
-1. `PlannerInput` context v2: `recentSnapshots` + `windowSummary` + position/order context
-2. Supabase `agent_jobs` queue + worker lock helpers
-3. `apps/hermes` Docker worker baseline
-4. agent run evaluation metadata and replay harness
-5. planner quality iteration loop
-6. multi-Hermes router
-7. plan revision agent
-8. post-plan review agent
-9. scoped lesson candidates
+1. Supabase `agent_jobs` queue + worker lock helpers
+2. `apps/hermes` Docker worker baseline
+3. agent run evaluation metadata and replay harness
+4. planner quality iteration loop
+5. multi-Hermes router
+6. plan revision agent
+7. post-plan review agent
+8. scoped lesson candidates
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. `PlannerInput` context v2 unit tests
-2. agent job enqueue / claim / retry tests
-3. `apps/hermes` worker local smoke
-4. multi-market AI replay smoke
-5. dashboard Agent Runs / Market Detail manual QA
-6. plan revision smoke
-7. post-plan review smoke
-8. real TradingView external webhook
+1. agent job enqueue / claim / retry tests
+2. `apps/hermes` worker local smoke
+3. multi-market AI replay smoke
+4. dashboard Agent Runs / Market Detail manual QA
+5. plan revision smoke
+6. post-plan review smoke
+7. real TradingView external webhook
 
 ## 8. 本轮状态快照
 
@@ -249,7 +247,9 @@
 - 当前部署主路径更新为 `Vercel + Supabase + VPS Hermes Docker`；Inngest 降级为可选备选方案
 - 当前已明确：逻辑 multi-Hermes 与物理多容器不是同一件事，MVP 先做单 `apps/hermes` worker baseline
 - 当前已明确：`agent_jobs` 的正确性依赖 durable queue polling；Supabase realtime 只负责前端刷新和可选 worker 唤醒
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“context v2、Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
+- 本轮已完成 `PlannerInput context v2`：主 timeframe `recentSnapshots`、`windowSummary`、active plan、open orders、open position 已进入 planner 输入
+- 本轮已验证 `PlannerInput context v2` 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
 
