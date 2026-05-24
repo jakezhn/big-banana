@@ -1,3 +1,4 @@
+import { createTradePlanGeneratorFromEnv } from "@big-banana/agent";
 import {
   createAgentRunRepositoryFromEnv,
   createExecutionIntentRepositoryFromEnv,
@@ -21,7 +22,6 @@ import type {
   TradePlanVersionRepository,
   WebhookEventRepository
 } from "@big-banana/domain";
-import { createTradePlanGeneratorFromEnv } from "../../../../src/planner/create-trade-plan-generator-from-env";
 import { getDeterministicRiskPolicyFromEnv } from "../../../../src/trading/get-deterministic-risk-policy-from-env";
 import {
   getPipelineModeFromEnv,

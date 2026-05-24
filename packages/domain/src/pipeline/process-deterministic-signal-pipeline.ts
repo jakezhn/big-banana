@@ -78,7 +78,7 @@ export async function processSignalPipelineWithGenerator(
   runner: PlannerRunnerInfo,
   createdAt = new Date().toISOString()
 ): Promise<ProcessDeterministicSignalPipelineResult> {
-  const plan =
+  const planResult =
     await generateAndRecordTradePlanWithGenerator(
       envelope,
       {
@@ -94,6 +94,15 @@ export async function processSignalPipelineWithGenerator(
       runner,
       createdAt
     );
+
+  if (!planResult.recordResult) {
+    throw new Error("Signal pipeline expected a persisted trade plan version");
+  }
+
+  const plan: GenerateAndRecordTradePlanForSignalResult = {
+    ...planResult,
+    recordResult: planResult.recordResult
+  };
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,
     riskPolicy,

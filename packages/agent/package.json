@@ -1,0 +1,16 @@
+{
+  "name": "@big-banana/agent",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@big-banana/contracts": "workspace:*",
+    "@big-banana/domain": "workspace:*",
+    "openai": "^6.1.0"
+  }
+}

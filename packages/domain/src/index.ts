@@ -46,7 +46,8 @@ export {
   buildSymbolLockKey
 } from "./agent-locks/lock-keys";
 export {
-  generateAndRecordTradePlanWithAgentRun
+  generateAndRecordTradePlanWithAgentRun,
+  replayTradePlanWithAgentRun
 } from "./agent-runs/generate-and-record-trade-plan-with-agent-run";
 export {
   buildPlannerInput,

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createTradePlanGeneratorFromEnv } from "../../src/planner/create-trade-plan-generator-from-env";
-import { MissingOpenAiPlannerApiKeyError } from "../../src/planner/create-openai-trade-plan-generator";
+import {
+  createTradePlanGeneratorFromEnv,
+  MissingOpenAiPlannerApiKeyError
+} from "@big-banana/agent";
 
 describe("createTradePlanGeneratorFromEnv", () => {
   it("defaults to deterministic runtime", () => {

@@ -1,23 +1,37 @@
-import type { AgentJobType } from "@big-banana/domain";
+import type {
+  AgentJobType,
+  AgentRunRepository,
+  MarketStateRepository,
+  OrderRepository,
+  PositionRepository,
+  TradePlanVersionRepository
+} from "@big-banana/domain";
 import type { AgentJobHandler } from "./agent-job-handler";
+import { createReplayPlannerHandler } from "./replay/replay-planner-handler";
+
+export type DefaultAgentJobHandlerDependencies = {
+  marketStateRepository: MarketStateRepository;
+  tradePlanVersionRepository: TradePlanVersionRepository;
+  orderRepository: OrderRepository;
+  positionRepository: PositionRepository;
+  agentRunRepository: AgentRunRepository;
+  tradingAccountId: string;
+};
 
 export function createDefaultAgentJobHandlers(): Partial<
   Record<AgentJobType, AgentJobHandler>
-> {
-  return {
-    replay_planner: async (job, context) => {
-      context.logger.info(
-        `[hermes] replay_planner completed for job ${job.id} (${job.market}:${job.symbol ?? "unknown"})`
-      );
+>;
+export function createDefaultAgentJobHandlers(
+  dependencies: DefaultAgentJobHandlerDependencies
+): Partial<Record<AgentJobType, AgentJobHandler>>;
+export function createDefaultAgentJobHandlers(
+  dependencies?: DefaultAgentJobHandlerDependencies
+): Partial<Record<AgentJobType, AgentJobHandler>> {
+  if (!dependencies) {
+    return {};
+  }
 
-      return {
-        jobType: job.jobType,
-        market: job.market,
-        symbol: job.symbol,
-        timeframe: job.timeframe,
-        handledAt: context.now(),
-        payload: job.payloadJson
-      };
-    }
+  return {
+    replay_planner: createReplayPlannerHandler(dependencies)
   };
 }

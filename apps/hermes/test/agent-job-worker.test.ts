@@ -13,7 +13,8 @@ const baseConfig: HermesWorkerConfig = {
   pollIntervalMs: 1,
   lockTtlSeconds: 30,
   jobTypes: ["replay_planner"],
-  markets: undefined
+  markets: undefined,
+  tradingAccountId: "acct-1"
 };
 
 describe("AgentJobWorker", () => {

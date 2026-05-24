@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   type AgentRunRepository,
+  generateDeterministicTradePlan,
   generateAndRecordTradePlanForSignal,
+  replayTradePlanWithAgentRun,
   type MarketStateRepository,
   type OrderRepository,
   type PositionRepository,
@@ -290,5 +292,54 @@ describe("generateAndRecordTradePlanForSignal", () => {
     );
     expect(secondResult.recordResult.tradePlanVersion.version).toBe(2);
     expect(agentRunRepository.runs).toHaveLength(2);
+  });
+
+  it("replays a signal without persisting a trade plan version but still records agent run", async () => {
+    const marketStateRepository = new InMemoryMarketStateRepository();
+    const planRepository = new InMemoryTradePlanVersionRepository();
+    const agentRunRepository = new InMemoryAgentRunRepository();
+    const orderRepository = new InMemoryOrderRepository();
+    const positionRepository = new InMemoryPositionRepository();
+    const snapshot = contractFixture("snapshot.valid.json") as {
+      context: ReceivedMarketState["context"];
+    };
+
+    await marketStateRepository.recordMarketState({
+      marketKey: "BINANCE:BTCUSDT:240",
+      webhookEventId: crypto.randomUUID(),
+      tickerid: "BINANCE:BTCUSDT",
+      timeframe: "240",
+      barTimeMs: 1778419200000,
+      context: snapshot.context,
+      createdAt: "2026-05-17T10:00:00.000Z"
+    });
+
+    const result = await replayTradePlanWithAgentRun(
+      contractFixture("signal.valid.json"),
+      {
+        marketStateRepository,
+        tradePlanVersionRepository: planRepository,
+        orderRepository,
+        positionRepository,
+        tradingAccountId: "acct-1"
+      },
+      agentRunRepository,
+      ({ plannerInput, reusablePlan }) =>
+        generateDeterministicTradePlan(plannerInput, reusablePlan),
+      {
+        runnerKind: "deterministic",
+        modelProvider: null,
+        model: null,
+        skillName: "generate_trade_plan",
+        promptVersion: "deterministic-v1"
+      },
+      "2026-05-17T10:01:00.000Z"
+    );
+
+    expect(result.tradePlan.action).toBe("create");
+    expect(planRepository.versions.size).toBe(0);
+    expect(agentRunRepository.runs).toHaveLength(1);
+    expect(agentRunRepository.runs[0]?.operation).toBe("plan.replay");
+    expect(agentRunRepository.runs[0]?.tradePlanVersionId).toBeNull();
   });
 });

@@ -20,6 +20,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@big-banana/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
       '@big-banana/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -38,9 +41,6 @@ importers:
       next:
         specifier: ^16.0.0
         version: 16.2.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      openai:
-        specifier: ^6.1.0
-        version: 6.38.0
       react:
         specifier: ^19.0.0
         version: 19.2.6
@@ -57,6 +57,9 @@ importers:
 
   apps/hermes:
     dependencies:
+      '@big-banana/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
       '@big-banana/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -91,6 +94,18 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.14)
+
+  packages/agent:
+    dependencies:
+      '@big-banana/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@big-banana/domain':
+        specifier: workspace:*
+        version: link:../domain
+      openai:
+        specifier: ^6.1.0
+        version: 6.38.0
 
   packages/contracts:
     dependencies:

@@ -199,6 +199,11 @@ async function processAdvisorySignalPipeline(
     dependencies.tradePlanGenerator,
     dependencies.plannerRunner
   );
+
+  if (!plan.recordResult) {
+    throw new Error("Advisory pipeline expected a persisted trade plan version");
+  }
+
   const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
     plan.recordResult.tradePlanVersion,
     dependencies.riskPolicy,

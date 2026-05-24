@@ -111,7 +111,7 @@
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
 | Planner / Agent | real AI planner 接入 | 已完成 | 100% | 已接入 `deterministic | openai` runtime，并完成 Vercel AI Gateway paper validation |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
-| Planner / Agent | `agent_runs` evaluation metadata | 已开始 | 75% | 已补 provider / skill / prompt version / token usage / execution eligibility，并接入 dashboard；replay 对比与人工 review 仍未落地 |
+| Planner / Agent | `agent_runs` evaluation metadata | 已完成 | 100% | 已补 provider / skill / prompt version / token usage / execution eligibility，并接入 dashboard；已具备下一阶段 replay/eval 基线 |
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
 | Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
@@ -143,10 +143,10 @@
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
 | Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
-| Platform / Deployment | `packages/agent` extraction | 未开始 | 0% | 待把 LLM prompt/model/skill 代码从 `apps/api` 中抽出 |
+| Platform / Deployment | `packages/agent` extraction | 已开始 | 75% | 已把 planner runtime、OpenAI prompt/schema/generator/env config 抽到共享包，并由 `apps/api` 与 `apps/hermes` 共用；revision/review skills 仍未迁出 |
 | Platform / Deployment | Supabase `agent_jobs` queue | 已完成 | 100% | 已补 `agent_jobs` migration、repository、enqueue/claim/complete/fail/timeout recovery、idempotency key |
 | Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 symbol / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
-| Platform / Deployment | `apps/hermes` Docker worker | 已开始 | 75% | 已补单 Docker worker baseline、polling loop、handler registry、Dockerfile；当前先支持 `replay_planner`，`generate_plan` 主链接管待后续补齐 |
+| Platform / Deployment | `apps/hermes` Docker worker | 已开始 | 75% | 已补单 Docker worker baseline、polling loop、Dockerfile，并接入真实 `replay_planner` handler 与 planner write-back 路径；`generate_plan` 主链接管与 DB 级 smoke 仍待补齐 |
 | Platform / Deployment | dashboard realtime refresh path | 未开始 | 0% | 待确定 `Broadcast -> API re-fetch` 为主路径，`Postgres Changes` 仅作早期替代 |
 | Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
@@ -172,6 +172,7 @@
 | Integration | `agent_jobs` queue / lock foundation regression | 已完成 | 100% | domain tests、API tests、`typecheck` 已通过；timeout recovery 已计入 attempt / maxAttempts |
 | Integration | `apps/hermes` worker baseline regression | 已完成 | 100% | `apps/hermes` worker unit tests与全仓 `typecheck` 已通过 |
 | Integration | `agent_runs` evaluation metadata regression | 已完成 | 100% | domain/api/hermes tests 与全仓 `typecheck` 已通过；dashboard Agent Runs 已展示新元数据 |
+| Integration | hermes replay path regression | 已完成 | 100% | `packages/agent`、domain replay helper、hermes replay handler 已通过 unit/regression 与全仓 `typecheck` |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -213,7 +214,7 @@
 
 严格按下面顺序推进：
 
-1. agent run evaluation metadata and replay harness
+1. replay harness
 2. planner quality iteration loop
 3. multi-Hermes router
 4. plan revision agent
@@ -223,11 +224,11 @@
 ## 7. 当前建议的下一轮测试顺序
 
 1. enqueue -> worker -> write-back end-to-end smoke
-2. multi-market AI replay smoke
-3. dashboard Agent Runs / Market Detail manual QA
-4. plan revision smoke
-5. post-plan review smoke
-6. real TradingView external webhook
+2. replay_planner job smoke
+3. multi-market AI replay smoke
+4. dashboard Agent Runs / Market Detail manual QA
+5. plan revision smoke
+6. post-plan review smoke
 
 ## 8. 本轮状态快照
 
@@ -256,6 +257,11 @@
 - 本轮已验证 `apps/hermes` baseline 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 `agent_runs` evaluation metadata 第一阶段：新增 provider / skill / prompt version / token usage / execution eligibility，并贯通 agent run 持久化、dashboard API 和 Agent Runs 页面
 - 本轮已验证 `agent_runs` metadata 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
+- 本轮已完成 `packages/agent` 第一阶段抽取：planner runtime 已从 `apps/api` 抽成共享包，`apps/api` 与 `apps/hermes` 已共用同一套 generator/runtime 配置
+- 本轮已完成 `apps/hermes` 真实 `replay_planner` 路径：worker 现在会调用共享 planner runtime，记录 `plan.replay` 类型 `agent_run`，且 replay 默认不持久化真实 `trade_plan_version`
+- 当前 `packages/agent` 与 `apps/hermes` 已形成下一阶段 replay/eval 的最小闭环；下一步重点转向 replay fixture、summary 和质量迭代，而不是继续扩 planner 接线
+- 本轮已完成 hermes replay 路径第一阶段：`replay_planner` 现在会真实调用 planner、记录 `plan.replay` agent run，并把 summary 写回 job `result_ref_json`
+- 本轮已验证 replay path 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
 - 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则

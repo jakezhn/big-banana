@@ -1,4 +1,11 @@
-import { createAgentJobRepositoryFromEnv } from "@big-banana/db";
+import {
+  createAgentJobRepositoryFromEnv,
+  createAgentRunRepositoryFromEnv,
+  createMarketStateRepositoryFromEnv,
+  createOrderRepositoryFromEnv,
+  createPositionRepositoryFromEnv,
+  createTradePlanVersionRepositoryFromEnv
+} from "@big-banana/db";
 import { getHermesWorkerConfigFromEnv } from "./config/get-hermes-worker-config-from-env";
 import { createDefaultAgentJobHandlers } from "./worker/create-default-agent-job-handlers";
 import { AgentJobWorker } from "./worker/agent-job-worker";
@@ -8,7 +15,14 @@ async function main(): Promise<void> {
   const worker = new AgentJobWorker({
     jobRepository: createAgentJobRepositoryFromEnv(),
     config,
-    handlers: createDefaultAgentJobHandlers()
+    handlers: createDefaultAgentJobHandlers({
+      marketStateRepository: createMarketStateRepositoryFromEnv(),
+      tradePlanVersionRepository: createTradePlanVersionRepositoryFromEnv(),
+      orderRepository: createOrderRepositoryFromEnv(),
+      positionRepository: createPositionRepositoryFromEnv(),
+      agentRunRepository: createAgentRunRepositoryFromEnv(),
+      tradingAccountId: config.tradingAccountId
+    })
   });
 
   const controller = new AbortController();

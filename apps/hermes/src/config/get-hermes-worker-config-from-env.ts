@@ -6,6 +6,7 @@ export type HermesWorkerConfig = {
   lockTtlSeconds: number;
   jobTypes: AgentJobType[];
   markets: AgentJobMarket[] | undefined;
+  tradingAccountId: string;
 };
 
 const supportedJobTypes: AgentJobType[] = [
@@ -41,7 +42,11 @@ export function getHermesWorkerConfigFromEnv(
       supportedJobTypes,
       ["replay_planner"]
     ),
-    markets: parseOptionalEnumList(env.HERMES_JOB_MARKETS, supportedMarkets)
+    markets: parseOptionalEnumList(env.HERMES_JOB_MARKETS, supportedMarkets),
+    tradingAccountId: requireNonEmptyString(
+      env.TRADING_ACCOUNT_ID,
+      "TRADING_ACCOUNT_ID"
+    )
   };
 }
 
@@ -88,4 +93,15 @@ function parseOptionalEnumList<T extends string>(
   }
 
   return tokens;
+}
+
+function requireNonEmptyString(
+  value: string | undefined,
+  name: string
+): string {
+  if (!value || value.trim() === "") {
+    throw new Error(`${name} is required`);
+  }
+
+  return value.trim();
 }

@@ -10,13 +10,15 @@ import {
   generateAndRecordTradePlanWithGenerator,
   type GenerateAndRecordTradePlanWithGeneratorResult
 } from "./generate-and-record-trade-plan-with-generator";
+import type { RecordGeneratedTradePlanResult } from "../plans/record-generated-trade-plan";
 
 export { InvalidGeneratedTradePlanError } from "./generate-and-record-trade-plan-with-generator";
 
 export type GenerateAndRecordTradePlanForSignalResult =
-  GenerateAndRecordTradePlanWithGeneratorResult & {
+  Omit<GenerateAndRecordTradePlanWithGeneratorResult, "recordResult"> & {
     plannerInput: PlannerInput;
     tradePlan: ReturnType<typeof generateDeterministicTradePlan>;
+    recordResult: RecordGeneratedTradePlanResult;
   };
 
 export async function generateAndRecordTradePlanForSignal(
@@ -26,7 +28,7 @@ export async function generateAndRecordTradePlanForSignal(
   agentRunRepository: AgentRunRepository,
   startedAt = new Date().toISOString()
 ): Promise<GenerateAndRecordTradePlanForSignalResult> {
-  return generateAndRecordTradePlanWithGenerator(
+  const result = await generateAndRecordTradePlanWithGenerator(
     envelope,
     plannerInputDependencies,
     tradePlanVersionRepository,
@@ -42,4 +44,13 @@ export async function generateAndRecordTradePlanForSignal(
     },
     startedAt
   );
+
+  if (!result.recordResult) {
+    throw new Error("Signal planner flow expected a persisted trade plan version");
+  }
+
+  return {
+    ...result,
+    recordResult: result.recordResult
+  };
 }

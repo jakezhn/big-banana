@@ -54,8 +54,13 @@ export type GeneratedTradePlanResult = {
 export type GenerateAndRecordTradePlanWithGeneratorResult = {
   plannerInput: PlannerInput;
   tradePlan: TradePlan;
-  recordResult: RecordGeneratedTradePlanResult;
+  recordResult: RecordGeneratedTradePlanResult | null;
   agentRun: StoredAgentRun;
+};
+
+export type GenerateAndRecordTradePlanOptions = {
+  operation?: string;
+  persistTradePlan?: boolean;
 };
 
 export async function generateAndRecordTradePlanWithGenerator(
@@ -65,9 +70,12 @@ export async function generateAndRecordTradePlanWithGenerator(
   agentRunRepository: AgentRunRepository,
   generator: TradePlanGenerator,
   runner: PlannerRunnerInfo,
-  startedAt = new Date().toISOString()
+  startedAt = new Date().toISOString(),
+  options: GenerateAndRecordTradePlanOptions = {}
 ): Promise<GenerateAndRecordTradePlanWithGeneratorResult> {
   const startedAtMs = Date.parse(startedAt);
+  const operation = options.operation ?? "plan.generate";
+  const persistTradePlan = options.persistTradePlan ?? true;
 
   try {
     const plannerInput = await buildPlannerInput(
@@ -83,32 +91,34 @@ export async function generateAndRecordTradePlanWithGenerator(
       throw new InvalidGeneratedTradePlanError();
     }
 
-    const recordResult = await recordGeneratedTradePlan(
-      {
-        tradePlan,
-        marketKey: envelope.marketKey,
-        sourceEventKey: envelope.eventKey,
-        planId: reusablePlan?.planId
-      },
-      tradePlanVersionRepository
-    );
+    const recordResult = persistTradePlan
+      ? await recordGeneratedTradePlan(
+          {
+            tradePlan,
+            marketKey: envelope.marketKey,
+            sourceEventKey: envelope.eventKey,
+            planId: reusablePlan?.planId
+          },
+          tradePlanVersionRepository
+        )
+      : null;
     const completedAt = new Date().toISOString();
 
     const agentRun = await agentRunRepository.recordAgentRun({
       marketKey: envelope.marketKey,
       sourceEventKey: envelope.eventKey,
-      operation: "plan.generate",
+      operation,
       runnerKind: runner.runnerKind,
       modelProvider: runner.modelProvider,
       model: runner.model,
       skillName: runner.skillName,
       promptVersion: runner.promptVersion,
       status: "success",
-      inputSummary: buildInputSummary(plannerInput, recordResult.tradePlanVersion.marketKey),
+      inputSummary: buildInputSummary(plannerInput, envelope.marketKey),
       outputSummary: buildOutputSummary(tradePlan, recordResult),
       tokenUsageJson: generatedResult.tokenUsageJson ?? null,
       executionEligible: isExecutionEligibleTradePlan(tradePlan),
-      tradePlanVersionId: recordResult.tradePlanVersion.id,
+      tradePlanVersionId: recordResult?.tradePlanVersion.id ?? null,
       errorMessage: null,
       startedAt,
       completedAt,
@@ -127,7 +137,7 @@ export async function generateAndRecordTradePlanWithGenerator(
     await agentRunRepository.recordAgentRun({
       marketKey: envelope.marketKey,
       sourceEventKey: envelope.eventKey,
-      operation: "plan.generate",
+      operation,
       runnerKind: runner.runnerKind,
       modelProvider: runner.modelProvider,
       model: runner.model,
@@ -202,15 +212,15 @@ function buildInputSummary(
 
 function buildOutputSummary(
   tradePlan: TradePlan,
-  recordResult: RecordGeneratedTradePlanResult
+  recordResult: RecordGeneratedTradePlanResult | null
 ): Record<string, JsonValue> {
   return {
     action: tradePlan.action,
     bias: tradePlan.market_thesis.bias,
     execution_state: tradePlan.execution_playbook.state,
     risk_tier: tradePlan.risk_intent.risk_tier,
-    trade_plan_version_id: recordResult.tradePlanVersion.id,
-    plan_id: recordResult.tradePlanVersion.planId,
-    version: recordResult.tradePlanVersion.version
+    trade_plan_version_id: recordResult?.tradePlanVersion.id ?? null,
+    plan_id: recordResult?.tradePlanVersion.planId ?? null,
+    version: recordResult?.tradePlanVersion.version ?? null
   };
 }
