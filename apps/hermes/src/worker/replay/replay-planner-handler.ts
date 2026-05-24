@@ -9,12 +9,8 @@ import type {
   TradePlanVersionRepository
 } from "@big-banana/domain";
 import { replayTradePlanWithAgentRun } from "@big-banana/domain";
+import { type ReplayPlannerPayload } from "../../replay/replay-planner-harness";
 import type { AgentJobHandler } from "../agent-job-handler";
-
-type ReplayPlannerPayload = {
-  rawPayload: unknown;
-  receivedAt?: string;
-};
 
 export type ReplayPlannerHandlerDependencies = {
   marketStateRepository: MarketStateRepository;
@@ -49,6 +45,7 @@ export function createReplayPlannerHandler(
     );
 
     return {
+      fixtureId: payload.fixtureId ?? null,
       jobType: job.jobType,
       market: job.market,
       symbol: job.symbol,
@@ -82,6 +79,8 @@ function parseReplayPlannerPayload(payloadJson: JsonValue): ReplayPlannerPayload
     typeof payloadJson.receivedAt === "string" ? payloadJson.receivedAt : undefined;
 
   return {
+    fixtureId:
+      typeof payloadJson.fixtureId === "string" ? payloadJson.fixtureId : undefined,
     rawPayload: payloadJson.rawPayload,
     receivedAt
   };

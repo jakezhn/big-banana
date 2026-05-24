@@ -60,6 +60,9 @@ importers:
       '@big-banana/agent':
         specifier: workspace:*
         version: link:../../packages/agent
+      '@big-banana/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@big-banana/db':
         specifier: workspace:*
         version: link:../../packages/db

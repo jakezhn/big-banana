@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@big-banana/agent": "workspace:*",
+    "@big-banana/contracts": "workspace:*",
     "@big-banana/db": "workspace:*",
     "@big-banana/domain": "workspace:*"
   }

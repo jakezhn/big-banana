@@ -116,6 +116,7 @@
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
 | Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
 | Planner / Agent | single-timeframe reasoning rule | 已明确设计 | 100% | 当前 MVP 不做显式 HTF/LTF/MTF reasoning；`1H/4H/1D/1W` 计划按 `marketKey` 独立并存 |
+| Planner / Agent | replay harness | 已开始 | 75% | 已补 replay fixtures、job builder、result summary、真实 `replay_planner` handler smoke；DB 级批量 replay 与质量看板仍待补齐 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
@@ -175,6 +176,7 @@
 | Integration | `apps/hermes` worker baseline regression | 已完成 | 100% | `apps/hermes` worker unit tests与全仓 `typecheck` 已通过 |
 | Integration | `agent_runs` evaluation metadata regression | 已完成 | 100% | domain/api/hermes tests 与全仓 `typecheck` 已通过；dashboard Agent Runs 已展示新元数据 |
 | Integration | hermes replay path regression | 已完成 | 100% | `packages/agent`、domain replay helper、hermes replay handler 已通过 unit/regression 与全仓 `typecheck` |
+| Integration | replay harness regression | 已完成 | 100% | replay fixture builder、summary 聚合、真实 deterministic replay handler smoke 已通过 hermes tests |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -267,6 +269,8 @@
 - 当前 `packages/agent` 与 `apps/hermes` 已形成下一阶段 replay/eval 的最小闭环；下一步重点转向 replay fixture、summary 和质量迭代，而不是继续扩 planner 接线
 - 本轮已完成 hermes replay 路径第一阶段：`replay_planner` 现在会真实调用 planner、记录 `plan.replay` agent run，并把 summary 写回 job `result_ref_json`
 - 本轮已验证 replay path 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
+- 本轮已完成 replay harness 第一阶段：已补默认 replay fixtures、job builder、result summary parser/aggregator，以及真实 deterministic replay handler smoke
+- 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
 - 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、单 timeframe 计划质量迭代、live worker handoff、plan revision、post-plan review”
 
 ## 9. 更新规则
