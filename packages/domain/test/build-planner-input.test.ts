@@ -268,6 +268,14 @@ describe("buildPlannerInput", () => {
         ...snapshot.context,
         bar: { ...snapshot.context.bar, close: 65000, high: 65200, low: 64500 },
         regime: { ...snapshot.context.regime, name: "compression" },
+        structure: {
+          ...snapshot.context.structure,
+          ema20: 64600,
+          ema50: 64200,
+          ema100: 63800,
+          ema200: 63000
+        },
+        volatility: { ...snapshot.context.volatility, atr: 400 },
         momentum: { ...snapshot.context.momentum, direction: "bull" },
         osc: { ...snapshot.context.osc, direction: "bull" }
       },
@@ -283,6 +291,14 @@ describe("buildPlannerInput", () => {
         ...snapshot.context,
         bar: { ...snapshot.context.bar, close: 67000, high: 67200, low: 64800 },
         regime: { ...snapshot.context.regime, name: "trend" },
+        structure: {
+          ...snapshot.context.structure,
+          ema20: 66000,
+          ema50: 65200,
+          ema100: 64600,
+          ema200: 63600
+        },
+        volatility: { ...snapshot.context.volatility, atr: 500 },
         momentum: { ...snapshot.context.momentum, direction: "bull" },
         osc: { ...snapshot.context.osc, direction: "bull" }
       },
@@ -364,6 +380,13 @@ describe("buildPlannerInput", () => {
     ]);
     expect(plannerInput.state.windowSummary.snapshotCount).toBe(2);
     expect(plannerInput.state.windowSummary.netDirection).toBe("bull");
+    expect(plannerInput.state.windowSummary.closeLocationInRangePct).toBeCloseTo(92.59, 1);
+    expect(plannerInput.state.windowSummary.distanceFromWindowHighPct).toBeCloseTo(0.3, 1);
+    expect(plannerInput.state.windowSummary.latestEmaStack).toBe("bull");
+    expect(plannerInput.state.windowSummary.extensionFromEma20Atr).toBeCloseTo(2, 5);
+    expect(plannerInput.state.windowSummary.higherHighCount).toBe(1);
+    expect(plannerInput.state.windowSummary.higherLowCount).toBe(1);
+    expect(plannerInput.state.windowSummary.latestVsAverageRangeRatio).toBeCloseTo(1.58, 1);
     expect(plannerInput.state.activePlan?.planId).toBe("plan-1");
     expect(plannerInput.state.openOrders).toHaveLength(1);
     expect(plannerInput.state.openPosition?.positionSide).toBe("long");

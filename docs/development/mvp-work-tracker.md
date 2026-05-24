@@ -112,7 +112,7 @@
 | Planner / Agent | real AI planner 接入 | 已完成 | 100% | 已接入 `deterministic | openai` runtime，并完成 Vercel AI Gateway paper validation |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
-| Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并接入 planner 主链 |
+| Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
@@ -248,6 +248,7 @@
 - 当前已明确：逻辑 multi-Hermes 与物理多容器不是同一件事，MVP 先做单 `apps/hermes` worker baseline
 - 当前已明确：`agent_jobs` 的正确性依赖 durable queue polling；Supabase realtime 只负责前端刷新和可选 worker 唤醒
 - 本轮已完成 `PlannerInput context v2`：主 timeframe `recentSnapshots`、`windowSummary`、active plan、open orders、open position 已进入 planner 输入
+- 本轮进一步补强 `windowSummary`：已包含区间位置、EMA stack、相对 EMA 的 ATR 扩张、HH/HL/LH/LL 计数、bar range 扩张比
 - 本轮已验证 `PlannerInput context v2` 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
 - 当前主线阻塞已从“真实 AI planner 接入”转移到“Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
 

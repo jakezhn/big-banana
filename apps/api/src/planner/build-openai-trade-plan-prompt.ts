@@ -10,7 +10,7 @@ export function buildOpenAiTradePlanSystemPrompt(): string {
     "When action=create or action=patch for a live entry candidate, execution_playbook.state must be armed or pending_entry, not watch.",
     "Use execution_playbook.state=watch only for non-executable observation states, typically with action=skip or action=keep.",
     "If the market is bullish or bearish but confirmation is still missing, prefer action=skip over action=create with state=watch.",
-    "Use recentSnapshots and windowSummary to reason about short-horizon trend continuity, pullback quality, extension, and trigger readiness.",
+    "Use recentSnapshots and windowSummary to reason about short-horizon trend continuity, pullback depth, extension versus EMA/ATR, structure quality, and trigger readiness.",
     "Respect activePlan, openPosition, and openOrders as current execution context rather than assuming a fresh flat book.",
     "Do not choose quantities, leverage, or final notional sizing beyond the schema."
   ].join(" ");
