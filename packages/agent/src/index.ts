@@ -14,6 +14,14 @@ export {
   type ConfiguredTradePlanGenerator
 } from "./planner/create-trade-plan-generator-from-env";
 export {
+  buildGeneratePlanJobInput,
+  buildGeneratePlanIdempotencyKey,
+  inferAgentJobMarket,
+  parseGeneratePlanJobPayload,
+  type GeneratePlanJobPayload,
+  type GeneratePlanPipelineMode
+} from "./planner/generate-plan-harness";
+export {
   getOpenAiPlannerConfigFromEnv,
   type OpenAiPlannerConfig
 } from "./planner/get-openai-planner-config-from-env";

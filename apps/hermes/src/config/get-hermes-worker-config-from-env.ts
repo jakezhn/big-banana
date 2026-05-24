@@ -40,7 +40,7 @@ export function getHermesWorkerConfigFromEnv(
     jobTypes: parseEnumList(
       env.HERMES_JOB_TYPES,
       supportedJobTypes,
-      ["replay_planner"]
+      ["generate_plan", "replay_planner"]
     ),
     markets: parseOptionalEnumList(env.HERMES_JOB_MARKETS, supportedMarkets),
     tradingAccountId: requireNonEmptyString(

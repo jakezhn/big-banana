@@ -117,6 +117,7 @@
 | Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
 | Planner / Agent | single-timeframe reasoning rule | 已明确设计 | 100% | 当前 MVP 不做显式 HTF/LTF/MTF reasoning；`1H/4H/1D/1W` 计划按 `marketKey` 独立并存 |
 | Planner / Agent | replay harness | 已开始 | 75% | 已补 replay fixtures、job builder、result summary、真实 `replay_planner` handler smoke；DB 级批量 replay 与质量看板仍待补齐 |
+| Planner / Agent | live `generate_plan` worker handoff | 已开始 | 75% | `apps/api` signal webhook 已改为 enqueue `generate_plan` job，`apps/hermes` 已接入真实 live planning handler；DB 级 `enqueue -> worker -> write-back` smoke 仍待补齐 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
@@ -149,7 +150,7 @@
 | Platform / Deployment | `packages/agent` extraction | 已开始 | 75% | 已把 planner runtime、OpenAI prompt/schema/generator/env config 抽到共享包，并由 `apps/api` 与 `apps/hermes` 共用；revision/review skills 仍未迁出 |
 | Platform / Deployment | Supabase `agent_jobs` queue | 已完成 | 100% | 已补 `agent_jobs` migration、repository、enqueue/claim/complete/fail/timeout recovery、idempotency key |
 | Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 `marketKey` / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
-| Platform / Deployment | `apps/hermes` Docker worker | 已开始 | 75% | 已补单 Docker worker baseline、polling loop、Dockerfile，并接入真实 `replay_planner` handler 与 planner write-back 路径；`generate_plan` 主链接管与 DB 级 smoke 仍待补齐 |
+| Platform / Deployment | `apps/hermes` Docker worker | 已开始 | 75% | 已补单 Docker worker baseline、polling loop、Dockerfile，并接入真实 `replay_planner` 与 `generate_plan` handler；DB 级 smoke 与运行时联调仍待补齐 |
 | Platform / Deployment | dashboard realtime refresh path | 未开始 | 0% | 待确定 `Broadcast -> API re-fetch` 为主路径，`Postgres Changes` 仅作早期替代 |
 | Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
@@ -177,6 +178,7 @@
 | Integration | `agent_runs` evaluation metadata regression | 已完成 | 100% | domain/api/hermes tests 与全仓 `typecheck` 已通过；dashboard Agent Runs 已展示新元数据 |
 | Integration | hermes replay path regression | 已完成 | 100% | `packages/agent`、domain replay helper、hermes replay handler 已通过 unit/regression 与全仓 `typecheck` |
 | Integration | replay harness regression | 已完成 | 100% | replay fixture builder、summary 聚合、真实 deterministic replay handler smoke 已通过 hermes tests |
+| Integration | live `generate_plan` worker handoff regression | 已完成 | 100% | `apps/api` webhook route tests、`apps/hermes` live planning handler tests、全仓 `typecheck` 已通过 |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -205,12 +207,13 @@
 
 ### 当前还缺
 
+- live `generate_plan` worker handoff
+- enqueue -> worker -> write-back end-to-end smoke
 - planner quality iteration loop
 - plan revision agent
 - post-plan review agent
 - scoped lesson candidates
 - advanced interventions
-- `apps/hermes` Docker worker
 - dashboard realtime refresh wiring
 - optional Inngest fallback
 
@@ -220,18 +223,19 @@
 
 1. live `generate_plan` worker handoff
 2. enqueue -> worker -> write-back end-to-end smoke
-3. planner quality iteration loop
-4. multi-Hermes router
-5. plan revision agent
-6. post-plan review agent
-7. scoped lesson candidates
+3. dashboard Agent Runs / Market Detail manual QA
+4. planner quality iteration loop
+5. multi-Hermes router
+6. plan revision agent
+7. post-plan review agent
+8. scoped lesson candidates
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. live `generate_plan` worker smoke
 2. enqueue -> worker -> write-back end-to-end smoke
-3. replay_planner batch smoke
-4. dashboard Agent Runs / Market Detail manual QA
+3. dashboard Agent Runs / Market Detail manual QA
+4. replay_planner batch smoke
 5. multi-market AI replay baseline
 6. plan revision smoke
 7. post-plan review smoke
@@ -272,7 +276,9 @@
 - 本轮已验证 replay path 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
 - 本轮已完成 replay harness 第一阶段：已补默认 replay fixtures、job builder、result summary parser/aggregator，以及真实 deterministic replay handler smoke
 - 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“live worker handoff、真实 webhook/dashboard 验证、单 timeframe 计划质量迭代、plan revision、post-plan review”
+- 本轮已完成 live `generate_plan` worker handoff 第一阶段：`apps/api` signal webhook 已改为 enqueue `generate_plan` job，live planning 已迁入 `apps/hermes` handler，并由 worker 负责写回 webhook `process_status`
+- 本轮已验证 live handoff 回归通过：`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 当前主线阻塞已从“真实 AI planner 接入”进一步转移到“DB 级 worker handoff smoke、真实 webhook/dashboard 验证、单 timeframe 计划质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
 

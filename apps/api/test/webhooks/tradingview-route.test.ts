@@ -1,15 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { contractFixture } from "../../../../packages/domain/test/helpers.js";
 import {
-  type TradePlan,
   type AgentRunRepository,
+  type AgentJobRepository,
   type ExecutionIntentRepository,
-  generateDeterministicTradePlan,
-  type MarketStateRepository,
-  type OrderRepository,
-  type PositionRepository,
-  type PlannerRunnerInfo,
   type ReceivedAgentRun,
+  type EnqueueAgentJobInput,
   type ReceivedOrder,
   type ReceivedOrderStatusUpdate,
   type ReceivedExecutionIntent,
@@ -24,6 +20,7 @@ import {
   type RiskVerdictRepository,
   type StoredExecutionIntent,
   type StoredAgentRun,
+  type StoredAgentJob,
   type StoredMarketState,
   type StoredOrder,
   type StoredPlanTransition,
@@ -224,6 +221,79 @@ class InMemoryAgentRunRepository implements AgentRunRepository {
   }
 }
 
+class InMemoryAgentJobRepository implements AgentJobRepository {
+  readonly jobs: StoredAgentJob[] = [];
+
+  async enqueueJob(input: EnqueueAgentJobInput): Promise<StoredAgentJob> {
+    const existing = this.jobs.find(
+      (job) => job.idempotencyKey === input.idempotencyKey
+    );
+
+    if (existing) {
+      return existing;
+    }
+
+    const createdAt = input.createdAt ?? "2026-05-24T10:00:00.000Z";
+    const runAfter = input.runAfter ?? createdAt;
+    const stored: StoredAgentJob = {
+      id: crypto.randomUUID(),
+      jobType: input.jobType,
+      status: "pending",
+      market: input.market,
+      symbol: input.symbol ?? null,
+      timeframe: input.timeframe ?? null,
+      signalId: input.signalId ?? null,
+      planId: input.planId ?? null,
+      priority: input.priority ?? 5,
+      idempotencyKey: input.idempotencyKey,
+      payloadJson: input.payloadJson,
+      resultRefJson: null,
+      lockedBy: null,
+      lockedAt: null,
+      lockedUntil: null,
+      attemptCount: 0,
+      maxAttempts: input.maxAttempts ?? 3,
+      runAfter,
+      lastError: null,
+      createdAt,
+      updatedAt: createdAt
+    };
+
+    this.jobs.push(stored);
+    return stored;
+  }
+
+  async getJobById(jobId: string): Promise<StoredAgentJob | null> {
+    return this.jobs.find((job) => job.id === jobId) ?? null;
+  }
+
+  async getJobByIdempotencyKey(
+    idempotencyKey: string
+  ): Promise<StoredAgentJob | null> {
+    return this.jobs.find((job) => job.idempotencyKey === idempotencyKey) ?? null;
+  }
+
+  async claimNextJob(): Promise<StoredAgentJob | null> {
+    throw new Error("Not used in route tests");
+  }
+
+  async markJobCompleted(): Promise<StoredAgentJob> {
+    throw new Error("Not used in route tests");
+  }
+
+  async reportJobFailure(): Promise<StoredAgentJob> {
+    throw new Error("Not used in route tests");
+  }
+
+  async requeueTimedOutJobs(): Promise<number> {
+    throw new Error("Not used in route tests");
+  }
+
+  async cancelJob(): Promise<StoredAgentJob> {
+    throw new Error("Not used in route tests");
+  }
+}
+
 class InMemoryOrderRepository implements OrderRepository {
   readonly orders: StoredOrder[] = [];
 
@@ -309,13 +379,6 @@ function dependencies(
   overrides?: Partial<{
     riskPolicy: RiskPolicySnapshot;
     pipelineMode: PipelineMode;
-    tradePlanGenerator: (
-      args: {
-        plannerInput: Parameters<typeof generateDeterministicTradePlan>[0];
-        reusablePlan: Parameters<typeof generateDeterministicTradePlan>[1];
-      }
-    ) => Promise<TradePlan> | TradePlan;
-    plannerRunner: PlannerRunnerInfo;
   }>
 ) {
   return {
@@ -323,25 +386,13 @@ function dependencies(
     marketStateRepository: new InMemoryMarketStateRepository(),
     tradePlanVersionRepository: new InMemoryTradePlanVersionRepository(),
     agentRunRepository: new InMemoryAgentRunRepository(),
+    agentJobRepository: new InMemoryAgentJobRepository(),
     riskVerdictRepository: new InMemoryRiskVerdictRepository(),
     executionIntentRepository: new InMemoryExecutionIntentRepository(),
     orderRepository: new InMemoryOrderRepository(),
     positionRepository: new InMemoryPositionRepository(),
     riskPolicy: overrides?.riskPolicy ?? manualReviewPolicy,
-    pipelineMode: overrides?.pipelineMode ?? "full",
-    tradePlanGenerator:
-      overrides?.tradePlanGenerator ??
-      (({ plannerInput, reusablePlan }) =>
-        generateDeterministicTradePlan(plannerInput, reusablePlan)),
-    plannerRunner:
-      overrides?.plannerRunner ??
-      ({
-        runnerKind: "deterministic",
-        modelProvider: null,
-        model: null,
-        skillName: "generate_trade_plan",
-        promptVersion: "deterministic-v1"
-      } satisfies PlannerRunnerInfo)
+    pipelineMode: overrides?.pipelineMode ?? "full"
   };
 }
 
@@ -366,7 +417,7 @@ describe("POST /api/webhooks/tradingview", () => {
     expect(deps.tradePlanVersionRepository.versions.size).toBe(0);
   });
 
-  it("processes a valid signal payload through plan, risk, intent, and auto-submit by default", async () => {
+  it("enqueues a valid signal payload for live planning by default", async () => {
     const deps = dependencies();
     await handleTradingViewWebhookRequest(
       request(JSON.stringify(contractFixture("snapshot.valid.json"))),
@@ -383,13 +434,15 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: false,
-      process_status: "order_submitted"
+      process_status: "queued"
     });
-    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
-    expect(deps.agentRunRepository.runs).toHaveLength(1);
-    expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
-    expect(deps.executionIntentRepository.intents).toHaveLength(1);
-    expect(deps.orderRepository.orders).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs[0]?.jobType).toBe("generate_plan");
+    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(0);
+    expect(deps.agentRunRepository.runs).toHaveLength(0);
+    expect(deps.riskVerdictRepository.verdicts).toHaveLength(0);
+    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.orderRepository.orders).toHaveLength(0);
   });
 
   it("marks a repeated signal delivery as duplicate without replaying downstream writes", async () => {
@@ -408,16 +461,17 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: true,
-      process_status: "order_submitted"
+      process_status: "queued"
     });
-    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
-    expect(deps.agentRunRepository.runs).toHaveLength(1);
-    expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
-    expect(deps.executionIntentRepository.intents).toHaveLength(1);
-    expect(deps.orderRepository.orders).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs).toHaveLength(1);
+    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(0);
+    expect(deps.agentRunRepository.runs).toHaveLength(0);
+    expect(deps.riskVerdictRepository.verdicts).toHaveLength(0);
+    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.orderRepository.orders).toHaveLength(0);
   });
 
-  it("ignores the deprecated manual-review flag and still auto-submits", async () => {
+  it("ignores the deprecated manual-review flag and still enqueues live planning", async () => {
     const deps = dependencies({
       riskPolicy: {
         ...manualReviewPolicy,
@@ -439,14 +493,15 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: false,
-      process_status: "order_submitted"
+      process_status: "queued"
     });
-    expect(deps.executionIntentRepository.intents).toHaveLength(1);
-    expect(deps.orderRepository.orders).toHaveLength(1);
-    expect(deps.agentRunRepository.runs).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs).toHaveLength(1);
+    expect(deps.executionIntentRepository.intents).toHaveLength(0);
+    expect(deps.orderRepository.orders).toHaveLength(0);
+    expect(deps.agentRunRepository.runs).toHaveLength(0);
   });
 
-  it("stops at risk when pipeline mode is advisory", async () => {
+  it("enqueues an advisory signal without directly mutating downstream facts", async () => {
     const deps = dependencies({
       pipelineMode: "advisory"
     });
@@ -465,87 +520,16 @@ describe("POST /api/webhooks/tradingview", () => {
       accepted: true,
       event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
       duplicate: false,
-      process_status: "risk_approved"
+      process_status: "queued"
     });
-    expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs[0]?.payloadJson).toMatchObject({
+      pipelineMode: "advisory"
+    });
+    expect(deps.riskVerdictRepository.verdicts).toHaveLength(0);
     expect(deps.executionIntentRepository.intents).toHaveLength(0);
     expect(deps.orderRepository.orders).toHaveLength(0);
-    expect(deps.agentRunRepository.runs).toHaveLength(1);
-  });
-
-  it("degrades to risk-approved when the planner returns a non-executable watch-state create plan", async () => {
-    const deps = dependencies({
-      tradePlanGenerator: async () =>
-        ({
-          action: "create",
-          market_thesis: {
-            bias: "long",
-            environment: "transition",
-            htf_bias: "bull",
-            mtf_bias: "bull",
-            bias_confidence: 0.78,
-            trend_end_score: 0.24,
-            structure_summary: "Bullish context but not yet executable.",
-            key_levels: [
-              {
-                role: "support",
-                price_ref: "EMA50",
-                importance: "primary"
-              }
-            ]
-          },
-          execution_playbook: {
-            state: "watch",
-            entry_style: "pullback",
-            entry_zone: {
-              low: 66800,
-              high: 67650,
-              source: "structure"
-            },
-            allowed_triggers: ["aligned_signal", "zone_touch"],
-            requires_signal: true,
-            disqualifiers: ["needs_confirmation"],
-            tp_style: "ladder",
-            update_policy: "minor_patch"
-          },
-          risk_intent: {
-            risk_tier: "standard",
-            suggested_max_account_risk_pct: 0.75,
-            stop_anchor: "swing_low",
-            stop_buffer_atr: 0.35,
-            rationale_codes: ["needs_confirmation"]
-          },
-          reasoning_summary: "Setup is valid but still waiting for confirmation.",
-          evidence: ["bullish_structure", "ranked_signal"]
-        }) satisfies TradePlan,
-      plannerRunner: {
-        runnerKind: "openai",
-        modelProvider: "openai",
-        model: "gpt-5.4-mini",
-        skillName: "generate_trade_plan",
-        promptVersion: "openai-trade-plan-v3"
-      }
-    });
-    await handleTradingViewWebhookRequest(
-      request(JSON.stringify(contractFixture("snapshot.valid.json"))),
-      deps
-    );
-
-    const response = await handleTradingViewWebhookRequest(
-      request(JSON.stringify(contractFixture("signal.valid.json"))),
-      deps
-    );
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
-      accepted: true,
-      event_key: "BINANCE:BTCUSDT:240:1778404800000:signal",
-      duplicate: false,
-      process_status: "risk_approved"
-    });
-    expect(deps.agentRunRepository.runs).toHaveLength(1);
-    expect(deps.executionIntentRepository.intents).toHaveLength(0);
-    expect(deps.orderRepository.orders).toHaveLength(0);
+    expect(deps.agentRunRepository.runs).toHaveLength(0);
   });
 
   it("rejects non-json content types", async () => {

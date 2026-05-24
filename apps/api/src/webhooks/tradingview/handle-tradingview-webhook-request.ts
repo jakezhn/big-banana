@@ -1,25 +1,21 @@
 import {
-  evaluateAndRecordDeterministicRiskVerdict,
-  generateAndRecordTradePlanWithGenerator,
   InvalidTradingViewPayloadError,
   ingestTradingViewPayload,
-  processSignalPipelineWithGenerator,
   projectTradingViewMarketState,
   type CanonicalEnvelope,
-  type PlannerRunnerInfo,
-  type TradePlanGenerator,
   type AgentRunRepository,
+  type AgentJobRepository,
   type ExecutionIntentRepository,
   type MarketStateRepository,
   type OrderRepository,
   type PositionRepository,
-  type RiskPolicySnapshot,
   type RiskVerdictRepository,
-  submitPaperOrderFromExecutionIntent,
   type TradePlanVersionRepository,
   type WebhookEventRepository
 } from "@big-banana/domain";
 import type { PipelineMode } from "../../trading/get-pipeline-mode-from-env";
+import { buildGeneratePlanJobInput } from "@big-banana/agent";
+import type { RiskPolicySnapshot } from "@big-banana/domain";
 
 type ErrorResponse = {
   accepted: false;
@@ -38,14 +34,13 @@ export type TradingViewWebhookRequestDependencies = {
   marketStateRepository: MarketStateRepository;
   tradePlanVersionRepository: TradePlanVersionRepository;
   agentRunRepository: AgentRunRepository;
+  agentJobRepository: AgentJobRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
   orderRepository: OrderRepository;
   positionRepository: PositionRepository;
   riskPolicy: RiskPolicySnapshot;
   pipelineMode: PipelineMode;
-  tradePlanGenerator: TradePlanGenerator;
-  plannerRunner: PlannerRunnerInfo;
 };
 
 function jsonResponse(
@@ -101,7 +96,11 @@ export async function handleTradingViewWebhookRequest(
 
     const processStatus =
       result.envelope.type === "signal"
-        ? await processSignalPipeline(result.envelope, dependencies)
+        ? await processSignalPipeline(
+            result.envelope,
+            result.webhookEvent.id,
+            dependencies
+          )
         : "normalized";
 
     await dependencies.webhookEventRepository.updateProcessStatus(
@@ -135,84 +134,22 @@ function shouldSkipProcessedDuplicate(
 
 async function processSignalPipeline(
   envelope: CanonicalEnvelope,
+  webhookEventId: string,
   dependencies: TradingViewWebhookRequestDependencies
 ): Promise<string> {
-  if (dependencies.pipelineMode === "advisory") {
-    return processAdvisorySignalPipeline(envelope, dependencies);
-  }
-
-  const result = await processSignalPipelineWithGenerator(
-    envelope,
-    dependencies.riskPolicy,
-    {
-      marketStateRepository: dependencies.marketStateRepository,
-      tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
-      orderRepository: dependencies.orderRepository,
-      positionRepository: dependencies.positionRepository,
-      tradingAccountId: dependencies.riskPolicy.tradingAccountId,
-      agentRunRepository: dependencies.agentRunRepository,
-      riskVerdictRepository: dependencies.riskVerdictRepository,
-      executionIntentRepository: dependencies.executionIntentRepository
-    },
-    dependencies.tradePlanGenerator,
-    dependencies.plannerRunner
+  await dependencies.agentJobRepository.enqueueJob(
+    buildGeneratePlanJobInput(
+      {
+        webhookEventId,
+        envelope,
+        riskPolicy: dependencies.riskPolicy,
+        pipelineMode: dependencies.pipelineMode
+      },
+      {
+        createdAt: new Date().toISOString()
+      }
+    )
   );
 
-  if (result.executionIntent) {
-    const existingOrder =
-      await dependencies.orderRepository.getLatestOrderByExecutionIntentId(
-        result.executionIntent.id
-      );
-
-    if (!existingOrder) {
-      await submitPaperOrderFromExecutionIntent(
-        result.executionIntent,
-        dependencies.orderRepository
-      );
-    }
-
-    return "order_submitted";
-  }
-
-  if (result.riskVerdict.verdict === "reject") {
-    return "risk_rejected";
-  }
-
-  return "risk_approved";
-}
-
-async function processAdvisorySignalPipeline(
-  envelope: CanonicalEnvelope,
-  dependencies: TradingViewWebhookRequestDependencies
-): Promise<string> {
-  const plan = await generateAndRecordTradePlanWithGenerator(
-    envelope,
-    {
-      marketStateRepository: dependencies.marketStateRepository,
-      tradePlanVersionRepository: dependencies.tradePlanVersionRepository,
-      orderRepository: dependencies.orderRepository,
-      positionRepository: dependencies.positionRepository,
-      tradingAccountId: dependencies.riskPolicy.tradingAccountId
-    },
-    dependencies.tradePlanVersionRepository,
-    dependencies.agentRunRepository,
-    dependencies.tradePlanGenerator,
-    dependencies.plannerRunner
-  );
-
-  if (!plan.recordResult) {
-    throw new Error("Advisory pipeline expected a persisted trade plan version");
-  }
-
-  const riskVerdict = await evaluateAndRecordDeterministicRiskVerdict(
-    plan.recordResult.tradePlanVersion,
-    dependencies.riskPolicy,
-    dependencies.riskVerdictRepository
-  );
-
-  if (riskVerdict.verdict === "reject") {
-    return "risk_rejected";
-  }
-
-  return "risk_approved";
+  return "queued";
 }

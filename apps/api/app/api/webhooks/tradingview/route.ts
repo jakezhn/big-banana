@@ -1,5 +1,5 @@
-import { createTradePlanGeneratorFromEnv } from "@big-banana/agent";
 import {
+  createAgentJobRepositoryFromEnv,
   createAgentRunRepositoryFromEnv,
   createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
@@ -11,12 +11,11 @@ import {
 } from "@big-banana/db";
 import type {
   AgentRunRepository,
+  AgentJobRepository,
   ExecutionIntentRepository,
   MarketStateRepository,
   OrderRepository,
   PositionRepository,
-  PlannerRunnerInfo,
-  TradePlanGenerator,
   RiskVerdictRepository,
   RiskPolicySnapshot,
   TradePlanVersionRepository,
@@ -33,15 +32,13 @@ let webhookEventRepository: WebhookEventRepository | undefined;
 let marketStateRepository: MarketStateRepository | undefined;
 let tradePlanVersionRepository: TradePlanVersionRepository | undefined;
 let agentRunRepository: AgentRunRepository | undefined;
+let agentJobRepository: AgentJobRepository | undefined;
 let riskVerdictRepository: RiskVerdictRepository | undefined;
 let executionIntentRepository: ExecutionIntentRepository | undefined;
 let orderRepository: OrderRepository | undefined;
 let positionRepository: PositionRepository | undefined;
 let riskPolicy: RiskPolicySnapshot | undefined;
 let pipelineMode: PipelineMode | undefined;
-let configuredTradePlanGenerator:
-  | ReturnType<typeof createTradePlanGeneratorFromEnv>
-  | undefined;
 
 export async function POST(request: Request): Promise<Response> {
   return handleTradingViewWebhookRequest(request, {
@@ -49,14 +46,13 @@ export async function POST(request: Request): Promise<Response> {
     marketStateRepository: getMarketStateRepository(),
     tradePlanVersionRepository: getTradePlanVersionRepository(),
     agentRunRepository: getAgentRunRepository(),
+    agentJobRepository: getAgentJobRepository(),
     riskVerdictRepository: getRiskVerdictRepository(),
     executionIntentRepository: getExecutionIntentRepository(),
     orderRepository: getOrderRepository(),
     positionRepository: getPositionRepository(),
     riskPolicy: getRiskPolicy(),
-    pipelineMode: getPipelineMode(),
-    tradePlanGenerator: getTradePlanGenerator(),
-    plannerRunner: getPlannerRunner()
+    pipelineMode: getPipelineMode()
   });
 }
 
@@ -78,6 +74,11 @@ function getTradePlanVersionRepository(): TradePlanVersionRepository {
 function getAgentRunRepository(): AgentRunRepository {
   agentRunRepository ??= createAgentRunRepositoryFromEnv();
   return agentRunRepository;
+}
+
+function getAgentJobRepository(): AgentJobRepository {
+  agentJobRepository ??= createAgentJobRepositoryFromEnv();
+  return agentJobRepository;
 }
 
 function getRiskVerdictRepository(): RiskVerdictRepository {
@@ -108,14 +109,4 @@ function getRiskPolicy(): RiskPolicySnapshot {
 function getPipelineMode(): PipelineMode {
   pipelineMode ??= getPipelineModeFromEnv();
   return pipelineMode;
-}
-
-function getTradePlanGenerator(): TradePlanGenerator {
-  configuredTradePlanGenerator ??= createTradePlanGeneratorFromEnv();
-  return configuredTradePlanGenerator.generator;
-}
-
-function getPlannerRunner(): PlannerRunnerInfo {
-  configuredTradePlanGenerator ??= createTradePlanGeneratorFromEnv();
-  return configuredTradePlanGenerator.runner;
 }

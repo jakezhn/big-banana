@@ -1,10 +1,14 @@
 import {
   createAgentJobRepositoryFromEnv,
   createAgentRunRepositoryFromEnv,
+  createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
   createPositionRepositoryFromEnv,
+  createRiskVerdictRepositoryFromEnv,
   createTradePlanVersionRepositoryFromEnv
+  ,
+  createWebhookEventRepositoryFromEnv
 } from "@big-banana/db";
 import { getHermesWorkerConfigFromEnv } from "./config/get-hermes-worker-config-from-env";
 import { createDefaultAgentJobHandlers } from "./worker/create-default-agent-job-handlers";
@@ -16,11 +20,14 @@ async function main(): Promise<void> {
     jobRepository: createAgentJobRepositoryFromEnv(),
     config,
     handlers: createDefaultAgentJobHandlers({
+      webhookEventRepository: createWebhookEventRepositoryFromEnv(),
       marketStateRepository: createMarketStateRepositoryFromEnv(),
       tradePlanVersionRepository: createTradePlanVersionRepositoryFromEnv(),
       orderRepository: createOrderRepositoryFromEnv(),
       positionRepository: createPositionRepositoryFromEnv(),
       agentRunRepository: createAgentRunRepositoryFromEnv(),
+      riskVerdictRepository: createRiskVerdictRepositoryFromEnv(),
+      executionIntentRepository: createExecutionIntentRepositoryFromEnv(),
       tradingAccountId: config.tradingAccountId
     })
   });
