@@ -218,9 +218,9 @@
 
 严格按下面顺序推进：
 
-1. replay harness
-2. planner quality iteration loop
-3. live `generate_plan` worker handoff
+1. live `generate_plan` worker handoff
+2. enqueue -> worker -> write-back end-to-end smoke
+3. planner quality iteration loop
 4. multi-Hermes router
 5. plan revision agent
 6. post-plan review agent
@@ -228,12 +228,13 @@
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. enqueue -> worker -> write-back end-to-end smoke
-2. replay_planner job smoke
-3. multi-market AI replay smoke
+1. live `generate_plan` worker smoke
+2. enqueue -> worker -> write-back end-to-end smoke
+3. replay_planner batch smoke
 4. dashboard Agent Runs / Market Detail manual QA
-5. plan revision smoke
-6. post-plan review smoke
+5. multi-market AI replay baseline
+6. plan revision smoke
+7. post-plan review smoke
 
 ## 8. 本轮状态快照
 
@@ -266,12 +267,12 @@
 - 本轮已验证 `agent_runs` metadata 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
 - 本轮已完成 `packages/agent` 第一阶段抽取：planner runtime 已从 `apps/api` 抽成共享包，`apps/api` 与 `apps/hermes` 已共用同一套 generator/runtime 配置
 - 本轮已完成 `apps/hermes` 真实 `replay_planner` 路径：worker 现在会调用共享 planner runtime，记录 `plan.replay` 类型 `agent_run`，且 replay 默认不持久化真实 `trade_plan_version`
-- 当前 `packages/agent` 与 `apps/hermes` 已形成下一阶段 replay/eval 的最小闭环；下一步重点转向 replay fixture、summary 和质量迭代，而不是继续扩 planner 接线
+- 当前 `packages/agent` 与 `apps/hermes` 已形成 replay/eval 的最小闭环；下一步应优先把 live `generate_plan` 接到 worker，再进入批量质量迭代
 - 本轮已完成 hermes replay 路径第一阶段：`replay_planner` 现在会真实调用 planner、记录 `plan.replay` agent run，并把 summary 写回 job `result_ref_json`
 - 本轮已验证 replay path 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
 - 本轮已完成 replay harness 第一阶段：已补默认 replay fixtures、job builder、result summary parser/aggregator，以及真实 deterministic replay handler smoke
 - 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、单 timeframe 计划质量迭代、live worker handoff、plan revision、post-plan review”
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“live worker handoff、真实 webhook/dashboard 验证、单 timeframe 计划质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
 

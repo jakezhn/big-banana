@@ -48,7 +48,7 @@ This is not a rewrite of the pipeline. It is a role shift:
 - `latestSnapshots` should remain only as hidden MTF reference, not active MTF reasoning input.
 - The LLM path is still one-stage `plan.generate`.
 - There are no persisted market analysis, signal analysis, plan revision, post-plan review, or lesson candidate records.
-- There is no replay/evaluation harness for prompt and context iteration.
+- Replay harness foundations now exist, but batch replay and planner quality comparison are still missing.
 - `apps/hermes` exists, but only `replay_planner` has been wired; live `generate_plan` has not moved to the worker yet.
 
 ## 3. Target Architecture

@@ -332,8 +332,7 @@ Broadcast is a better long-term fit for "something changed, re-fetch now" than u
 The current repo supports the refactor direction, but these gaps must be closed:
 
 - `apps/hermes` still only handles `replay_planner`; live `generate_plan` has not moved to the worker yet
-- no replay/evaluation dataset exists
-- no replay summary or planner quality comparison loop exists
+- replay harness exists, but DB-backed batch replay and planner quality comparison loop are still missing
 - no plan revision model exists
 - no post-plan review or lesson candidate table exists
 - the MVP still lacks an explicit "single-timeframe reasoning, multi-timeframe coexistence" rule across planner, queue, and revision flows
