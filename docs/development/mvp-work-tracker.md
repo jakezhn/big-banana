@@ -22,6 +22,7 @@
 - 最大化 Hermes/LLM 在分析、计划、修正、复盘中的作用
 - 保留 workflow、Supabase、deterministic guardrail 作为可靠 harness
 - 建立可 replay、可评估、可复盘的 agent quality loop
+- 在 MVP 内坚持单 timeframe reasoning，同时允许同一 ticker 在不同 timeframe 上并存多条独立 plan/pipeline
 
 当前不作为 MVP 主目标：
 
@@ -114,11 +115,12 @@
 | Planner / Agent | `agent_runs` evaluation metadata | 已完成 | 100% | 已补 provider / skill / prompt version / token usage / execution eligibility，并接入 dashboard；已具备下一阶段 replay/eval 基线 |
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
 | Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
+| Planner / Agent | single-timeframe reasoning rule | 已明确设计 | 100% | 当前 MVP 不做显式 HTF/LTF/MTF reasoning；`1H/4H/1D/1W` 计划按 `marketKey` 独立并存 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
 | Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
-| Planner / Agent | multi-Hermes router | 未开始 | 0% | 待按 market/job type 路由 Global/Crypto/US Equity/CN Equity/Commodity Hermes |
+| Planner / Agent | multi-Hermes router | 未开始 | 0% | 待按 market/job type 路由 Global/Crypto/US Equity/CN Equity/Commodity Hermes；不是按 timeframe 做 MTF 合并 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
 | Execution | paper submit | 已完成 | 100% | 已支持自动 paper order submit |
@@ -145,7 +147,7 @@
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
 | Platform / Deployment | `packages/agent` extraction | 已开始 | 75% | 已把 planner runtime、OpenAI prompt/schema/generator/env config 抽到共享包，并由 `apps/api` 与 `apps/hermes` 共用；revision/review skills 仍未迁出 |
 | Platform / Deployment | Supabase `agent_jobs` queue | 已完成 | 100% | 已补 `agent_jobs` migration、repository、enqueue/claim/complete/fail/timeout recovery、idempotency key |
-| Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 symbol / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
+| Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 `marketKey` / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
 | Platform / Deployment | `apps/hermes` Docker worker | 已开始 | 75% | 已补单 Docker worker baseline、polling loop、Dockerfile，并接入真实 `replay_planner` handler 与 planner write-back 路径；`generate_plan` 主链接管与 DB 级 smoke 仍待补齐 |
 | Platform / Deployment | dashboard realtime refresh path | 未开始 | 0% | 待确定 `Broadcast -> API re-fetch` 为主路径，`Postgres Changes` 仅作早期替代 |
 | Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
@@ -216,10 +218,11 @@
 
 1. replay harness
 2. planner quality iteration loop
-3. multi-Hermes router
-4. plan revision agent
-5. post-plan review agent
-6. scoped lesson candidates
+3. live `generate_plan` worker handoff
+4. multi-Hermes router
+5. plan revision agent
+6. post-plan review agent
+7. scoped lesson candidates
 
 ## 7. 当前建议的下一轮测试顺序
 
@@ -248,6 +251,8 @@
 - 当前部署主路径更新为 `Vercel + Supabase + VPS Hermes Docker`；Inngest 降级为可选备选方案
 - 当前已明确：逻辑 multi-Hermes 与物理多容器不是同一件事，MVP 先做单 `apps/hermes` worker baseline
 - 当前已明确：`agent_jobs` 的正确性依赖 durable queue polling；Supabase realtime 只负责前端刷新和可选 worker 唤醒
+- 当前已明确：MVP 只做 single-timeframe reasoning，不做 `1H/4H/1D` 联合推理；同一 ticker 不同 timeframe 允许独立 plan 并存
+- 当前已明确：`latestSnapshots` 只保留为隐形参考，不作为现行 MTF reasoning 入口；当前 planner 主要依赖 `recentSnapshots + windowSummary`
 - 本轮已完成 `PlannerInput context v2`：主 timeframe `recentSnapshots`、`windowSummary`、active plan、open orders、open position 已进入 planner 输入
 - 本轮进一步补强 `windowSummary`：已包含区间位置、EMA stack、相对 EMA 的 ATR 扩张、HH/HL/LH/LL 计数、bar range 扩张比
 - 本轮已验证 `PlannerInput context v2` 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
@@ -262,7 +267,7 @@
 - 当前 `packages/agent` 与 `apps/hermes` 已形成下一阶段 replay/eval 的最小闭环；下一步重点转向 replay fixture、summary 和质量迭代，而不是继续扩 planner 接线
 - 本轮已完成 hermes replay 路径第一阶段：`replay_planner` 现在会真实调用 planner、记录 `plan.replay` agent run，并把 summary 写回 job `result_ref_json`
 - 本轮已验证 replay path 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、策略质量迭代、plan revision、post-plan review”
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、单 timeframe 计划质量迭代、live worker handoff、plan revision、post-plan review”
 
 ## 9. 更新规则
 

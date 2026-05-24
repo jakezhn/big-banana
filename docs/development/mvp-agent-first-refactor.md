@@ -44,16 +44,12 @@ This is not a rewrite of the pipeline. It is a role shift:
 
 ### Current Constraints
 
-- `PlannerInput` is still too thin for agent-first reasoning.
-- `latestSnapshots` is only latest state per market key, not a bar window.
-- There is no `recentSnapshots` primary-timeframe window.
-- `agent_runs` stores summary-level audit, not full evaluation metadata.
+- The current MVP must explicitly stay single-timeframe in reasoning, even though one ticker may have multiple independent timeframe plans.
+- `latestSnapshots` should remain only as hidden MTF reference, not active MTF reasoning input.
 - The LLM path is still one-stage `plan.generate`.
 - There are no persisted market analysis, signal analysis, plan revision, post-plan review, or lesson candidate records.
 - There is no replay/evaluation harness for prompt and context iteration.
-- There is no `apps/hermes` Docker worker runtime yet.
-- There is no Supabase-backed `agent_jobs` queue yet.
-- There is no worker lock/idempotency layer yet.
+- `apps/hermes` exists, but only `replay_planner` has been wired; live `generate_plan` has not moved to the worker yet.
 
 ## 3. Target Architecture
 
@@ -81,6 +77,14 @@ Guardrail / Execution Layer
 ```
 
 The first implementation should not physically split into many agents. It should introduce agent roles as structured operations and skills, then later move orchestration into `apps/hermes`.
+
+For the current MVP, the target model is:
+
+- single-timeframe reasoning
+- multi-timeframe coexistence
+- shared symbol/account risk awareness
+
+That means `BTCUSDT:1H`, `BTCUSDT:4H`, `BTCUSDT:1D`, and `BTCUSDT:1W` may all maintain separate plans, but Hermes should reason from the current timeframe's signal and recent context only.
 
 ## 4. Affected Modules
 
@@ -110,12 +114,12 @@ The frozen `trade-plan` contract remains the execution-facing planner output for
 Required changes:
 
 - upgrade `buildPlannerInput` to context v2:
-  - `primaryTimeframe`
   - `recentSnapshots`
   - `windowSummary`
   - `openOrders`
   - `openPosition`
   - `activePlan`
+- keep `latestSnapshots`, but treat it as hidden reference context, not primary MTF reasoning context
 - add deterministic derivation helpers for window summary
 - add plan revision domain model
 - add post-plan review domain model
@@ -292,6 +296,7 @@ Changes:
 - keep the first deployed runtime as one Docker service with one planning worker loop
 - treat market-specific Hermes as logical roles inside that worker before physically splitting services
 - treat realtime notifications as optional accelerators, not as the correctness path for job dispatch
+- keep planning queue identity at `marketKey` granularity so different timeframes of one ticker can coexist without coalescing
 
 Validation:
 
@@ -357,8 +362,12 @@ Changes:
 Validation:
 
 - crypto jobs do not retrieve equity-specific lessons
-- global summary can be attached to market-specific planning
 - role routing works while all roles still run in one `apps/hermes` deployment
+
+Note:
+
+- this stage is market routing, not timeframe routing
+- the MVP still does not merge `1H` and `4H` jobs into one plan bundle
 
 ### Stage 6: Plan Revision Agent
 
@@ -442,10 +451,16 @@ This split is a scaling step, not a starting requirement.
 Concurrency policy:
 
 - analysis: high concurrency
-- planning: symbol lock
+- planning: `marketKey` lock
 - revision: plan lock
 - risk: account lock
-- execution: account lock
+- execution: account lock, later `account + symbol` if needed
+
+This preserves the intended boundary:
+
+- separate timeframe plans may coexist
+- risk still sees shared account exposure
+- execution still sees shared account/symbol mutation
 
 Risk and execution remain deterministic services, not agents.
 
@@ -471,6 +486,8 @@ PlannerInput v2 = current signal + current context + latestSnapshots + recentSna
 ```
 
 This is the highest-leverage change because it improves Hermes reasoning while preserving the current working workflow, risk, execution, and dashboard harness.
+
+In the current MVP, `latestSnapshots` is not a prompt-level instruction to perform active HTF/LTF reasoning. It remains a hidden reference field that can be narrowed or ignored by the runtime while `recentSnapshots` and `windowSummary` stay authoritative for current-timeframe planning.
 
 After Stage 1, the next infrastructure step is Stage 2:
 

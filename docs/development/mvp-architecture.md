@@ -62,6 +62,8 @@ Hermes may produce:
 - post-plan reviews
 - memory lesson candidates
 
+For the current MVP, Hermes reasons on one timeframe at a time. Different timeframes for the same ticker may coexist as independent planning tracks, but Hermes does not yet perform explicit HTF/LTF/MTF reasoning.
+
 ## 3. Active Applications
 
 ### `apps/web`
@@ -163,7 +165,7 @@ Next MVP phase additions:
 - expanded `agent_runs` metadata: prompt version, model provider, raw prompt/output capture policy, token usage when available
 - `agent_jobs`: Supabase-backed durable queue for Hermes jobs
 - `agent_locks` or DB advisory-lock backed lock helpers for symbol/plan/account/execution concurrency
-- planner context v2 read model: `recentSnapshots`, `windowSummary`, open position, open orders, active plan
+- planner context v2 read model: `recentSnapshots`, `windowSummary`, open position, open orders, active plan, and `latestSnapshots` as hidden MTF reference only
 - plan review records
 - plan revision suggestions
 - post-plan review records
@@ -177,7 +179,7 @@ The MVP should not physically split into many agents immediately. Start with one
 
 Logical roles:
 
-- Market Analyst: interpret broader market and multi-timeframe context
+- Market Analyst: interpret broader market and the current single-timeframe context
 - Signal Analyst: evaluate signal quality and contradictions
 - Trade Planner: produce frozen `trade_plan`
 - Plan Revision Agent: suggest updates to active plans as context changes
@@ -186,6 +188,8 @@ Logical roles:
 - Memory Curator: decide which lesson candidates are scoped enough to store
 
 Only Trade Planner is currently implemented.
+
+In the current MVP, `BTCUSDT:1H`, `BTCUSDT:4H`, `BTCUSDT:1D`, and `BTCUSDT:1W` are separate `marketKey` tracks. They may all exist at the same time, but each plan is generated from its own timeframe context.
 
 ## 7. Guardrail Boundary
 
@@ -270,6 +274,8 @@ Important distinction:
 
 The MVP should implement logical role separation first and keep physical deployment simple.
 
+This role split is by market, not by timeframe. Timeframe remains part of the `marketKey` and queue/lock identity, not a separate Hermes role dimension in the current MVP.
+
 ### 8.3 Queue and locks
 
 Use Supabase/Postgres as the initial queue:
@@ -291,10 +297,16 @@ Neither should be the only way Hermes learns about a new job.
 Concurrency rules:
 
 - analysis jobs: high concurrency
-- planning jobs: symbol-level lock
+- planning jobs: `marketKey`-level lock
 - revision jobs: plan-level lock
 - risk review: account-level lock
-- execution: account-level lock first, symbol-level later if needed
+- execution: account-level lock first, account+symbol-level later if needed
+
+Planning and replay should treat each timeframe as independent:
+
+- `BTCUSDT:1H` planning job and `BTCUSDT:4H` planning job may both run
+- they should not be coalesced into one MTF bundle in the current MVP
+- risk and execution still need shared account/symbol awareness so the account cannot overexpose itself through separate timeframe plans
 
 Risk and execution do not need to be agents. They should remain deterministic skills/services that workers call after Hermes proposes a plan or revision.
 
@@ -319,15 +331,13 @@ Broadcast is a better long-term fit for "something changed, re-fetch now" than u
 
 The current repo supports the refactor direction, but these gaps must be closed:
 
-- `PlannerInput` lacks `recentSnapshots` and `windowSummary`
-- no `agent_jobs` queue exists
-- no worker lock/idempotency helper exists
-- `agent_runs` stores summaries but not enough evaluation metadata
-- planner prompt and schemas are still a single-stage planner shape
+- `apps/hermes` still only handles `replay_planner`; live `generate_plan` has not moved to the worker yet
 - no replay/evaluation dataset exists
+- no replay summary or planner quality comparison loop exists
 - no plan revision model exists
 - no post-plan review or lesson candidate table exists
-- no `apps/hermes` Docker worker exists for durable async workflows
+- the MVP still lacks an explicit "single-timeframe reasoning, multi-timeframe coexistence" rule across planner, queue, and revision flows
+- `latestSnapshots` still needs to be treated as hidden reference context rather than active MTF reasoning input
 
 ## 10. Active Reference
 
