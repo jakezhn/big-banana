@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contractFixture } from "../../../../packages/domain/test/helpers.js";
+import { AgentJobWorker } from "../../../hermes/src/worker/agent-job-worker.js";
+import { createGeneratePlanHandler } from "../../../hermes/src/worker/planning/generate-plan-handler.js";
 import {
   type AgentRunRepository,
   type AgentJobRepository,
@@ -273,24 +275,157 @@ class InMemoryAgentJobRepository implements AgentJobRepository {
     return this.jobs.find((job) => job.idempotencyKey === idempotencyKey) ?? null;
   }
 
-  async claimNextJob(): Promise<StoredAgentJob | null> {
-    throw new Error("Not used in route tests");
+  async claimNextJob(input: {
+    workerId: string;
+    lockTtlSeconds: number;
+    now: string;
+    jobTypes: string[];
+    markets?: string[];
+  }): Promise<StoredAgentJob | null> {
+    const claimable = this.jobs.find(
+      (job) =>
+        job.status === "pending" &&
+        job.runAfter <= input.now &&
+        input.jobTypes.includes(job.jobType) &&
+        (input.markets === undefined || input.markets.includes(job.market))
+    );
+
+    if (!claimable) {
+      return null;
+    }
+
+    const lockedUntil = new Date(
+      Date.parse(input.now) + input.lockTtlSeconds * 1000
+    ).toISOString();
+
+    const claimed = {
+      ...claimable,
+      status: "running" as const,
+      lockedBy: input.workerId,
+      lockedAt: input.now,
+      lockedUntil,
+      updatedAt: input.now
+    };
+
+    this.replaceJob(claimed);
+    return claimed;
   }
 
-  async markJobCompleted(): Promise<StoredAgentJob> {
-    throw new Error("Not used in route tests");
+  async markJobCompleted(
+    jobId: string,
+    workerId: string,
+    completedAt: string,
+    resultRefJson: StoredAgentJob["resultRefJson"]
+  ): Promise<StoredAgentJob> {
+    const existing = this.requireJob(jobId);
+    const completed = {
+      ...existing,
+      status: "completed" as const,
+      resultRefJson,
+      lockedBy: workerId,
+      lockedAt: null,
+      lockedUntil: null,
+      updatedAt: completedAt
+    };
+
+    this.replaceJob(completed);
+    return completed;
   }
 
-  async reportJobFailure(): Promise<StoredAgentJob> {
-    throw new Error("Not used in route tests");
+  async reportJobFailure(
+    jobId: string,
+    workerId: string,
+    failedAt: string,
+    errorMessage: string
+  ): Promise<StoredAgentJob> {
+    const existing = this.requireJob(jobId);
+    const attemptCount = existing.attemptCount + 1;
+    const status =
+      attemptCount >= existing.maxAttempts ? "failed" : "pending";
+    const failed = {
+      ...existing,
+      status,
+      attemptCount,
+      lastError: errorMessage,
+      lockedBy: workerId,
+      lockedAt: null,
+      lockedUntil: null,
+      updatedAt: failedAt
+    };
+
+    this.replaceJob(failed);
+    return failed;
   }
 
-  async requeueTimedOutJobs(): Promise<number> {
-    throw new Error("Not used in route tests");
+  async requeueTimedOutJobs(now: string): Promise<number> {
+    let count = 0;
+
+    this.jobs.splice(
+      0,
+      this.jobs.length,
+      ...this.jobs.map((job) => {
+        if (
+          job.status !== "running" ||
+          job.lockedUntil === null ||
+          job.lockedUntil > now
+        ) {
+          return job;
+        }
+
+        count += 1;
+        return {
+          ...job,
+          status: "pending" as const,
+          attemptCount: Math.min(job.attemptCount + 1, job.maxAttempts),
+          lockedBy: null,
+          lockedAt: null,
+          lockedUntil: null,
+          updatedAt: now
+        };
+      })
+    );
+
+    return count;
   }
 
-  async cancelJob(): Promise<StoredAgentJob> {
-    throw new Error("Not used in route tests");
+  async cancelJob(
+    jobId: string,
+    cancelledAt: string,
+    reason: string
+  ): Promise<StoredAgentJob> {
+    const existing = this.requireJob(jobId);
+    const cancelled = {
+      ...existing,
+      status: "cancelled" as const,
+      lastError: reason,
+      lockedBy: null,
+      lockedAt: null,
+      lockedUntil: null,
+      updatedAt: cancelledAt
+    };
+
+    this.replaceJob(cancelled);
+    return cancelled;
+  }
+
+  private requireJob(jobId: string): StoredAgentJob {
+    const existing = this.jobs.find((job) => job.id === jobId);
+
+    if (!existing) {
+      throw new Error(`Unknown agent job: ${jobId}`);
+    }
+
+    return existing;
+  }
+
+  private replaceJob(updated: StoredAgentJob): void {
+    const index = this.jobs.findIndex((job) => job.id === updated.id);
+
+    if (index < 0) {
+      throw new Error(`Unknown agent job: ${updated.id}`);
+    }
+
+    this.jobs[index] = updated;
   }
 }
 
@@ -530,6 +665,86 @@ describe("POST /api/webhooks/tradingview", () => {
     expect(deps.executionIntentRepository.intents).toHaveLength(0);
     expect(deps.orderRepository.orders).toHaveLength(0);
     expect(deps.agentRunRepository.runs).toHaveLength(0);
+  });
+
+  it("hands off a queued signal to the hermes worker and writes back live planning results", async () => {
+    const deps = dependencies();
+    await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("snapshot.valid.json"))),
+      deps
+    );
+
+    const signalResponse = await handleTradingViewWebhookRequest(
+      request(JSON.stringify(contractFixture("signal.valid.json"))),
+      deps
+    );
+
+    expect(signalResponse.status).toBe(200);
+    expect(deps.agentJobRepository.jobs).toHaveLength(1);
+    expect(deps.agentJobRepository.jobs[0]?.status).toBe("pending");
+    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(0);
+
+    const runAfter = deps.agentJobRepository.jobs[0]?.runAfter;
+    expect(runAfter).toBeTruthy();
+    const workerStartAt = new Date(
+      Date.parse(runAfter as string) + 1000
+    ).toISOString();
+    const workerEndAt = new Date(
+      Date.parse(runAfter as string) + 2000
+    ).toISOString();
+
+    const worker = new AgentJobWorker({
+      jobRepository: deps.agentJobRepository,
+      config: {
+        workerId: "hermes-test",
+        pollIntervalMs: 1,
+        lockTtlSeconds: 30,
+        jobTypes: ["generate_plan"],
+        markets: undefined,
+        tradingAccountId: deps.riskPolicy.tradingAccountId
+      },
+      handlers: {
+        generate_plan: createGeneratePlanHandler(
+          {
+            webhookEventRepository: deps.webhookEventRepository,
+            marketStateRepository: deps.marketStateRepository,
+            tradePlanVersionRepository: deps.tradePlanVersionRepository,
+            agentRunRepository: deps.agentRunRepository,
+            riskVerdictRepository: deps.riskVerdictRepository,
+            executionIntentRepository: deps.executionIntentRepository,
+            orderRepository: deps.orderRepository,
+            positionRepository: deps.positionRepository
+          },
+          { PLANNER_RUNTIME: "deterministic" } satisfies NodeJS.ProcessEnv
+        )
+      },
+      now: (() => {
+        const timestamps = [workerStartAt, workerStartAt, workerEndAt];
+        let index = 0;
+        return () => timestamps[Math.min(index++, timestamps.length - 1)]!;
+      })()
+    });
+
+    const result = await worker.runOnce();
+
+    expect(result).toMatchObject({
+      kind: "completed",
+      jobType: "generate_plan"
+    });
+    expect(deps.agentJobRepository.jobs[0]?.status).toBe("completed");
+    expect(deps.agentJobRepository.jobs[0]?.resultRefJson).toMatchObject({
+      processStatus: "order_submitted",
+      pipelineMode: "full"
+    });
+    expect([...deps.webhookEventRepository.events.values()].find(
+      (event) =>
+        event.eventKey === "BINANCE:BTCUSDT:240:1778404800000:signal"
+    )?.processStatus).toBe("order_submitted");
+    expect([...deps.tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
+    expect(deps.agentRunRepository.runs).toHaveLength(1);
+    expect(deps.riskVerdictRepository.verdicts).toHaveLength(1);
+    expect(deps.executionIntentRepository.intents).toHaveLength(1);
+    expect(deps.orderRepository.orders).toHaveLength(1);
   });
 
   it("rejects non-json content types", async () => {

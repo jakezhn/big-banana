@@ -179,6 +179,7 @@
 | Integration | hermes replay path regression | 已完成 | 100% | `packages/agent`、domain replay helper、hermes replay handler 已通过 unit/regression 与全仓 `typecheck` |
 | Integration | replay harness regression | 已完成 | 100% | replay fixture builder、summary 聚合、真实 deterministic replay handler smoke 已通过 hermes tests |
 | Integration | live `generate_plan` worker handoff regression | 已完成 | 100% | `apps/api` webhook route tests、`apps/hermes` live planning handler tests、全仓 `typecheck` 已通过 |
+| Integration | local enqueue -> worker -> write-back smoke | 已完成 | 100% | 已补 API enqueue + Hermes worker + write-back 的最小闭环 smoke，验证 `queued -> completed -> order_submitted` 主路径 |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -222,7 +223,7 @@
 严格按下面顺序推进：
 
 1. live `generate_plan` worker handoff
-2. enqueue -> worker -> write-back end-to-end smoke
+2. DB/runtime 级 enqueue -> worker -> write-back smoke
 3. dashboard Agent Runs / Market Detail manual QA
 4. planner quality iteration loop
 5. multi-Hermes router
@@ -233,7 +234,7 @@
 ## 7. 当前建议的下一轮测试顺序
 
 1. live `generate_plan` worker smoke
-2. enqueue -> worker -> write-back end-to-end smoke
+2. DB/runtime 级 enqueue -> worker -> write-back smoke
 3. dashboard Agent Runs / Market Detail manual QA
 4. replay_planner batch smoke
 5. multi-market AI replay baseline
@@ -278,6 +279,7 @@
 - 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
 - 本轮已完成 live `generate_plan` worker handoff 第一阶段：`apps/api` signal webhook 已改为 enqueue `generate_plan` job，live planning 已迁入 `apps/hermes` handler，并由 worker 负责写回 webhook `process_status`
 - 本轮已验证 live handoff 回归通过：`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已补本地 API enqueue -> Hermes worker -> write-back 最小闭环 smoke：同一条 signal 现在可在测试中完整经历 `queued -> completed -> order_submitted`
 - 当前主线阻塞已从“真实 AI planner 接入”进一步转移到“DB 级 worker handoff smoke、真实 webhook/dashboard 验证、单 timeframe 计划质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
