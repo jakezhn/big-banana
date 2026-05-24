@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
+    "dev": "tsx watch src/bootstrap.ts",
+    "start": "tsx src/bootstrap.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -12,7 +12,8 @@
     "@big-banana/agent": "workspace:*",
     "@big-banana/contracts": "workspace:*",
     "@big-banana/db": "workspace:*",
-    "@big-banana/domain": "workspace:*"
+    "@big-banana/domain": "workspace:*",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "tsx": "^4.20.6"

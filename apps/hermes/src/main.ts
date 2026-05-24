@@ -6,8 +6,7 @@ import {
   createOrderRepositoryFromEnv,
   createPositionRepositoryFromEnv,
   createRiskVerdictRepositoryFromEnv,
-  createTradePlanVersionRepositoryFromEnv
-  ,
+  createTradePlanVersionRepositoryFromEnv,
   createWebhookEventRepositoryFromEnv
 } from "@big-banana/db";
 import { getHermesWorkerConfigFromEnv } from "./config/get-hermes-worker-config-from-env";

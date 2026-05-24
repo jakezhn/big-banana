@@ -238,7 +238,7 @@
 
 ## 8. 本轮状态快照
 
-更新时间：`2026-05-24`
+更新时间：`2026-05-25`
 
 本轮结论：
 
@@ -277,6 +277,7 @@
 - 本轮已补本地 API enqueue -> Hermes worker -> write-back 最小闭环 smoke：同一条 signal 现在可在测试中完整经历 `queued -> completed -> order_submitted`
 - 本轮已跑通 remote Supabase worker runtime smoke：fresh BTC signal 现在可在真实远端库中经历 `queued -> order_submitted`，并落出新的 `trade_plan_version v2`、`agent_run`、`risk_verdict`、`execution_intent` 与 `order`
 - 本轮还修复了一个真实联调 bug：`/api/market-pipeline` 和 dashboard GET 路由此前会返回旧缓存结果，现在已强制改为 dynamic/no-cache 路径
+- 本轮已补 `apps/hermes` 自动加载 `.env.local`：worker 启动命令与 runbook 现在一致，不再要求手动 `source` 环境变量
 - 当前主线阻塞已从“worker handoff”转移到“dashboard 手工 QA、单 timeframe 计划质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
