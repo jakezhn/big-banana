@@ -55,6 +55,15 @@ importers:
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.14)
 
+  apps/hermes:
+    dependencies:
+      '@big-banana/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@big-banana/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+
   apps/web:
     dependencies:
       '@big-banana/domain':
