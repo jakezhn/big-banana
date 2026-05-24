@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+API_ENV_FILE="$ROOT_DIR/apps/api/.env.local"
+HERMES_ENV_FILE="$ROOT_DIR/apps/hermes/.env.local"
 
 if [[ "${1:-}" == "--help" ]]; then
   cat <<'EOF'
@@ -23,7 +25,23 @@ if ! command -v psql >/dev/null 2>&1; then
 fi
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
-  echo "DATABASE_URL is required" >&2
+  if [[ -f "$API_ENV_FILE" ]]; then
+    set -a
+    source "$API_ENV_FILE"
+    set +a
+  fi
+fi
+
+if [[ -z "${DATABASE_URL:-}" ]]; then
+  if [[ -f "$HERMES_ENV_FILE" ]]; then
+    set -a
+    source "$HERMES_ENV_FILE"
+    set +a
+  fi
+fi
+
+if [[ -z "${DATABASE_URL:-}" ]]; then
+  echo "DATABASE_URL is required (or configure it in apps/api/.env.local or apps/hermes/.env.local)" >&2
   exit 1
 fi
 

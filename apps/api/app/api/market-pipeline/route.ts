@@ -2,6 +2,9 @@ import { createMarketPipelineReadModelRepositoryFromEnv } from "@big-banana/db";
 import type { MarketPipelineReadModelRepository } from "@big-banana/domain";
 import { handleGetMarketPipelineRequest } from "../../../src/markets/handle-get-market-pipeline-request";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 let marketPipelineReadModelRepository:
   | MarketPipelineReadModelRepository
   | undefined;

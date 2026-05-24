@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --experimental-strip-types --watch src/main.ts",
-    "start": "node --experimental-strip-types src/main.ts",
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -13,5 +13,8 @@
     "@big-banana/contracts": "workspace:*",
     "@big-banana/db": "workspace:*",
     "@big-banana/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
   }
 }
