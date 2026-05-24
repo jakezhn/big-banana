@@ -17,6 +17,34 @@ export type {
   ReceivedAgentRun,
   StoredAgentRun
 } from "./agent-runs/agent-run-repository";
+export type {
+  AgentJobMarket,
+  AgentJobRepository,
+  AgentJobStatus,
+  AgentJobType,
+  ClaimNextAgentJobInput,
+  EnqueueAgentJobInput,
+  ReceivedAgentJob,
+  StoredAgentJob
+} from "./agent-jobs/agent-job-repository";
+export {
+  buildAgentJobFailureState,
+  getAgentJobRetryBackoffMs,
+  shouldRetryAgentJob
+} from "./agent-jobs/retry-policy";
+export type { AgentJobFailureState } from "./agent-jobs/retry-policy";
+export type {
+  AgentLockRepository,
+  AgentLockScope,
+  ReceivedAgentLock,
+  StoredAgentLock
+} from "./agent-locks/agent-lock-repository";
+export {
+  buildExecutionLockKey,
+  buildPlanLockKey,
+  buildRiskLockKey,
+  buildSymbolLockKey
+} from "./agent-locks/lock-keys";
 export {
   generateAndRecordTradePlanWithAgentRun
 } from "./agent-runs/generate-and-record-trade-plan-with-agent-run";
@@ -88,6 +116,7 @@ export {
   submitPaperOrderFromExecutionIntent
 } from "./orders/submit-paper-order-from-execution-intent";
 export type {
+  JsonValue,
   OrderRepository,
   ReceivedOrder,
   ReceivedOrderStatusUpdate,

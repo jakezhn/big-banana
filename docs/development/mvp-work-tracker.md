@@ -143,8 +143,8 @@
 | Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
 | Platform / Deployment | `packages/agent` extraction | 未开始 | 0% | 待把 LLM prompt/model/skill 代码从 `apps/api` 中抽出 |
-| Platform / Deployment | Supabase `agent_jobs` queue | 未开始 | 0% | 待补 job table、idempotency、retry、timeout recovery |
-| Platform / Deployment | worker lock helpers | 未开始 | 0% | 待补 symbol / plan / account / execution lock |
+| Platform / Deployment | Supabase `agent_jobs` queue | 已完成 | 100% | 已补 `agent_jobs` migration、repository、enqueue/claim/complete/fail/timeout recovery、idempotency key |
+| Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 symbol / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
 | Platform / Deployment | `apps/hermes` Docker worker | 未开始 | 0% | 待补 VPS worker runtime、polling loop、job router |
 | Platform / Deployment | dashboard realtime refresh path | 未开始 | 0% | 待确定 `Broadcast -> API re-fetch` 为主路径，`Postgres Changes` 仅作早期替代 |
 | Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
@@ -168,6 +168,7 @@
 | Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
 | Integration | real AI planner paper validation | 已完成 | 100% | 已完成 Vercel AI Gateway -> plan -> risk -> intent -> order -> reconcile 闭环验证 |
 | Integration | `PlannerInput` context v2 unit / route regression | 已完成 | 100% | domain/api test 与 `typecheck` 已通过 |
+| Integration | `agent_jobs` queue / lock foundation regression | 已完成 | 100% | domain tests、API tests、`typecheck` 已通过；timeout recovery 已计入 attempt / maxAttempts |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -201,7 +202,6 @@
 - post-plan review agent
 - scoped lesson candidates
 - advanced interventions
-- Supabase `agent_jobs` queue and worker locks
 - `apps/hermes` Docker worker
 - dashboard realtime refresh wiring
 - optional Inngest fallback
@@ -210,19 +210,18 @@
 
 严格按下面顺序推进：
 
-1. Supabase `agent_jobs` queue + worker lock helpers
-2. `apps/hermes` Docker worker baseline
-3. agent run evaluation metadata and replay harness
-4. planner quality iteration loop
-5. multi-Hermes router
-6. plan revision agent
-7. post-plan review agent
-8. scoped lesson candidates
+1. `apps/hermes` Docker worker baseline
+2. agent run evaluation metadata and replay harness
+3. planner quality iteration loop
+4. multi-Hermes router
+5. plan revision agent
+6. post-plan review agent
+7. scoped lesson candidates
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. agent job enqueue / claim / retry tests
-2. `apps/hermes` worker local smoke
+1. `apps/hermes` worker local smoke
+2. enqueue -> worker -> write-back end-to-end smoke
 3. multi-market AI replay smoke
 4. dashboard Agent Runs / Market Detail manual QA
 5. plan revision smoke
@@ -250,7 +249,9 @@
 - 本轮已完成 `PlannerInput context v2`：主 timeframe `recentSnapshots`、`windowSummary`、active plan、open orders、open position 已进入 planner 输入
 - 本轮进一步补强 `windowSummary`：已包含区间位置、EMA stack、相对 EMA 的 ATR 扩张、HH/HL/LH/LL 计数、bar range 扩张比
 - 本轮已验证 `PlannerInput context v2` 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
-- 当前主线阻塞已从“真实 AI planner 接入”转移到“Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
+- 本轮已完成 `agent_jobs` queue 与 worker lock foundation：新增 `agent_jobs` / `agent_locks` migration、domain contracts、Postgres repository、retry/backoff 与 timeout recovery
+- 本轮已验证 queue / lock foundation 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
+- 当前主线阻塞已从“真实 AI planner 接入”转移到“`apps/hermes` worker、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则
 

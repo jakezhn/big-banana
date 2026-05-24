@@ -3,6 +3,14 @@ export {
   PostgresAgentRunRepository
 } from "./agent-runs/postgres-agent-run-repository";
 export {
+  createAgentJobRepositoryFromEnv,
+  PostgresAgentJobRepository
+} from "./agent-jobs/postgres-agent-job-repository";
+export {
+  createAgentLockRepositoryFromEnv,
+  PostgresAgentLockRepository
+} from "./agent-locks/postgres-agent-lock-repository";
+export {
   createWebhookEventRepositoryFromEnv,
   PostgresWebhookEventRepository
 } from "./webhook-events/postgres-webhook-event-repository";
