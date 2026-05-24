@@ -9,7 +9,10 @@ describe("createTradePlanGeneratorFromEnv", () => {
     expect(result.runtime).toBe("deterministic");
     expect(result.runner).toEqual({
       runnerKind: "deterministic",
-      model: null
+      modelProvider: null,
+      model: null,
+      skillName: "generate_trade_plan",
+      promptVersion: "deterministic-v1"
     });
   });
 

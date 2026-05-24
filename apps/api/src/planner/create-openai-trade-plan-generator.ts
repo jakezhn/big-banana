@@ -1,11 +1,10 @@
-import {
-  getTradePlanJsonSchema,
-  validateTradePlan,
-  type TradePlan
-} from "@big-banana/contracts";
-import type { TradePlanGenerator } from "@big-banana/domain";
+import { getTradePlanJsonSchema, validateTradePlan } from "@big-banana/contracts";
+import type { GeneratedTradePlanResult, TradePlanGenerator } from "@big-banana/domain";
 import OpenAI from "openai";
-import { buildOpenAiTradePlanSystemPrompt, buildOpenAiTradePlanUserPrompt } from "./build-openai-trade-plan-prompt";
+import {
+  buildOpenAiTradePlanSystemPrompt,
+  buildOpenAiTradePlanUserPrompt
+} from "./build-openai-trade-plan-prompt";
 import { createOpenAiCompatibleSchema } from "./create-openai-compatible-schema";
 import type { OpenAiPlannerConfig } from "./get-openai-planner-config-from-env";
 
@@ -79,6 +78,11 @@ export function createOpenAiTradePlanGenerator(
       );
     }
 
-    return parsed as TradePlan;
+    return {
+      tradePlan: parsed,
+      tokenUsageJson:
+        (response as { usage?: GeneratedTradePlanResult["tokenUsageJson"] }).usage ??
+        null
+    } as GeneratedTradePlanResult;
   };
 }

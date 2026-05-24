@@ -38,6 +38,7 @@ migrations=(
   "packages/db/migrations/0008_fills_and_positions.sql"
   "packages/db/migrations/0009_agent_runs.sql"
   "packages/db/migrations/0010_agent_jobs_and_locks.sql"
+  "packages/db/migrations/0011_agent_runs_metadata.sql"
 )
 
 for migration in "${migrations[@]}"; do

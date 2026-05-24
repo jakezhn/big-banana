@@ -40,7 +40,9 @@ export default async function AgentRunsPage() {
                 <th>Market</th>
                 <th>Operation</th>
                 <th>Runner</th>
+                <th>Prompt</th>
                 <th>Status</th>
+                <th>Eligible</th>
                 <th>Latency</th>
                 <th>Plan Version</th>
                 <th>Started</th>
@@ -49,7 +51,7 @@ export default async function AgentRunsPage() {
             <tbody>
               {agentRuns.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="empty-cell">
+                  <td colSpan={9} className="empty-cell">
                     No agent runs available yet.
                   </td>
                 </tr>
@@ -58,12 +60,18 @@ export default async function AgentRunsPage() {
                   <tr key={run.id}>
                     <td>{run.marketKey}</td>
                     <td>{run.operation}</td>
-                    <td>{run.model ? `${run.runnerKind}:${run.model}` : run.runnerKind}</td>
+                    <td>
+                      {run.model
+                        ? `${run.modelProvider ?? run.runnerKind}:${run.model}`
+                        : run.runnerKind}
+                    </td>
+                    <td>{run.promptVersion ?? "—"}</td>
                     <td>
                       <span className={`status-pill status-${run.status}`}>
                         {run.status}
                       </span>
                     </td>
+                    <td>{formatEligible(run.executionEligible)}</td>
                     <td>{run.latencyMs} ms</td>
                     <td>{run.tradePlanVersionId ?? "—"}</td>
                     <td>{formatTimestamp(run.startedAt)}</td>
@@ -86,4 +94,12 @@ function formatTimestamp(value: string): string {
     hour: "2-digit",
     minute: "2-digit"
   });
+}
+
+function formatEligible(value: boolean | null): string {
+  if (value === null) {
+    return "—";
+  }
+
+  return value ? "yes" : "no";
 }

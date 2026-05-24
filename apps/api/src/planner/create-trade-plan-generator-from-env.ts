@@ -4,6 +4,7 @@ import {
   type TradePlanGenerator
 } from "@big-banana/domain";
 import { createOpenAiTradePlanGenerator } from "./create-openai-trade-plan-generator";
+import { OPENAI_TRADE_PLAN_PROMPT_VERSION } from "./build-openai-trade-plan-prompt";
 import { getOpenAiPlannerConfigFromEnv } from "./get-openai-planner-config-from-env";
 import {
   getPlannerRuntimeFromEnv,
@@ -28,7 +29,10 @@ export function createTradePlanGeneratorFromEnv(
       runtime,
       runner: {
         runnerKind: "openai",
-        model: config.model
+        modelProvider: "openai",
+        model: config.model,
+        skillName: "generate_trade_plan",
+        promptVersion: OPENAI_TRADE_PLAN_PROMPT_VERSION
       },
       generator: createOpenAiTradePlanGenerator(config)
     };
@@ -38,7 +42,10 @@ export function createTradePlanGeneratorFromEnv(
     runtime,
     runner: {
       runnerKind: "deterministic",
-      model: null
+      modelProvider: null,
+      model: null,
+      skillName: "generate_trade_plan",
+      promptVersion: "deterministic-v1"
     },
     generator: ({ plannerInput, reusablePlan }) =>
       generateDeterministicTradePlan(plannerInput, reusablePlan)

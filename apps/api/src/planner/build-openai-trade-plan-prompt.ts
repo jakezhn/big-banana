@@ -1,5 +1,7 @@
 import type { PlannerInput, StoredTradePlanVersion } from "@big-banana/domain";
 
+export const OPENAI_TRADE_PLAN_PROMPT_VERSION = "openai-trade-plan-v3";
+
 export function buildOpenAiTradePlanSystemPrompt(): string {
   return [
     "You are a trading plan generator.",

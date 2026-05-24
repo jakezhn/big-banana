@@ -28,8 +28,13 @@ type AgentRunListRow = {
   source_event_key: string;
   operation: string;
   runner_kind: string;
+  model_provider: string | null;
   model: string | null;
+  skill_name: string;
+  prompt_version: string | null;
   status: DashboardAgentRunListItem["status"];
+  token_usage_json: DashboardAgentRunListItem["tokenUsageJson"];
+  execution_eligible: boolean | null;
   trade_plan_version_id: string | null;
   error_message: string | null;
   started_at: string;
@@ -165,8 +170,13 @@ export class PostgresDashboardReadModelRepository
         source_event_key,
         operation,
         runner_kind,
+        model_provider,
         model,
+        skill_name,
+        prompt_version,
         status,
+        token_usage_json,
+        execution_eligible,
         trade_plan_version_id,
         error_message,
         started_at,
@@ -183,8 +193,13 @@ export class PostgresDashboardReadModelRepository
       sourceEventKey: row.source_event_key,
       operation: row.operation,
       runnerKind: row.runner_kind,
+      modelProvider: row.model_provider,
       model: row.model,
+      skillName: row.skill_name,
+      promptVersion: row.prompt_version,
       status: row.status,
+      tokenUsageJson: row.token_usage_json,
+      executionEligible: row.execution_eligible,
       tradePlanVersionId: row.trade_plan_version_id,
       errorMessage: row.error_message,
       startedAt: row.started_at,

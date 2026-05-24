@@ -111,6 +111,7 @@
 | Planner / Agent | deterministic planner | 已完成 | 100% | 作为真实 AI planner 的占位主链 |
 | Planner / Agent | real AI planner 接入 | 已完成 | 100% | 已接入 `deterministic | openai` runtime，并完成 Vercel AI Gateway paper validation |
 | Planner / Agent | `agent_runs` 审计 | 已完成 | 100% | 当前已记录 planner run 审计基线 |
+| Planner / Agent | `agent_runs` evaluation metadata | 已开始 | 75% | 已补 provider / skill / prompt version / token usage / execution eligibility，并接入 dashboard；replay 对比与人工 review 仍未落地 |
 | Planner / Agent | agent-first design docs | 已完成 | 100% | 已建立 agent-first 主架构、重构计划与归档结构 |
 | Planner / Agent | `PlannerInput` context v2 | 已完成 | 100% | 已补 `recentSnapshots`、`windowSummary`、active plan、position/order context，并把 `windowSummary` 提升到 pullback / extension / structure quality 摘要 |
 | Planner / Agent | planner quality iteration loop | 未开始 | 0% | 待补 replay / prompt tuning / plan quality review，验证策略质量而不只是链路连通性 |
@@ -170,6 +171,7 @@
 | Integration | `PlannerInput` context v2 unit / route regression | 已完成 | 100% | domain/api test 与 `typecheck` 已通过 |
 | Integration | `agent_jobs` queue / lock foundation regression | 已完成 | 100% | domain tests、API tests、`typecheck` 已通过；timeout recovery 已计入 attempt / maxAttempts |
 | Integration | `apps/hermes` worker baseline regression | 已完成 | 100% | `apps/hermes` worker unit tests与全仓 `typecheck` 已通过 |
+| Integration | `agent_runs` evaluation metadata regression | 已完成 | 100% | domain/api/hermes tests 与全仓 `typecheck` 已通过；dashboard Agent Runs 已展示新元数据 |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision smoke | 未开始 | 0% | 待 plan revision agent 落地 |
 | Integration | post-plan review smoke | 未开始 | 0% | 待 post-plan review agent 落地 |
@@ -252,6 +254,8 @@
 - 本轮已验证 queue / lock foundation 回归通过：`packages/domain` tests、`apps/api` tests、`pnpm typecheck` 全部通过
 - 本轮已完成 `apps/hermes` baseline：新增独立 app、worker loop、default handler registry、Dockerfile、根脚本与 worker 单测
 - 本轮已验证 `apps/hermes` baseline 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已完成 `agent_runs` evaluation metadata 第一阶段：新增 provider / skill / prompt version / token usage / execution eligibility，并贯通 agent run 持久化、dashboard API 和 Agent Runs 页面
+- 本轮已验证 `agent_runs` metadata 回归通过：`packages/domain` tests、`apps/api` tests、`apps/hermes` tests、`pnpm typecheck`
 - 当前主线阻塞已从“真实 AI planner 接入”转移到“replay/eval 基座、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则

@@ -337,7 +337,10 @@ function dependencies(
       overrides?.plannerRunner ??
       ({
         runnerKind: "deterministic",
-        model: null
+        modelProvider: null,
+        model: null,
+        skillName: "generate_trade_plan",
+        promptVersion: "deterministic-v1"
       } satisfies PlannerRunnerInfo)
   };
 }
@@ -517,7 +520,10 @@ describe("POST /api/webhooks/tradingview", () => {
         }) satisfies TradePlan,
       plannerRunner: {
         runnerKind: "openai",
-        model: "gpt-5.4-mini"
+        modelProvider: "openai",
+        model: "gpt-5.4-mini",
+        skillName: "generate_trade_plan",
+        promptVersion: "openai-trade-plan-v3"
       }
     });
     await handleTradingViewWebhookRequest(

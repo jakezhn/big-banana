@@ -61,7 +61,10 @@ export async function processDeterministicSignalPipeline(
       generateDeterministicTradePlan(plannerInput, reusablePlan),
     {
       runnerKind: "deterministic",
-      model: null
+      modelProvider: null,
+      model: null,
+      skillName: "generate_trade_plan",
+      promptVersion: "deterministic-v1"
     },
     createdAt
   );

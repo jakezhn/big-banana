@@ -35,7 +35,10 @@ export async function generateAndRecordTradePlanForSignal(
       generateDeterministicTradePlan(plannerInput, reusablePlan),
     {
       runnerKind: "deterministic",
-      model: null
+      modelProvider: null,
+      model: null,
+      skillName: "generate_trade_plan",
+      promptVersion: "deterministic-v1"
     },
     startedAt
   );

@@ -7,10 +7,15 @@ export type ReceivedAgentRun = {
   sourceEventKey: string;
   operation: string;
   runnerKind: string;
+  modelProvider: string | null;
   model: string | null;
+  skillName: string;
+  promptVersion: string | null;
   status: AgentRunStatus;
   inputSummary: JsonValue;
   outputSummary: JsonValue | null;
+  tokenUsageJson: JsonValue | null;
+  executionEligible: boolean | null;
   tradePlanVersionId: string | null;
   errorMessage: string | null;
   startedAt: string;

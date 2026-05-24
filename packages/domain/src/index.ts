@@ -72,6 +72,7 @@ export {
   generateAndRecordTradePlanWithGenerator
 } from "./planner/generate-and-record-trade-plan-with-generator";
 export type {
+  GeneratedTradePlanResult,
   GenerateAndRecordTradePlanWithGeneratorResult,
   PlannerRunnerInfo,
   TradePlanGenerator,

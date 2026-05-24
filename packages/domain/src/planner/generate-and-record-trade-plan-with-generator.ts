@@ -33,11 +33,22 @@ export type TradePlanGeneratorContext = {
 
 export type TradePlanGenerator = (
   context: TradePlanGeneratorContext
-) => Promise<TradePlan> | TradePlan;
+) =>
+  | Promise<TradePlan | GeneratedTradePlanResult>
+  | TradePlan
+  | GeneratedTradePlanResult;
 
 export type PlannerRunnerInfo = {
   runnerKind: string;
+  modelProvider: string | null;
   model: string | null;
+  skillName: string;
+  promptVersion: string | null;
+};
+
+export type GeneratedTradePlanResult = {
+  tradePlan: TradePlan;
+  tokenUsageJson?: JsonValue | null;
 };
 
 export type GenerateAndRecordTradePlanWithGeneratorResult = {
@@ -64,7 +75,9 @@ export async function generateAndRecordTradePlanWithGenerator(
       plannerInputDependencies
     );
     const reusablePlan = plannerInput.state.activePlan;
-    const tradePlan = await generator({ plannerInput, reusablePlan });
+    const generated = await generator({ plannerInput, reusablePlan });
+    const generatedResult = normalizeGeneratedTradePlanResult(generated);
+    const tradePlan = generatedResult.tradePlan;
 
     if (!validateTradePlan(tradePlan)) {
       throw new InvalidGeneratedTradePlanError();
@@ -86,10 +99,15 @@ export async function generateAndRecordTradePlanWithGenerator(
       sourceEventKey: envelope.eventKey,
       operation: "plan.generate",
       runnerKind: runner.runnerKind,
+      modelProvider: runner.modelProvider,
       model: runner.model,
+      skillName: runner.skillName,
+      promptVersion: runner.promptVersion,
       status: "success",
       inputSummary: buildInputSummary(plannerInput, recordResult.tradePlanVersion.marketKey),
       outputSummary: buildOutputSummary(tradePlan, recordResult),
+      tokenUsageJson: generatedResult.tokenUsageJson ?? null,
+      executionEligible: isExecutionEligibleTradePlan(tradePlan),
       tradePlanVersionId: recordResult.tradePlanVersion.id,
       errorMessage: null,
       startedAt,
@@ -111,13 +129,18 @@ export async function generateAndRecordTradePlanWithGenerator(
       sourceEventKey: envelope.eventKey,
       operation: "plan.generate",
       runnerKind: runner.runnerKind,
+      modelProvider: runner.modelProvider,
       model: runner.model,
+      skillName: runner.skillName,
+      promptVersion: runner.promptVersion,
       status:
         error instanceof InvalidGeneratedTradePlanError
           ? "invalid_output"
           : "failed",
       inputSummary: buildFailureInputSummary(envelope),
       outputSummary: null,
+      tokenUsageJson: null,
+      executionEligible: null,
       tradePlanVersionId: null,
       errorMessage: error instanceof Error ? error.message : "Unknown agent error",
       startedAt,
@@ -127,6 +150,25 @@ export async function generateAndRecordTradePlanWithGenerator(
 
     throw error;
   }
+}
+
+function normalizeGeneratedTradePlanResult(
+  value: TradePlan | GeneratedTradePlanResult
+): GeneratedTradePlanResult {
+  if ("tradePlan" in value) {
+    return value;
+  }
+
+  return { tradePlan: value };
+}
+
+function isExecutionEligibleTradePlan(tradePlan: TradePlan): boolean {
+  const executionState = tradePlan.execution_playbook.state;
+
+  return (
+    (tradePlan.action === "create" || tradePlan.action === "patch") &&
+    (executionState === "armed" || executionState === "pending_entry")
+  );
 }
 
 function buildFailureInputSummary(

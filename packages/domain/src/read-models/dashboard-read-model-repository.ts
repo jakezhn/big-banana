@@ -1,3 +1,5 @@
+import type { JsonValue } from "../orders/order-repository";
+
 export type DashboardOverviewReadModel = {
   signalsTodayCount: number;
   plansTodayCount: number;
@@ -39,8 +41,13 @@ export type DashboardAgentRunListItem = {
   sourceEventKey: string;
   operation: string;
   runnerKind: string;
+  modelProvider: string | null;
   model: string | null;
+  skillName: string;
+  promptVersion: string | null;
   status: "success" | "invalid_output" | "failed";
+  tokenUsageJson: JsonValue | null;
+  executionEligible: boolean | null;
   tradePlanVersionId: string | null;
   errorMessage: string | null;
   startedAt: string;
