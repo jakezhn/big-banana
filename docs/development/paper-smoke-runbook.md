@@ -117,6 +117,30 @@ NEXT_PUBLIC_SUPABASE_URL='https://your-project-ref.supabase.co'
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='your-publishable-key'
 ```
 
+Suggested baseline for `apps/hermes/.env.local`:
+
+```bash
+DATABASE_URL='your-supabase-connection-string'
+TRADING_ACCOUNT_ID='paper-tradingview'
+PLANNER_RUNTIME='deterministic'
+OPENAI_API_KEY=''
+OPENAI_BASE_URL=''
+OPENAI_PLANNER_MODEL='gpt-5.4-mini'
+HERMES_WORKER_ID='hermes-local'
+HERMES_POLL_INTERVAL_MS='1000'
+HERMES_LOCK_TTL_SECONDS='60'
+HERMES_JOB_TYPES='generate_plan,replay_planner'
+HERMES_JOB_MARKETS=''
+```
+
+`HERMES_JOB_MARKETS` is optional:
+
+- leave it empty to claim every supported market
+- set `crypto` to run a crypto-only worker
+- set `crypto,commodity` to run a worker for a subset of markets
+
+For the current MVP, keep it empty unless you are intentionally testing market-scoped routing.
+
 ## 5. Install psql locally
 
 On macOS with Homebrew:
@@ -162,12 +186,18 @@ If you want help text:
 pnpm db:migrate:remote --help
 ```
 
-## 7. Start the local API app
+## 7. Start the local API app and Hermes worker
 
 Run locally:
 
 ```bash
 pnpm --filter @big-banana/api dev
+```
+
+In a separate terminal, start Hermes:
+
+```bash
+pnpm --filter @big-banana/hermes dev
 ```
 
 Default base URL:
@@ -179,9 +209,10 @@ http://127.0.0.1:3000
 At this point:
 
 - API routes run locally from `apps/api`
+- Hermes worker polls `agent_jobs` from remote Supabase
 - all DB writes land in remote Supabase
 - Supabase SDK clients can use Auth, Storage, and server-side admin probes
-- `PIPELINE_MODE=full` means the system auto-generates intents and auto-submits paper orders
+- `PIPELINE_MODE=full` means the system enqueues live planning, and Hermes auto-generates intents and auto-submits paper orders
 
 If you also want to preview the dashboard UI, start the frontend separately:
 
@@ -239,6 +270,8 @@ Default:
 ```bash
 pnpm smoke:paper
 ```
+
+This script now waits briefly for Hermes to pick up the queued `generate_plan` job before reading the pipeline snapshot.
 
 Optional:
 

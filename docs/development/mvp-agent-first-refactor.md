@@ -49,7 +49,7 @@ This is not a rewrite of the pipeline. It is a role shift:
 - The LLM path is still one-stage `plan.generate`.
 - There are no persisted market analysis, signal analysis, plan revision, post-plan review, or lesson candidate records.
 - Replay harness foundations now exist, but batch replay and planner quality comparison are still missing.
-- `apps/hermes` exists, but only `replay_planner` has been wired; live `generate_plan` has not moved to the worker yet.
+- `apps/hermes` exists and now handles both `replay_planner` and live `generate_plan`; the remaining gap is DB/runtime smoke and broader worker orchestration.
 
 ## 3. Target Architecture
 
