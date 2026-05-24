@@ -146,6 +146,7 @@
 | Platform / Deployment | Supabase `agent_jobs` queue | 未开始 | 0% | 待补 job table、idempotency、retry、timeout recovery |
 | Platform / Deployment | worker lock helpers | 未开始 | 0% | 待补 symbol / plan / account / execution lock |
 | Platform / Deployment | `apps/hermes` Docker worker | 未开始 | 0% | 待补 VPS worker runtime、polling loop、job router |
+| Platform / Deployment | dashboard realtime refresh path | 未开始 | 0% | 待确定 `Broadcast -> API re-fetch` 为主路径，`Postgres Changes` 仅作早期替代 |
 | Platform / Deployment | Inngest integration | 后置可选 | 0% | 降级为不用 VPS 时的 managed workflow 备选方案 |
 | Platform / Deployment | real exchange adapter | 未开始 | 0% | MVP 仍停留在 paper execution |
 
@@ -202,6 +203,7 @@
 - advanced interventions
 - Supabase `agent_jobs` queue and worker locks
 - `apps/hermes` Docker worker
+- dashboard realtime refresh wiring
 - optional Inngest fallback
 
 ## 6. 当前建议的下一轮开发顺序
@@ -245,6 +247,8 @@
 - 额外修复了“AI plan 合法但暂不可执行时 route 返回 500”的降级问题
 - 当前已完成 agent-first 文档收口：旧 workflow-first 主文档已归档，新主架构和 staged refactor plan 已建立
 - 当前部署主路径更新为 `Vercel + Supabase + VPS Hermes Docker`；Inngest 降级为可选备选方案
+- 当前已明确：逻辑 multi-Hermes 与物理多容器不是同一件事，MVP 先做单 `apps/hermes` worker baseline
+- 当前已明确：`agent_jobs` 的正确性依赖 durable queue polling；Supabase realtime 只负责前端刷新和可选 worker 唤醒
 - 当前主线阻塞已从“真实 AI planner 接入”转移到“context v2、Supabase job queue、Hermes worker、策略质量迭代、plan revision、post-plan review”
 
 ## 9. 更新规则

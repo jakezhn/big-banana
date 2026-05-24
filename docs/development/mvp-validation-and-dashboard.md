@@ -96,6 +96,24 @@ Add a minimal internal page or API to replay fixed scenarios:
 
 This can start as an API and script before becoming UI.
 
+### Realtime Refresh
+
+Dashboard freshness should not depend on the worker sharing in-memory state with the frontend.
+
+Preferred model:
+
+1. Hermes worker writes facts and traces back to Supabase
+2. Supabase emits a lightweight realtime signal
+3. frontend re-fetches authoritative API/read-model data
+
+Recommended order:
+
+- simplest MVP: manual refresh or polling
+- better MVP: Supabase Realtime Broadcast, then API re-fetch
+- acceptable early fallback: Postgres Changes on a few read-model tables
+
+Realtime should improve responsiveness, not become the source of truth.
+
 ## 5. Validation Order
 
 Run validation in this order:

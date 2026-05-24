@@ -289,6 +289,9 @@ Changes:
   - `last_error`
 - add claim/retry helpers using `FOR UPDATE SKIP LOCKED` or advisory locks
 - create `apps/hermes` with a minimal worker loop
+- keep the first deployed runtime as one Docker service with one planning worker loop
+- treat market-specific Hermes as logical roles inside that worker before physically splitting services
+- treat realtime notifications as optional accelerators, not as the correctness path for job dispatch
 
 Validation:
 
@@ -296,6 +299,7 @@ Validation:
 - one worker claims one job once
 - failed job can retry
 - stale running job can recover
+- the worker still finds jobs when realtime delivery is disabled
 
 ### Stage 3: Agent Run Evaluation Metadata
 
@@ -354,6 +358,7 @@ Validation:
 
 - crypto jobs do not retrieve equity-specific lessons
 - global summary can be attached to market-specific planning
+- role routing works while all roles still run in one `apps/hermes` deployment
 
 ### Stage 6: Plan Revision Agent
 
@@ -426,6 +431,14 @@ Potential workers:
 - risk-worker
 - execution-worker
 
+Potential physical deployment after the single-worker baseline:
+
+- one Docker service with several internal worker loops
+- or several Docker replicas claiming from the same `agent_jobs` queue
+- or separate services for planning/review/execution if throughput or isolation requires it
+
+This split is a scaling step, not a starting requirement.
+
 Concurrency policy:
 
 - analysis: high concurrency
@@ -468,3 +481,15 @@ Hermes produces structured outputs
 workers validate and persist results
 dashboard reads Supabase facts
 ```
+
+Realtime complements this flow but does not replace it:
+
+```text
+Supabase Realtime Broadcast/Postgres Changes
+  -> tell the dashboard to re-fetch
+
+Supabase Database Webhooks or wake signals
+  -> optionally reduce worker polling delay
+```
+
+Polling plus durable claim remains the primary dispatch mechanism.

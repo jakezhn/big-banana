@@ -243,6 +243,14 @@ VPS apps/hermes
   replay/review/memory jobs
 ```
 
+The first runtime should be intentionally small:
+
+- one `apps/hermes` Docker service
+- one planning worker loop
+- one durable job queue in Supabase/Postgres
+
+Only after the queue, lock, retry, and replay model is validated should the project increase worker concurrency or split Hermes into multiple deployed services.
+
 ### 8.2 Multi-Hermes shape
 
 Hermes should not become one global trading brain. Use scoped roles and route jobs by market and task:
@@ -255,6 +263,13 @@ Hermes should not become one global trading brain. Use scoped roles and route jo
 
 MVP can run these as logical roles in one Docker service first. Physical process splitting can wait until throughput or isolation requires it.
 
+Important distinction:
+
+- logical multi-Hermes: different role prompts, retrieval scopes, and job routing rules
+- physical multi-worker/multi-container: multiple polling loops or Docker replicas
+
+The MVP should implement logical role separation first and keep physical deployment simple.
+
 ### 8.3 Queue and locks
 
 Use Supabase/Postgres as the initial queue:
@@ -263,6 +278,15 @@ Use Supabase/Postgres as the initial queue:
 - `idempotency_key` for duplicate prevention
 - `FOR UPDATE SKIP LOCKED` or advisory locks for worker claiming
 - retry and timeout fields for recovery
+
+Correctness should rely on durable polling and claiming, not on realtime delivery. The worker should continue to function if websocket delivery is delayed or unavailable.
+
+Supabase Realtime and Database Webhooks can still be useful, but only as secondary mechanisms:
+
+- Realtime Broadcast or Postgres Changes: notify the dashboard that fresh data is available
+- Database Webhooks or lightweight realtime wake-ups: optionally reduce worker polling latency
+
+Neither should be the only way Hermes learns about a new job.
 
 Concurrency rules:
 
@@ -273,6 +297,23 @@ Concurrency rules:
 - execution: account-level lock first, symbol-level later if needed
 
 Risk and execution do not need to be agents. They should remain deterministic skills/services that workers call after Hermes proposes a plan or revision.
+
+### 8.4 Dashboard freshness
+
+Dashboard freshness should prefer a two-step model:
+
+1. Supabase emits a lightweight realtime signal
+2. frontend reloads authoritative data from API/read models
+
+This keeps facts in relational tables and avoids coupling UI correctness to raw database change streams.
+
+Recommended order:
+
+- MVP acceptable: periodic refresh or manual reload
+- Better MVP: Supabase Realtime Broadcast signals, then API re-fetch
+- Acceptable early alternative: Supabase Postgres Changes subscriptions on a few read-model tables
+
+Broadcast is a better long-term fit for "something changed, re-fetch now" than using raw table change feeds everywhere.
 
 ## 9. Current Architectural Gaps
 
