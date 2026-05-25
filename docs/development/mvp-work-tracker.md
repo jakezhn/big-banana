@@ -189,11 +189,11 @@
 | Integration | remote Supabase worker runtime smoke | 已完成 | 100% | 已用 remote Supabase 跑通 `apps/api + apps/hermes` 联调；fresh signal 能经历 `queued -> order_submitted`，`agent_runs` 与 `trade_plan_versions` 均已远端落库 |
 | Integration | context v2 replay | 未开始 | 0% | 待建立 recent context 后的 replay 验证 |
 | Integration | plan revision foundation regression | 已完成 | 100% | `plan-revision` contract、`revise_plan` handler、shared revision runtime 与全仓 `typecheck` 已通过 |
-| Integration | plan revision smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
+| Integration | plan revision smoke | 已开始 | 75% | 已补 queue/runtime/write-back 本地 smoke，但仍待 remote DB smoke 与 dashboard 可见性验证 |
 | Integration | post-plan review foundation regression | 已完成 | 100% | `post-plan-review` contract、`post_plan_review` handler、shared review runtime 与全仓 `typecheck` 已通过 |
-| Integration | post-plan review smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
+| Integration | post-plan review smoke | 已开始 | 75% | 已补 queue/runtime/write-back 本地 smoke，但仍待 remote DB smoke 与 dashboard 可见性验证 |
 | Integration | memory lesson candidates foundation regression | 已完成 | 100% | `memory-lesson-candidates` contract、`memory_curate` handler、shared memory-curate runtime 与全仓 `typecheck` 已通过 |
-| Integration | memory lesson candidates smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
+| Integration | memory lesson candidates smoke | 已开始 | 75% | 已补 queue/runtime/write-back 本地 smoke，但仍待 remote DB smoke 与 dashboard 可见性验证 |
 
 ## 5. 当前已完成的主要里程碑
 
@@ -220,28 +220,24 @@
 ### 当前还缺
 
 - planner quality iteration loop
-- plan revision runtime smoke and visibility
-- post-plan review runtime smoke and visibility
-- memory lesson candidate runtime smoke and visibility
+- revision / review / memory lesson candidate dashboard visibility
 - advanced interventions
 - dashboard realtime refresh wiring
 - optional Inngest fallback
 
 ## 6. 当前建议的下一轮开发顺序
 
-1. dashboard `Agent Runs / Market Detail` 手工 QA
+1. 前端 UI 开发并结合 `Agent Runs / Market Detail` 手工 QA
 2. planner quality iteration loop baseline interpretation
-3. plan revision / post-plan review / memory lesson candidates smoke
+3. revision / review / memory lesson candidate read model 与展示
 4. multi-Hermes router
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. replay_planner batch smoke
 2. multi-market AI replay baseline
-3. plan revision smoke
-4. post-plan review smoke
-5. memory lesson candidates smoke
-6. dashboard Agent Runs / Market Detail manual QA
+3. remote revision / review / memory lesson candidate smoke
+4. dashboard Agent Runs / Market Detail manual QA
 
 ## 8. 本轮状态快照
 
@@ -283,6 +279,8 @@
 - 本轮已验证 replay quality report 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 memory lesson candidates foundation：新增 `memory_lesson_candidates` contract、migration、shared generator/runtime、`memory_curate` worker handler 与持久化 repo
 - 本轮已验证 memory lesson candidates foundation 回归通过：`pnpm --filter @big-banana/contracts test`、`pnpm --filter @big-banana/domain test`、`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已完成 revision / review / memory 三条 worker 路径的 queue/runtime 本地 smoke：`revise_plan -> post_plan_review -> memory_curate` 已可通过同一 worker/job loop 完成 write-back
+- 当前可将后端视为“基本收尾”：剩余重点转向前端 UI、dashboard 手工 QA、以及这些新记录类型的可见性与少量 remote smoke
 - 本轮已完成 replay baseline archive 第一阶段：默认 replay batch 现在会生成结构化 JSON 报告文件，可作为后续 prompt/version 对比基线
 - 本轮已验证 replay report archive 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline compare 第一阶段：已支持从已归档报告读取 baseline/candidate 并生成 quality delta，对比 prompt/model 改动前后的 replay 结果
