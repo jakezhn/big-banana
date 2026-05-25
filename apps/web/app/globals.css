@@ -113,6 +113,15 @@ a {
   color: #f8f4ec;
 }
 
+.action-link-inline {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--accent);
+}
+
 .action-link:hover,
 .text-link:hover {
   transform: translateY(-1px);
@@ -240,10 +249,25 @@ a {
   color: var(--muted);
 }
 
+.table-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.table-subtle {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.detail-grid-tight {
+  grid-template-columns: 1.1fr 1.4fr;
 }
 
 .detail-card {
@@ -265,12 +289,77 @@ a {
   word-break: break-word;
 }
 
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 0.9rem 0 0;
+}
+
+.detail-list-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+.detail-list-row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.detail-list dt {
+  color: var(--muted);
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detail-list dd {
+  margin: 0;
+  max-width: 60%;
+  text-align: right;
+  font-weight: 600;
+}
+
+.callout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+.callout-panel {
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: rgba(185, 95, 45, 0.08);
+  border: 1px solid rgba(185, 95, 45, 0.12);
+}
+
+.callout-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.callout-title {
+  margin: 0 0 0.35rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 980px) {
   .card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid-tight {
     grid-template-columns: 1fr;
   }
 
@@ -297,5 +386,14 @@ a {
 
   .card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-list-row {
+    flex-direction: column;
+  }
+
+  .detail-list dd {
+    max-width: none;
+    text-align: left;
   }
 }

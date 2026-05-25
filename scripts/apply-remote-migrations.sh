@@ -57,6 +57,9 @@ migrations=(
   "packages/db/migrations/0009_agent_runs.sql"
   "packages/db/migrations/0010_agent_jobs_and_locks.sql"
   "packages/db/migrations/0011_agent_runs_metadata.sql"
+  "packages/db/migrations/0012_plan_revision_suggestions.sql"
+  "packages/db/migrations/0013_post_plan_reviews.sql"
+  "packages/db/migrations/0014_memory_lesson_candidates.sql"
 )
 
 for migration in "${migrations[@]}"; do

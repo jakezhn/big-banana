@@ -26,6 +26,22 @@ export default async function MarketDetailPage({
     ["Signed Qty", formatNumber(pipeline.currentPosition?.signedQty ?? 0)],
     ["Avg Entry", formatNullableNumber(pipeline.currentPosition?.avgEntryPrice)]
   ] as const;
+  const overviewRows = [
+    ["Latest Plan Version", pipeline.tradePlanVersion?.version?.toString() ?? "—"],
+    ["Risk Verdict", pipeline.riskVerdict?.verdict ?? "—"],
+    ["Order Status", pipeline.latestOrder?.status ?? "—"],
+    ["Fill Price", formatNullableNumber(pipeline.latestFill?.price)],
+    [
+      "Lesson Candidate Status",
+      pipeline.memoryLessonCandidates[0]?.status ?? "—"
+    ],
+    [
+      "Last Revision At",
+      pipeline.latestPlanRevisionSuggestion
+        ? formatTimestamp(pipeline.latestPlanRevisionSuggestion.createdAt)
+        : "—"
+    ]
+  ] as const;
 
   return (
     <main className="dashboard-shell">
@@ -65,6 +81,57 @@ export default async function MarketDetailPage({
               <p className="metric-value metric-value-compact">{value}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Overview</p>
+            <h2>Plan and execution summary</h2>
+          </div>
+        </div>
+        <div className="detail-grid detail-grid-tight">
+          <article className="detail-card">
+            <p className="metric-label">Current summary</p>
+            <dl className="detail-list">
+              {overviewRows.map(([label, value]) => (
+                <div key={label} className="detail-list-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+          <article className="detail-card">
+            <p className="metric-label">Active reasoning summary</p>
+            <div className="callout-stack">
+              <div className="callout-panel">
+                <p className="callout-title">Trade plan</p>
+                <p>
+                  {pipeline.tradePlanVersion?.reasoningSummary
+                    ? truncate(pipeline.tradePlanVersion.reasoningSummary, 220)
+                    : "No active plan reasoning recorded."}
+                </p>
+              </div>
+              <div className="callout-panel">
+                <p className="callout-title">Latest revision</p>
+                <p>
+                  {pipeline.latestPlanRevisionSuggestion?.reason
+                    ? truncate(pipeline.latestPlanRevisionSuggestion.reason, 220)
+                    : "No revision suggestion recorded."}
+                </p>
+              </div>
+              <div className="callout-panel">
+                <p className="callout-title">Latest review</p>
+                <p>
+                  {pipeline.latestPostPlanReview?.outcomeSummary
+                    ? truncate(pipeline.latestPostPlanReview.outcomeSummary, 220)
+                    : "No post-plan review recorded."}
+                </p>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -132,7 +199,9 @@ export default async function MarketDetailPage({
           <div className="detail-grid">
             {pipeline.memoryLessonCandidates.map((candidate) => (
               <article key={candidate.id} className="detail-card">
-                <p className="metric-label">{candidate.status}</p>
+                <p className="metric-label">
+                  {candidate.status} · confidence {formatNumber(candidate.confidence)}
+                </p>
                 <p className="metric-value metric-value-compact">
                   {candidate.lesson}
                 </p>

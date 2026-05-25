@@ -140,8 +140,8 @@
 | Read Models / Dashboard | Agent Runs API | 已完成 | 100% | `/api/dashboard/agent-runs` 已可用 |
 | Frontend | Overview page | 已完成 | 100% | `/` 已提供 overview cards 和 recent pipelines |
 | Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
-| Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路，并开始展示 revision / review / scoped lesson candidates |
-| Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已可查看 planner runs，并展示 skill / error / market detail 跳转 |
+| Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路，现已补 overview / reasoning summary / revision / review / scoped lesson candidate 展示位 |
+| Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已补运行汇总卡片，并展示 skill / prompt / token usage / error / market detail 跳转 |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
@@ -170,7 +170,7 @@
 | Integration | `cancel_pending_entry` smoke | 已完成 | 100% | 已联调通过 |
 | Integration | advisory mode remote test | 未开始 | 0% | 当前 MVP 默认 full，可后置 |
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
-| Integration | dashboard manual QA | 未开始 | 0% | 页面已完成第一阶段，但尚未做联调级手工验证 |
+| Integration | dashboard manual QA | 已开始 | 50% | 已完成本地 localhost 级页面验证与 remote migration 收口；仍待结合后续 UI 收口做完整联调级手工 QA |
 | Integration | real AI planner paper validation | 已完成 | 100% | 已完成 Vercel AI Gateway -> plan -> risk -> intent -> order -> reconcile 闭环验证 |
 | Integration | `PlannerInput` context v2 unit / route regression | 已完成 | 100% | domain/api test 与 `typecheck` 已通过 |
 | Integration | `agent_jobs` queue / lock foundation regression | 已完成 | 100% | domain tests、API tests、`typecheck` 已通过；timeout recovery 已计入 attempt / maxAttempts |
@@ -220,24 +220,23 @@
 ### 当前还缺
 
 - planner quality iteration loop
-- revision / review / memory lesson candidate dashboard visibility
 - advanced interventions
 - dashboard realtime refresh wiring
 - optional Inngest fallback
 
 ## 6. 当前建议的下一轮开发顺序
 
-1. 前端 UI 开发并结合 `Agent Runs / Market Detail` 手工 QA
+1. 前端 UI 开发并继续推进 `Agent Runs / Market Detail` 手工 QA
 2. planner quality iteration loop baseline interpretation
-3. revision / review / memory lesson candidate read model 与展示
+3. revision / review / memory lesson candidate 的更细可见性与交互
 4. multi-Hermes router
 
 ## 7. 当前建议的下一轮测试顺序
 
 1. replay_planner batch smoke
 2. multi-market AI replay baseline
-3. remote revision / review / memory lesson candidate smoke
-4. dashboard Agent Runs / Market Detail manual QA
+3. dashboard Agent Runs / Market Detail manual QA
+4. remote revision / review / memory lesson candidate smoke
 
 ## 8. 本轮状态快照
 
@@ -258,6 +257,7 @@
 - 当前已明确：逻辑 multi-Hermes 与物理多容器不是同一件事，MVP 先做单 `apps/hermes` worker baseline
 - 当前已明确：`agent_jobs` 的正确性依赖 durable queue polling；Supabase realtime 只负责前端刷新和可选 worker 唤醒
 - 当前已明确：MVP 只做 single-timeframe reasoning，不做 `1H/4H/1D` 联合推理；同一 ticker 不同 timeframe 允许独立 plan 并存
+- 当前已补 remote migration 脚本到 `0014_memory_lesson_candidates.sql`，本地 `Agent Runs` / `Market Detail` 页面已完成 localhost 级验证并能正确读取 revision / review / lesson candidate 相关字段
 - 当前已明确：`latestSnapshots` 只保留为隐形参考，不作为现行 MTF reasoning 入口；当前 planner 主要依赖 `recentSnapshots + windowSummary`
 - 本轮已完成 `PlannerInput context v2`：主 timeframe `recentSnapshots`、`windowSummary`、active plan、open orders、open position 已进入 planner 输入
 - 本轮进一步补强 `windowSummary`：已包含区间位置、EMA stack、相对 EMA 的 ATR 扩张、HH/HL/LH/LL 计数、bar range 扩张比
