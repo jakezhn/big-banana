@@ -9,11 +9,17 @@ import {
 import { getHermesWorkerConfigFromEnv } from "../config/get-hermes-worker-config-from-env";
 import { defaultReplayPlannerFixtures } from "./default-replay-planner-fixtures";
 import { runReplayPlannerBatch } from "./replay-planner-batch";
+import {
+  buildDefaultReplayPlannerReportPath,
+  buildReplayPlannerBatchReport,
+  writeReplayPlannerBatchReport
+} from "./replay-planner-report";
 import { createReplayPlannerHandler } from "../worker/replay/replay-planner-handler";
 import { AgentJobWorker } from "../worker/agent-job-worker";
 
 async function main(): Promise<void> {
   const config = getHermesWorkerConfigFromEnv();
+  const generatedAt = new Date().toISOString();
   const jobRepository = createAgentJobRepositoryFromEnv();
   const worker = new AgentJobWorker({
     jobRepository,
@@ -40,22 +46,24 @@ async function main(): Promise<void> {
       worker
     },
     {
-      idempotencyPrefix: `replay-batch-${new Date().toISOString()}`,
+      idempotencyPrefix: `replay-batch-${generatedAt}`,
       maxRuns: defaultReplayPlannerFixtures.length * 4
     }
   );
+  const report = buildReplayPlannerBatchReport(
+    defaultReplayPlannerFixtures,
+    result,
+    generatedAt
+  );
+  const reportPath =
+    process.env.HERMES_REPLAY_REPORT_PATH ??
+    buildDefaultReplayPlannerReportPath(generatedAt);
+
+  await writeReplayPlannerBatchReport(report, reportPath);
 
   console.log(
     JSON.stringify(
-      {
-        totalFixtures: result.totalFixtures,
-        completedJobs: result.completedJobs.length,
-        failedJobs: result.failedJobs.length,
-        cancelledJobs: result.cancelledJobs.length,
-        pendingJobs: result.pendingJobs.length,
-        summary: result.summary,
-        qualityReport: result.qualityReport
-      },
+      { reportPath, ...report },
       null,
       2
     )
