@@ -68,6 +68,12 @@ describe("runReplayPlannerBatch", () => {
     expect(result.failedJobs).toHaveLength(0);
     expect(result.pendingJobs).toHaveLength(0);
     expect(result.summary.totalRuns).toBe(defaultReplayPlannerFixtures.length);
+    expect(result.qualityReport.overall.totalRuns).toBe(
+      defaultReplayPlannerFixtures.length
+    );
+    expect(result.qualityReport.overall.executionEligibleRate).toBeCloseTo(2 / 3);
+    expect(result.qualityReport.byMarket.crypto.actionableRate).toBe(1);
+    expect(result.qualityReport.byMarket.commodity.watchRate).toBe(1);
     expect(result.summary.marketCounts.crypto).toBe(1);
     expect(result.summary.marketCounts.us_equity).toBe(1);
     expect(result.summary.marketCounts.commodity).toBe(1);

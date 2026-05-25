@@ -53,7 +53,8 @@ async function main(): Promise<void> {
         failedJobs: result.failedJobs.length,
         cancelledJobs: result.cancelledJobs.length,
         pendingJobs: result.pendingJobs.length,
-        summary: result.summary
+        summary: result.summary,
+        qualityReport: result.qualityReport
       },
       null,
       2

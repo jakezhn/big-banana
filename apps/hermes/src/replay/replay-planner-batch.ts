@@ -4,6 +4,10 @@ import {
   type ReplayPlannerFixture,
   type ReplayPlannerSummary
 } from "./replay-planner-harness";
+import {
+  buildReplayPlannerQualityReport,
+  type ReplayPlannerQualityReport
+} from "./replay-planner-quality";
 import type {
   AgentJobRepository,
   JsonValue,
@@ -18,6 +22,7 @@ export type ReplayPlannerBatchRunResult = {
   cancelledJobs: StoredAgentJob[];
   pendingJobs: StoredAgentJob[];
   summary: ReplayPlannerSummary;
+  qualityReport: ReplayPlannerQualityReport;
   workerRuns: AgentJobWorkerRunResult[];
 };
 
@@ -109,6 +114,9 @@ function buildBatchRunResult(
   const pendingJobs = jobs.filter(
     (job) => job.status === "pending" || job.status === "running"
   );
+  const resultRefs = completedJobs
+    .map((job) => job.resultRefJson)
+    .filter((value): value is JsonValue => value !== null);
 
   return {
     totalFixtures,
@@ -116,11 +124,8 @@ function buildBatchRunResult(
     failedJobs,
     cancelledJobs,
     pendingJobs,
-    summary: summarizeReplayPlannerResultRefs(
-      completedJobs
-        .map((job) => job.resultRefJson)
-        .filter((value): value is JsonValue => value !== null)
-    ),
+    summary: summarizeReplayPlannerResultRefs(resultRefs),
+    qualityReport: buildReplayPlannerQualityReport(resultRefs),
     workerRuns
   };
 }
