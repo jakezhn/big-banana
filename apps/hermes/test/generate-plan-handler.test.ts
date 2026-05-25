@@ -126,6 +126,8 @@ describe("createGeneratePlanHandler", () => {
     expect(webhookEventRepository.processStatuses).toEqual([["wh-1", "order_submitted"]]);
     expect([...tradePlanVersionRepository.versions.values()].flat()).toHaveLength(1);
     expect(agentRunRepository.runs).toHaveLength(1);
+    expect(agentRunRepository.runs[0]?.skillName).toBe("generate_trade_plan.crypto");
+    expect(agentRunRepository.runs[0]?.promptVersion).toBe("deterministic-v1:crypto");
     expect(riskVerdictRepository.verdicts).toHaveLength(1);
     expect(executionIntentRepository.intents).toHaveLength(1);
     expect(orderRepository.orders).toHaveLength(1);

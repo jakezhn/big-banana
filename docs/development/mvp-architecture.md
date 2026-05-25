@@ -333,6 +333,7 @@ The current repo supports the refactor direction, but these gaps must be closed:
 
 - `apps/hermes` now handles both `replay_planner` and live `generate_plan`, and remote Supabase worker smoke has been validated; dashboard-level QA still remains
 - replay harness now supports DB-backed batch replay, summary aggregation, archived baseline reports, and automatic report comparison; the remaining gap is review labels and prompt/version interpretation
+- multi-Hermes routing has started as a logical role layer inside the single worker runtime: market-specific role selection now affects planner prompt shaping and `agent_runs` metadata, but not yet runtime/process isolation
 - no plan revision model exists
 - no post-plan review or lesson candidate table exists
 - the MVP still lacks an explicit "single-timeframe reasoning, multi-timeframe coexistence" rule across planner, queue, and revision flows

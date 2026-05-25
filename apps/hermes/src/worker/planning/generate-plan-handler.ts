@@ -20,6 +20,7 @@ import {
   submitPaperOrderFromExecutionIntent
 } from "@big-banana/domain";
 import type { AgentJobHandler } from "../agent-job-handler";
+import type { AgentJobMarket } from "@big-banana/domain";
 
 export type GeneratePlanHandlerDependencies = {
   webhookEventRepository: WebhookEventRepository;
@@ -36,9 +37,17 @@ export function createGeneratePlanHandler(
   dependencies: GeneratePlanHandlerDependencies,
   env: NodeJS.ProcessEnv = process.env
 ): AgentJobHandler {
-  const configuredGenerator = createTradePlanGeneratorFromEnv(env);
+  const configuredGenerators = new Map<
+    AgentJobMarket,
+    ReturnType<typeof createTradePlanGeneratorFromEnv>
+  >();
 
   return async (job) => {
+    const configuredGenerator = getConfiguredGenerator(
+      job.market,
+      configuredGenerators,
+      env
+    );
     const payload = parseGeneratePlanJobPayload(job.payloadJson);
 
     try {
@@ -71,6 +80,22 @@ export function createGeneratePlanHandler(
       throw error;
     }
   };
+}
+
+function getConfiguredGenerator(
+  market: AgentJobMarket,
+  cache: Map<AgentJobMarket, ReturnType<typeof createTradePlanGeneratorFromEnv>>,
+  env: NodeJS.ProcessEnv
+): ReturnType<typeof createTradePlanGeneratorFromEnv> {
+  const existing = cache.get(market);
+
+  if (existing) {
+    return existing;
+  }
+
+  const created = createTradePlanGeneratorFromEnv(env, { market });
+  cache.set(market, created);
+  return created;
 }
 
 async function processFullSignalPipeline(

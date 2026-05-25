@@ -7,6 +7,7 @@ import {
 } from "./build-openai-trade-plan-prompt";
 import { createOpenAiCompatibleSchema } from "./create-openai-compatible-schema";
 import type { OpenAiPlannerConfig } from "./get-openai-planner-config-from-env";
+import type { HermesMarketRole } from "./get-hermes-market-role";
 
 export class MissingOpenAiPlannerApiKeyError extends Error {
   constructor() {
@@ -23,7 +24,8 @@ export class InvalidOpenAiTradePlanOutputError extends Error {
 }
 
 export function createOpenAiTradePlanGenerator(
-  config: OpenAiPlannerConfig
+  config: OpenAiPlannerConfig,
+  options: { marketRole?: HermesMarketRole } = {}
 ): TradePlanGenerator {
   if (!config.apiKey) {
     throw new MissingOpenAiPlannerApiKeyError();
@@ -41,11 +43,15 @@ export function createOpenAiTradePlanGenerator(
       input: [
         {
           role: "system",
-          content: buildOpenAiTradePlanSystemPrompt()
+          content: buildOpenAiTradePlanSystemPrompt(options.marketRole)
         },
         {
           role: "user",
-          content: buildOpenAiTradePlanUserPrompt(plannerInput, reusablePlan)
+          content: buildOpenAiTradePlanUserPrompt(
+            plannerInput,
+            reusablePlan,
+            options.marketRole
+          )
         }
       ],
       text: {

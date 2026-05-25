@@ -122,7 +122,7 @@
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
 | Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
-| Planner / Agent | multi-Hermes router | 未开始 | 0% | 待按 market/job type 路由 Global/Crypto/US Equity/CN Equity/Commodity Hermes；不是按 timeframe 做 MTF 合并 |
+| Planner / Agent | multi-Hermes router | 已开始 | 25% | 已按 `job.market` 接入逻辑 role 路由，并把 market-specific role 信息写入 prompt 与 `agent_runs` metadata；后续待补更完整的 role-specific skills 与运行时分工 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
 | Execution | paper submit | 已完成 | 100% | 已支持自动 paper order submit |
@@ -183,6 +183,7 @@
 | Integration | replay report archive regression | 已完成 | 100% | replay baseline 报告封装与 JSON 落盘已通过 hermes tests |
 | Integration | replay report compare regression | 已完成 | 100% | replay baseline 报告读取、共享 fixture 检查与 quality delta 对比已通过 hermes tests |
 | Integration | replay baseline CLI regression | 已完成 | 100% | replay baseline 命令、最新报告发现与 comparison artifact 写入逻辑已通过 hermes tests |
+| Integration | multi-Hermes logical routing regression | 已完成 | 100% | market-scoped role routing、runner metadata 与 handler 路径已通过 api/hermes tests 与全仓 `typecheck` |
 | Integration | live `generate_plan` worker handoff regression | 已完成 | 100% | `apps/api` webhook route tests、`apps/hermes` live planning handler tests、全仓 `typecheck` 已通过 |
 | Integration | local enqueue -> worker -> write-back smoke | 已完成 | 100% | 已补 API enqueue + Hermes worker + write-back 的最小闭环 smoke，验证 `queued -> completed -> order_submitted` 主路径 |
 | Integration | remote Supabase worker runtime smoke | 已完成 | 100% | 已用 remote Supabase 跑通 `apps/api + apps/hermes` 联调；fresh signal 能经历 `queued -> order_submitted`，`agent_runs` 与 `trade_plan_versions` 均已远端落库 |
@@ -283,6 +284,8 @@
 - 本轮已验证 replay report compare 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline CLI 第一阶段：新增 `replay:baseline`，现在可自动写 baseline 报告、发现上一份归档并生成 comparison artifact
 - 本轮已验证 replay baseline CLI 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已完成 multi-Hermes router 第一阶段：当前仍是单 `apps/hermes` worker，但已按 `job.market` 选择逻辑 role，并把 role-specific `skillName/promptVersion` 写入 planner metadata
+- 本轮已验证 multi-Hermes logical routing 回归通过：`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay harness 第一阶段：已补默认 replay fixtures、job builder、result summary parser/aggregator，以及真实 deterministic replay handler smoke
 - 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
 - 本轮已完成 live `generate_plan` worker handoff 第一阶段：`apps/api` signal webhook 已改为 enqueue `generate_plan` job，live planning 已迁入 `apps/hermes` handler，并由 worker 负责写回 webhook `process_status`

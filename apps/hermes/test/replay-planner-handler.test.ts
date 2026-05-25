@@ -95,6 +95,8 @@ describe("createReplayPlannerHandler", () => {
     expect(typeof parsed.agentRunId).toBe("string");
     expect(agentRunRepository.runs).toHaveLength(1);
     expect(agentRunRepository.runs[0]?.operation).toBe("plan.replay");
+    expect(agentRunRepository.runs[0]?.skillName).toBe("generate_trade_plan.crypto");
+    expect(agentRunRepository.runs[0]?.promptVersion).toBe("deterministic-v1:crypto");
     expect(tradePlanVersionRepository.latestByMarketKey.size).toBe(0);
   });
 });

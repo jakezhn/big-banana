@@ -1,5 +1,6 @@
 import { createTradePlanGeneratorFromEnv } from "@big-banana/agent";
 import type {
+  AgentJobMarket,
   AgentRunRepository,
   JsonValue,
   MarketStateRepository,
@@ -25,9 +26,17 @@ export function createReplayPlannerHandler(
   dependencies: ReplayPlannerHandlerDependencies,
   env: NodeJS.ProcessEnv = process.env
 ): AgentJobHandler {
-  const configuredGenerator = createTradePlanGeneratorFromEnv(env);
+  const configuredGenerators = new Map<
+    AgentJobMarket,
+    ReturnType<typeof createTradePlanGeneratorFromEnv>
+  >();
 
   return async (job) => {
+    const configuredGenerator = getConfiguredGenerator(
+      job.market,
+      configuredGenerators,
+      env
+    );
     const payload = parseReplayPlannerPayload(job.payloadJson);
     const replay = await replayTradePlanWithAgentRun(
       payload.rawPayload,
@@ -64,6 +73,22 @@ export function createReplayPlannerHandler(
       tokenUsageJson: replay.agentRun.tokenUsageJson
     } satisfies Record<string, JsonValue>;
   };
+}
+
+function getConfiguredGenerator(
+  market: AgentJobMarket,
+  cache: Map<AgentJobMarket, ReturnType<typeof createTradePlanGeneratorFromEnv>>,
+  env: NodeJS.ProcessEnv
+): ReturnType<typeof createTradePlanGeneratorFromEnv> {
+  const existing = cache.get(market);
+
+  if (existing) {
+    return existing;
+  }
+
+  const created = createTradePlanGeneratorFromEnv(env, { market });
+  cache.set(market, created);
+  return created;
 }
 
 function parseReplayPlannerPayload(payloadJson: JsonValue): ReplayPlannerPayload {

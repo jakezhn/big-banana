@@ -1,8 +1,11 @@
 import type { PlannerInput, StoredTradePlanVersion } from "@big-banana/domain";
+import type { HermesMarketRole } from "./get-hermes-market-role";
 
 export const OPENAI_TRADE_PLAN_PROMPT_VERSION = "openai-trade-plan-v3";
 
-export function buildOpenAiTradePlanSystemPrompt(): string {
+export function buildOpenAiTradePlanSystemPrompt(
+  marketRole?: HermesMarketRole
+): string {
   return [
     "You are a trading plan generator.",
     "Return only a JSON object that satisfies the provided trade plan schema.",
@@ -14,17 +17,22 @@ export function buildOpenAiTradePlanSystemPrompt(): string {
     "If the market is bullish or bearish but confirmation is still missing, prefer action=skip over action=create with state=watch.",
     "Use recentSnapshots and windowSummary to reason about short-horizon trend continuity, pullback depth, extension versus EMA/ATR, structure quality, and trigger readiness.",
     "Respect activePlan, openPosition, and openOrders as current execution context rather than assuming a fresh flat book.",
-    "Do not choose quantities, leverage, or final notional sizing beyond the schema."
+    "Do not choose quantities, leverage, or final notional sizing beyond the schema.",
+    ...(marketRole?.systemPromptAppendix ?? [])
   ].join(" ");
 }
 
 export function buildOpenAiTradePlanUserPrompt(
   plannerInput: PlannerInput,
-  reusablePlan: StoredTradePlanVersion | null
+  reusablePlan: StoredTradePlanVersion | null,
+  marketRole?: HermesMarketRole
 ): string {
   return JSON.stringify(
     {
       task: "Generate the next trade plan version for this market.",
+      agent_scope: {
+        role: marketRole?.roleId ?? "generic"
+      },
       runtime_constraints: {
         pipeline_mode: "full",
         execution_rule:

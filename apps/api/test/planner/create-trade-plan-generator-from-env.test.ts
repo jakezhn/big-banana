@@ -9,12 +9,30 @@ describe("createTradePlanGeneratorFromEnv", () => {
     const result = createTradePlanGeneratorFromEnv({});
 
     expect(result.runtime).toBe("deterministic");
+    expect(result.marketRole).toBe("generic");
     expect(result.runner).toEqual({
       runnerKind: "deterministic",
       modelProvider: null,
       model: null,
       skillName: "generate_trade_plan",
       promptVersion: "deterministic-v1"
+    });
+  });
+
+  it("derives a market-scoped deterministic role when market is provided", () => {
+    const result = createTradePlanGeneratorFromEnv(
+      {},
+      { market: "crypto" }
+    );
+
+    expect(result.runtime).toBe("deterministic");
+    expect(result.marketRole).toBe("crypto");
+    expect(result.runner).toEqual({
+      runnerKind: "deterministic",
+      modelProvider: null,
+      model: null,
+      skillName: "generate_trade_plan.crypto",
+      promptVersion: "deterministic-v1:crypto"
     });
   });
 

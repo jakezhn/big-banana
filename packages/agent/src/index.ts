@@ -14,6 +14,11 @@ export {
   type ConfiguredTradePlanGenerator
 } from "./planner/create-trade-plan-generator-from-env";
 export {
+  getHermesMarketRole,
+  type HermesMarketRole,
+  type HermesMarketRoleId
+} from "./planner/get-hermes-market-role";
+export {
   buildGeneratePlanJobInput,
   buildGeneratePlanIdempotencyKey,
   inferAgentJobMarket,
