@@ -8,6 +8,11 @@ export {
   buildOpenAiPlanRevisionUserPrompt,
   OPENAI_PLAN_REVISION_PROMPT_VERSION
 } from "./revision/build-openai-plan-revision-prompt";
+export {
+  buildOpenAiPostPlanReviewSystemPrompt,
+  buildOpenAiPostPlanReviewUserPrompt,
+  OPENAI_POST_PLAN_REVIEW_PROMPT_VERSION
+} from "./review/build-openai-post-plan-review-prompt";
 export { createOpenAiCompatibleSchema } from "./planner/create-openai-compatible-schema";
 export {
   createOpenAiTradePlanGenerator,
@@ -19,6 +24,10 @@ export {
   InvalidOpenAiPlanRevisionOutputError
 } from "./revision/create-openai-plan-revision-generator";
 export {
+  createOpenAiPostPlanReviewGenerator,
+  InvalidOpenAiPostPlanReviewOutputError
+} from "./review/create-openai-post-plan-review-generator";
+export {
   createTradePlanGeneratorFromEnv,
   type ConfiguredTradePlanGenerator
 } from "./planner/create-trade-plan-generator-from-env";
@@ -26,6 +35,10 @@ export {
   createPlanRevisionGeneratorFromEnv,
   type ConfiguredPlanRevisionGenerator
 } from "./revision/create-plan-revision-generator-from-env";
+export {
+  createPostPlanReviewGeneratorFromEnv,
+  type ConfiguredPostPlanReviewGenerator
+} from "./review/create-post-plan-review-generator-from-env";
 export {
   getHermesMarketRole,
   type HermesMarketRole,
@@ -47,6 +60,13 @@ export {
   type RevisePlanJobPayload,
   type RevisePlanTrigger
 } from "./revision/revise-plan-harness";
+export {
+  buildPostPlanReviewJobInput,
+  buildPostPlanReviewIdempotencyKey,
+  parsePostPlanReviewJobPayload,
+  type PostPlanReviewJobPayload,
+  type PostPlanReviewTrigger
+} from "./review/post-plan-review-harness";
 export {
   getOpenAiPlannerConfigFromEnv,
   type OpenAiPlannerConfig

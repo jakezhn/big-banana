@@ -1,0 +1,18 @@
+{
+  "outcome_summary": "The plan reached execution and completed with evidence that the setup worked best after the pullback stabilized.",
+  "what_worked": [
+    "Aligned signal quality was preserved into execution.",
+    "The entry zone stayed close to structure support."
+  ],
+  "what_failed": [
+    "The setup stretched before terminal completion, reducing follow-through efficiency."
+  ],
+  "missed_context": [],
+  "early_warning_signals": [
+    "Range expansion accelerated after entry."
+  ],
+  "lesson_candidates": [
+    "When range expansion spikes after entry, tighten management earlier on this setup type."
+  ],
+  "should_update_strategy_memory": true
+}

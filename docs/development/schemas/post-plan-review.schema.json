@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/post-plan-review.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outcome_summary",
+    "what_worked",
+    "what_failed",
+    "missed_context",
+    "early_warning_signals",
+    "lesson_candidates",
+    "should_update_strategy_memory"
+  ],
+  "properties": {
+    "outcome_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "what_worked": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "what_failed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "missed_context": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "early_warning_signals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "lesson_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "should_update_strategy_memory": {
+      "type": "boolean"
+    }
+  }
+}

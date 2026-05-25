@@ -5,6 +5,13 @@ export {
 } from "./execution-intent";
 export type { ExecutionIntent } from "./execution-intent";
 export {
+  getPostPlanReviewJsonSchema,
+  getPostPlanReviewValidationErrors,
+  postPlanReviewSchemaVersion,
+  validatePostPlanReview
+} from "./post-plan-review";
+export type { PostPlanReview } from "./post-plan-review";
+export {
   getPlanRevisionJsonSchema,
   getPlanRevisionValidationErrors,
   planRevisionSchemaVersion,

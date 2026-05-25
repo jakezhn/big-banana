@@ -35,6 +35,10 @@ export {
   PostgresPositionRepository
 } from "./positions/postgres-position-repository";
 export {
+  createPostPlanReviewRepositoryFromEnv,
+  PostgresPostPlanReviewRepository
+} from "./reviews/postgres-post-plan-review-repository";
+export {
   createMarketPipelineReadModelRepositoryFromEnv,
   PostgresMarketPipelineReadModelRepository
 } from "./read-models/postgres-market-pipeline-read-model-repository";

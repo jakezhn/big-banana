@@ -2,9 +2,11 @@ import {
   createAgentJobRepositoryFromEnv,
   createAgentRunRepositoryFromEnv,
   createExecutionIntentRepositoryFromEnv,
+  createMarketPipelineReadModelRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
   createPlanRevisionSuggestionRepositoryFromEnv,
+  createPostPlanReviewRepositoryFromEnv,
   createPositionRepositoryFromEnv,
   createRiskVerdictRepositoryFromEnv,
   createTradePlanVersionRepositoryFromEnv,
@@ -22,11 +24,14 @@ async function main(): Promise<void> {
     handlers: createDefaultAgentJobHandlers({
       webhookEventRepository: createWebhookEventRepositoryFromEnv(),
       marketStateRepository: createMarketStateRepositoryFromEnv(),
+      marketPipelineReadModelRepository:
+        createMarketPipelineReadModelRepositoryFromEnv(),
       tradePlanVersionRepository: createTradePlanVersionRepositoryFromEnv(),
       orderRepository: createOrderRepositoryFromEnv(),
       positionRepository: createPositionRepositoryFromEnv(),
       planRevisionSuggestionRepository:
         createPlanRevisionSuggestionRepositoryFromEnv(),
+      postPlanReviewRepository: createPostPlanReviewRepositoryFromEnv(),
       agentRunRepository: createAgentRunRepositoryFromEnv(),
       riskVerdictRepository: createRiskVerdictRepositoryFromEnv(),
       executionIntentRepository: createExecutionIntentRepositoryFromEnv(),

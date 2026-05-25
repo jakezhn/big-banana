@@ -73,6 +73,9 @@ export {
   generateDeterministicPlanRevision
 } from "./revisions/generate-deterministic-plan-revision";
 export {
+  generateDeterministicPostPlanReview
+} from "./reviews/generate-deterministic-post-plan-review";
+export {
   generateAndRecordTradePlanWithGenerator
 } from "./planner/generate-and-record-trade-plan-with-generator";
 export type {
@@ -93,6 +96,17 @@ export type {
   PlanRevisionGenerator,
   PlanRevisionGeneratorContext
 } from "./revisions/generate-and-record-plan-revision-with-generator";
+export {
+  generateAndRecordPostPlanReviewWithGenerator,
+  InvalidGeneratedPostPlanReviewError,
+  MissingReviewableMarketPipelineError
+} from "./reviews/generate-and-record-post-plan-review-with-generator";
+export type {
+  GeneratedPostPlanReviewResult,
+  GenerateAndRecordPostPlanReviewWithGeneratorResult,
+  PostPlanReviewGenerator,
+  PostPlanReviewGeneratorContext
+} from "./reviews/generate-and-record-post-plan-review-with-generator";
 export {
   evaluateAndRecordDeterministicRiskVerdict,
   evaluateDeterministicRiskVerdict,
@@ -187,6 +201,11 @@ export type {
   ReceivedPlanRevisionSuggestion,
   StoredPlanRevisionSuggestion
 } from "./revisions/plan-revision-suggestion-repository";
+export type {
+  PostPlanReviewRepository,
+  ReceivedPostPlanReview,
+  StoredPostPlanReview
+} from "./reviews/post-plan-review-repository";
 export {
   assertOrderStateTransition,
   canTransitionOrderState,
