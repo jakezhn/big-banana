@@ -8,6 +8,10 @@ export default async function AgentRunsPage() {
   const apiBaseUrl = getApiBaseUrl();
   const agentRuns = await loadDashboardAgentRuns(50);
   const summaryCards = buildSummaryCards(agentRuns);
+  const latestFailedRun = agentRuns.find((run) => run.status !== "success") ?? null;
+  const latestEligibleRun =
+    agentRuns.find((run) => run.executionEligible === true) ?? null;
+  const runMixRows = buildRunMixRows(agentRuns);
 
   return (
     <main className="dashboard-shell">
@@ -47,6 +51,125 @@ export default async function AgentRunsPage() {
               <p className="metric-value metric-value-compact">{value}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Focus</p>
+            <h2>What needs attention</h2>
+          </div>
+        </div>
+        <div className="detail-grid detail-grid-tight">
+          <article className="detail-card">
+            <p className="metric-label">Latest failure</p>
+            {latestFailedRun ? (
+              <div className="callout-stack">
+                <div className="callout-panel callout-panel-danger">
+                  <p className="callout-title">
+                    {latestFailedRun.marketKey} · {latestFailedRun.status}
+                  </p>
+                  <p>{truncate(latestFailedRun.errorMessage ?? "Unknown failure", 220)}</p>
+                </div>
+                <dl className="detail-list">
+                  <div className="detail-list-row">
+                    <dt>Skill</dt>
+                    <dd>{latestFailedRun.skillName ?? latestFailedRun.operation}</dd>
+                  </div>
+                  <div className="detail-list-row">
+                    <dt>Prompt</dt>
+                    <dd>{latestFailedRun.promptVersion ?? "—"}</dd>
+                  </div>
+                  <div className="detail-list-row">
+                    <dt>Started</dt>
+                    <dd>{formatTimestamp(latestFailedRun.startedAt)}</dd>
+                  </div>
+                </dl>
+              </div>
+            ) : (
+              <p className="empty-cell">No failed runs in the current sample.</p>
+            )}
+          </article>
+          <article className="detail-card">
+            <p className="metric-label">Latest execution-ready plan</p>
+            {latestEligibleRun ? (
+              <div className="callout-stack">
+                <div className="callout-panel">
+                  <p className="callout-title">
+                    {latestEligibleRun.marketKey} · {latestEligibleRun.status}
+                  </p>
+                  <p>
+                    {latestEligibleRun.skillName ?? latestEligibleRun.operation} via{" "}
+                    {latestEligibleRun.model
+                      ? `${latestEligibleRun.modelProvider ?? latestEligibleRun.runnerKind}:${latestEligibleRun.model}`
+                      : latestEligibleRun.runnerKind}
+                  </p>
+                </div>
+                <dl className="detail-list">
+                  <div className="detail-list-row">
+                    <dt>Prompt</dt>
+                    <dd>{latestEligibleRun.promptVersion ?? "—"}</dd>
+                  </div>
+                  <div className="detail-list-row">
+                    <dt>Latency</dt>
+                    <dd>{latestEligibleRun.latencyMs} ms</dd>
+                  </div>
+                  <div className="detail-list-row">
+                    <dt>Plan Version</dt>
+                    <dd>
+                      {latestEligibleRun.tradePlanVersionId
+                        ? shortenId(latestEligibleRun.tradePlanVersionId)
+                        : "—"}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ) : (
+              <p className="empty-cell">No execution-eligible runs in the current sample.</p>
+            )}
+          </article>
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Mix</p>
+            <h2>Live, replay, and market breakdown</h2>
+          </div>
+        </div>
+        <div className="detail-grid detail-grid-tight">
+          <article className="detail-card">
+            <p className="metric-label">Current mix</p>
+            <dl className="detail-list">
+              {runMixRows.map(([label, value]) => (
+                <div key={label} className="detail-list-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+          <article className="detail-card">
+            <p className="metric-label">Why this matters</p>
+            <div className="callout-stack">
+              <div className="callout-panel">
+                <p className="callout-title">Live runs</p>
+                <p>
+                  Use these to validate whether the current planner/runtime is producing
+                  execution-ready plans on the actual webhook path.
+                </p>
+              </div>
+              <div className="callout-panel">
+                <p className="callout-title">Replay runs</p>
+                <p>
+                  Use these to compare prompt and model changes without polluting live
+                  plan facts or paper orders.
+                </p>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -149,6 +272,24 @@ function buildSummaryCards(
     ["Non-Success", String(failureCount)],
     ["Execution Eligible", String(eligibleCount)],
     ["Average Latency", `${averageLatencyMs} ms`]
+  ] as const;
+}
+
+function buildRunMixRows(
+  agentRuns: Awaited<ReturnType<typeof loadDashboardAgentRuns>>
+): readonly (readonly [string, string])[] {
+  const replayRuns = agentRuns.filter((run) => run.operation === "plan.replay").length;
+  const liveRuns = agentRuns.length - replayRuns;
+  const openAiRuns = agentRuns.filter((run) => run.runnerKind === "openai").length;
+  const cryptoRuns = agentRuns.filter((run) =>
+    run.marketKey.startsWith("BINANCE:")
+  ).length;
+
+  return [
+    ["Live Runs", String(liveRuns)],
+    ["Replay Runs", String(replayRuns)],
+    ["OpenAI Runs", String(openAiRuns)],
+    ["BINANCE Markets", String(cryptoRuns)]
   ] as const;
 }
 

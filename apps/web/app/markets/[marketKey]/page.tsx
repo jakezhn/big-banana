@@ -42,6 +42,33 @@ export default async function MarketDetailPage({
         : "—"
     ]
   ] as const;
+  const actionChecklist = [
+    ["Trade plan exists", pipeline.tradePlanVersion ? "ready" : "missing"],
+    ["Risk verdict recorded", pipeline.riskVerdict ? "ready" : "missing"],
+    ["Execution intent built", pipeline.executionIntent ? "ready" : "missing"],
+    ["Order submitted", pipeline.latestOrder ? pipeline.latestOrder.status : "missing"],
+    ["Fill recorded", pipeline.latestFill ? "ready" : "missing"],
+    [
+      "Current position",
+      pipeline.currentPosition ? pipeline.currentPosition.positionSide : "flat"
+    ]
+  ] as const;
+  const latestLifecycleEvents = [
+    ["Plan", pipeline.tradePlanVersion ? formatTimestamp(pipeline.tradePlanVersion.createdAt) : "—"],
+    [
+      "Revision",
+      pipeline.latestPlanRevisionSuggestion
+        ? formatTimestamp(pipeline.latestPlanRevisionSuggestion.createdAt)
+        : "—"
+    ],
+    [
+      "Review",
+      pipeline.latestPostPlanReview
+        ? formatTimestamp(pipeline.latestPostPlanReview.createdAt)
+        : "—"
+    ],
+    ["Order", pipeline.latestOrder ? formatTimestamp(pipeline.latestOrder.submittedAt) : "—"]
+  ] as const;
 
   return (
     <main className="dashboard-shell">
@@ -64,6 +91,39 @@ export default async function MarketDetailPage({
           >
             View Market API
           </Link>
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Checklist</p>
+            <h2>Current action state</h2>
+          </div>
+        </div>
+        <div className="detail-grid detail-grid-tight">
+          <article className="detail-card">
+            <p className="metric-label">Execution checklist</p>
+            <dl className="detail-list">
+              {actionChecklist.map(([label, value]) => (
+                <div key={label} className="detail-list-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+          <article className="detail-card">
+            <p className="metric-label">Latest lifecycle timestamps</p>
+            <dl className="detail-list">
+              {latestLifecycleEvents.map(([label, value]) => (
+                <div key={label} className="detail-list-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
         </div>
       </section>
 
