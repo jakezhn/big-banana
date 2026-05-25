@@ -1,0 +1,12 @@
+{
+  "memory_items": [
+    {
+      "lesson": "Generic lesson without scope",
+      "confidence": 0.5,
+      "sample_size": 1,
+      "decay_days": 90,
+      "retrieval_hint": "generic"
+    }
+  ],
+  "reject_reasons": []
+}

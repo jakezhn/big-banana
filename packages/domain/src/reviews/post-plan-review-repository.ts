@@ -21,6 +21,10 @@ export type StoredPostPlanReview = ReceivedPostPlanReview & {
 };
 
 export interface PostPlanReviewRepository {
+  getPostPlanReviewById(
+    reviewId: string
+  ): Promise<StoredPostPlanReview | null>;
+
   recordPostPlanReview(
     review: ReceivedPostPlanReview
   ): Promise<StoredPostPlanReview>;

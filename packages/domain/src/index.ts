@@ -76,6 +76,9 @@ export {
   generateDeterministicPostPlanReview
 } from "./reviews/generate-deterministic-post-plan-review";
 export {
+  generateDeterministicMemoryLessonCandidates
+} from "./memory/generate-deterministic-memory-lesson-candidates";
+export {
   generateAndRecordTradePlanWithGenerator
 } from "./planner/generate-and-record-trade-plan-with-generator";
 export type {
@@ -107,6 +110,17 @@ export type {
   PostPlanReviewGenerator,
   PostPlanReviewGeneratorContext
 } from "./reviews/generate-and-record-post-plan-review-with-generator";
+export {
+  generateAndRecordMemoryLessonCandidatesWithGenerator,
+  InvalidGeneratedMemoryLessonCandidatesError,
+  MissingReviewForMemoryCurationError
+} from "./memory/generate-and-record-memory-lesson-candidates-with-generator";
+export type {
+  GeneratedMemoryLessonCandidatesResult,
+  GenerateAndRecordMemoryLessonCandidatesWithGeneratorResult,
+  MemoryLessonCandidateGenerator,
+  MemoryLessonCandidateGeneratorContext
+} from "./memory/generate-and-record-memory-lesson-candidates-with-generator";
 export {
   evaluateAndRecordDeterministicRiskVerdict,
   evaluateDeterministicRiskVerdict,
@@ -206,6 +220,11 @@ export type {
   ReceivedPostPlanReview,
   StoredPostPlanReview
 } from "./reviews/post-plan-review-repository";
+export type {
+  MemoryLessonCandidateRepository,
+  ReceivedMemoryLessonCandidate,
+  StoredMemoryLessonCandidate
+} from "./memory/memory-lesson-candidate-repository";
 export {
   assertOrderStateTransition,
   canTransitionOrderState,

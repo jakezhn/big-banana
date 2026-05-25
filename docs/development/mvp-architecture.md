@@ -187,7 +187,16 @@ Logical roles:
 - Post-Plan Review Agent: summarize outcome and lesson candidates
 - Memory Curator: decide which lesson candidates are scoped enough to store
 
-Only Trade Planner is currently implemented.
+Currently implemented in foundation form:
+
+- Trade Planner
+- Plan Revision Agent
+- Post-Plan Review Agent
+- Memory Curator lesson-candidate stage
+
+Current gap:
+
+- revision/review/memory still need full runtime smoke, dashboard visibility, and richer orchestration before they count as fully complete.
 
 In the current MVP, `BTCUSDT:1H`, `BTCUSDT:4H`, `BTCUSDT:1D`, and `BTCUSDT:1W` are separate `marketKey` tracks. They may all exist at the same time, but each plan is generated from its own timeframe context.
 

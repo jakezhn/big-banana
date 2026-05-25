@@ -121,7 +121,7 @@
 | Planner / Agent | planner quality iteration loop | 已开始 | 75% | 已具备 replay batch / summary / quality report / baseline comparison / archived report compare / stable baseline CLI；后续待补 review labels 与 prompt/version 结果解读流程 |
 | Planner / Agent | plan revision agent | 已开始 | 50% | 已补 `plan_revision_suggestions` schema/migration、shared generator/runtime、`revise_plan` worker handler 与持久化 repo；后续待补 live trigger、dashboard/read model 和更完整的 revision orchestration |
 | Planner / Agent | post-plan review agent | 已开始 | 50% | 已补 `post_plan_reviews` schema/migration、shared generator/runtime、`post_plan_review` worker handler 与持久化 repo；后续待补 live trigger、dashboard/read model 与 smoke |
-| Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
+| Planner / Agent | memory lesson candidates | 已开始 | 50% | 已补 `memory_lesson_candidates` schema/migration、shared generator/runtime、`memory_curate` worker handler 与持久化 repo；当前只写 scoped candidate，不自动写长期 memory；后续待补 queue/runtime/DB smoke 与 dashboard/read model |
 | Planner / Agent | multi-Hermes router | 已开始 | 25% | 已按 `job.market` 接入逻辑 role 路由，并把 market-specific role 信息写入 prompt 与 `agent_runs` metadata；后续待补更完整的 role-specific skills 与运行时分工 |
 | Risk | deterministic risk engine | 已完成 | 100% | verdict 生成与持久化已完成 |
 | Execution | execution intent pipeline | 已完成 | 100% | 已支持自动 intent 生成 |
@@ -147,7 +147,7 @@
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
 | Platform / Deployment | `apps/web` / `apps/api` split | 已完成 | 100% | 前端与 API 已拆分为两个独立 app |
 | Platform / Deployment | Vercel deployment design | 已完成 | 100% | 已在架构文档明确 |
-| Platform / Deployment | `packages/agent` extraction | 已开始 | 85% | 已把 planner、revision、post-plan review 的 runtime、prompt/schema、job harness 抽到共享包，并由 `apps/api` / `apps/hermes` 共用；lesson skills 仍未迁出 |
+| Platform / Deployment | `packages/agent` extraction | 已开始 | 100% | 已把 planner、revision、post-plan review、memory curate 的 runtime、prompt/schema、job harness 抽到共享包，并由 `apps/api` / `apps/hermes` 共用；当前剩余工作不在抽取层，而在更高层 orchestration 和展示 |
 | Platform / Deployment | Supabase `agent_jobs` queue | 已完成 | 100% | 已补 `agent_jobs` migration、repository、enqueue/claim/complete/fail/timeout recovery、idempotency key |
 | Platform / Deployment | worker lock helpers | 已完成 | 100% | 已补 `marketKey` / plan / risk / execution lock key helpers 与 `agent_locks` repository 基座 |
 | Platform / Deployment | `apps/hermes` Docker worker | 已完成 | 100% | 已补单 Docker worker baseline、polling loop、Dockerfile，并接入真实 `replay_planner` 与 `generate_plan` handler；remote Supabase runtime smoke 已跑通 |
@@ -192,6 +192,8 @@
 | Integration | plan revision smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
 | Integration | post-plan review foundation regression | 已完成 | 100% | `post-plan-review` contract、`post_plan_review` handler、shared review runtime 与全仓 `typecheck` 已通过 |
 | Integration | post-plan review smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
+| Integration | memory lesson candidates foundation regression | 已完成 | 100% | `memory-lesson-candidates` contract、`memory_curate` handler、shared memory-curate runtime 与全仓 `typecheck` 已通过 |
+| Integration | memory lesson candidates smoke | 已开始 | 25% | 已有 hermes handler regression，但还未做 queue/runtime/DB 级 smoke 和 dashboard 可见性验证 |
 
 ## 5. 当前已完成的主要里程碑
 
@@ -218,18 +220,18 @@
 ### 当前还缺
 
 - planner quality iteration loop
-- plan revision agent foundation
-- post-plan review agent foundation
-- scoped lesson candidates
+- plan revision runtime smoke and visibility
+- post-plan review runtime smoke and visibility
+- memory lesson candidate runtime smoke and visibility
 - advanced interventions
 - dashboard realtime refresh wiring
 - optional Inngest fallback
 
 ## 6. 当前建议的下一轮开发顺序
 
-1. scoped lesson candidates
-2. dashboard `Agent Runs / Market Detail` 手工 QA
-3. planner quality iteration loop baseline interpretation
+1. dashboard `Agent Runs / Market Detail` 手工 QA
+2. planner quality iteration loop baseline interpretation
+3. plan revision / post-plan review / memory lesson candidates smoke
 4. multi-Hermes router
 
 ## 7. 当前建议的下一轮测试顺序
@@ -238,7 +240,8 @@
 2. multi-market AI replay baseline
 3. plan revision smoke
 4. post-plan review smoke
-5. dashboard Agent Runs / Market Detail manual QA
+5. memory lesson candidates smoke
+6. dashboard Agent Runs / Market Detail manual QA
 
 ## 8. 本轮状态快照
 
@@ -278,6 +281,8 @@
 - 本轮已验证 replay batch 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 planner quality iteration loop 第一阶段：新增 replay quality report 与 baseline comparison 原语，batch replay 现在可直接产出 actionable/watch/execution-eligible 等质量指标
 - 本轮已验证 replay quality report 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已完成 memory lesson candidates foundation：新增 `memory_lesson_candidates` contract、migration、shared generator/runtime、`memory_curate` worker handler 与持久化 repo
+- 本轮已验证 memory lesson candidates foundation 回归通过：`pnpm --filter @big-banana/contracts test`、`pnpm --filter @big-banana/domain test`、`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline archive 第一阶段：默认 replay batch 现在会生成结构化 JSON 报告文件，可作为后续 prompt/version 对比基线
 - 本轮已验证 replay report archive 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline compare 第一阶段：已支持从已归档报告读取 baseline/candidate 并生成 quality delta，对比 prompt/model 改动前后的 replay 结果

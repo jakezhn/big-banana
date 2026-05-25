@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/memory-lesson-candidates.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "memory_items",
+    "reject_reasons"
+  ],
+  "properties": {
+    "memory_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lesson",
+          "scope",
+          "confidence",
+          "sample_size",
+          "decay_days",
+          "retrieval_hint"
+        ],
+        "properties": {
+          "lesson": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "market",
+              "asset_class",
+              "symbol",
+              "timeframe",
+              "regime",
+              "signal_type"
+            ],
+            "properties": {
+              "market": {
+                "type": "string",
+                "minLength": 1
+              },
+              "asset_class": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "symbol": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "timeframe": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "regime": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "signal_type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "sample_size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decay_days": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "retrieval_hint": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "reject_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

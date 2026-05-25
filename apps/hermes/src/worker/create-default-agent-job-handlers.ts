@@ -2,6 +2,7 @@ import type {
   AgentJobType,
   AgentRunRepository,
   ExecutionIntentRepository,
+  MemoryLessonCandidateRepository,
   MarketStateRepository,
   MarketPipelineReadModelRepository,
   OrderRepository,
@@ -13,6 +14,7 @@ import type {
 } from "@big-banana/domain";
 import type { AgentJobHandler } from "./agent-job-handler";
 import { createGeneratePlanHandler } from "./planning/generate-plan-handler";
+import { createMemoryCurateHandler } from "./memory/memory-curate-handler";
 import { createReplayPlannerHandler } from "./replay/replay-planner-handler";
 import { createPostPlanReviewHandler } from "./review/post-plan-review-handler";
 import { createRevisePlanHandler } from "./revision/revise-plan-handler";
@@ -27,6 +29,7 @@ export type DefaultAgentJobHandlerDependencies = {
   positionRepository: PositionRepository;
   planRevisionSuggestionRepository: PlanRevisionSuggestionRepository;
   postPlanReviewRepository: PostPlanReviewRepository;
+  memoryLessonCandidateRepository: MemoryLessonCandidateRepository;
   agentRunRepository: AgentRunRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
@@ -48,6 +51,7 @@ export function createDefaultAgentJobHandlers(
 
   return {
     generate_plan: createGeneratePlanHandler(dependencies),
+    memory_curate: createMemoryCurateHandler(dependencies),
     post_plan_review: createPostPlanReviewHandler(dependencies),
     revise_plan: createRevisePlanHandler(dependencies),
     replay_planner: createReplayPlannerHandler(dependencies)

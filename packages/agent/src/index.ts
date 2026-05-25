@@ -13,6 +13,11 @@ export {
   buildOpenAiPostPlanReviewUserPrompt,
   OPENAI_POST_PLAN_REVIEW_PROMPT_VERSION
 } from "./review/build-openai-post-plan-review-prompt";
+export {
+  buildOpenAiMemoryLessonCandidatesSystemPrompt,
+  buildOpenAiMemoryLessonCandidatesUserPrompt,
+  OPENAI_MEMORY_LESSON_CANDIDATES_PROMPT_VERSION
+} from "./memory/build-openai-memory-lesson-candidates-prompt";
 export { createOpenAiCompatibleSchema } from "./planner/create-openai-compatible-schema";
 export {
   createOpenAiTradePlanGenerator,
@@ -28,6 +33,10 @@ export {
   InvalidOpenAiPostPlanReviewOutputError
 } from "./review/create-openai-post-plan-review-generator";
 export {
+  createOpenAiMemoryLessonCandidatesGenerator,
+  InvalidOpenAiMemoryLessonCandidatesOutputError
+} from "./memory/create-openai-memory-lesson-candidates-generator";
+export {
   createTradePlanGeneratorFromEnv,
   type ConfiguredTradePlanGenerator
 } from "./planner/create-trade-plan-generator-from-env";
@@ -39,6 +48,10 @@ export {
   createPostPlanReviewGeneratorFromEnv,
   type ConfiguredPostPlanReviewGenerator
 } from "./review/create-post-plan-review-generator-from-env";
+export {
+  createMemoryLessonCandidatesGeneratorFromEnv,
+  type ConfiguredMemoryLessonCandidatesGenerator
+} from "./memory/create-memory-lesson-candidates-generator-from-env";
 export {
   getHermesMarketRole,
   type HermesMarketRole,
@@ -67,6 +80,13 @@ export {
   type PostPlanReviewJobPayload,
   type PostPlanReviewTrigger
 } from "./review/post-plan-review-harness";
+export {
+  buildMemoryCurateJobInput,
+  buildMemoryCurateIdempotencyKey,
+  parseMemoryCurateJobPayload,
+  type MemoryCurateJobPayload,
+  type MemoryCurateTrigger
+} from "./memory/memory-lesson-candidate-harness";
 export {
   getOpenAiPlannerConfigFromEnv,
   type OpenAiPlannerConfig

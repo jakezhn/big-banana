@@ -28,6 +28,19 @@ export class PostgresPostPlanReviewRepository
 {
   constructor(private readonly sql: Sql) {}
 
+  async getPostPlanReviewById(
+    reviewId: string
+  ): Promise<StoredPostPlanReview | null> {
+    const [row] = await this.sql<PostPlanReviewRow[]>`
+      select *
+      from post_plan_reviews
+      where id = ${reviewId}
+      limit 1
+    `;
+
+    return row ? mapPostPlanReviewRow(row) : null;
+  }
+
   async recordPostPlanReview(
     review: ReceivedPostPlanReview
   ): Promise<StoredPostPlanReview> {

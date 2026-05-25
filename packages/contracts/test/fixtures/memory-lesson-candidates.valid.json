@@ -1,0 +1,20 @@
+{
+  "memory_items": [
+    {
+      "lesson": "When range expansion spikes after entry, tighten management earlier on this setup type.",
+      "scope": {
+        "market": "crypto",
+        "asset_class": "large_cap_crypto",
+        "symbol": "BINANCE:BTCUSDT",
+        "timeframe": "240",
+        "regime": "trend",
+        "signal_type": "pullback"
+      },
+      "confidence": 0.58,
+      "sample_size": 1,
+      "decay_days": 90,
+      "retrieval_hint": "crypto 4h pullback trend management tightening"
+    }
+  ],
+  "reject_reasons": []
+}

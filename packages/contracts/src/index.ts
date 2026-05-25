@@ -5,6 +5,16 @@ export {
 } from "./execution-intent";
 export type { ExecutionIntent } from "./execution-intent";
 export {
+  getMemoryLessonCandidatesJsonSchema,
+  getMemoryLessonCandidatesValidationErrors,
+  memoryLessonCandidatesSchemaVersion,
+  validateMemoryLessonCandidates
+} from "./memory-lesson-candidates";
+export type {
+  MemoryLessonCandidateItem,
+  MemoryLessonCandidates
+} from "./memory-lesson-candidates";
+export {
   getPostPlanReviewJsonSchema,
   getPostPlanReviewValidationErrors,
   postPlanReviewSchemaVersion,

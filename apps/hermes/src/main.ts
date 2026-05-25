@@ -2,6 +2,7 @@ import {
   createAgentJobRepositoryFromEnv,
   createAgentRunRepositoryFromEnv,
   createExecutionIntentRepositoryFromEnv,
+  createMemoryLessonCandidateRepositoryFromEnv,
   createMarketPipelineReadModelRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
@@ -32,6 +33,8 @@ async function main(): Promise<void> {
       planRevisionSuggestionRepository:
         createPlanRevisionSuggestionRepositoryFromEnv(),
       postPlanReviewRepository: createPostPlanReviewRepositoryFromEnv(),
+      memoryLessonCandidateRepository:
+        createMemoryLessonCandidateRepositoryFromEnv(),
       agentRunRepository: createAgentRunRepositoryFromEnv(),
       riskVerdictRepository: createRiskVerdictRepositoryFromEnv(),
       executionIntentRepository: createExecutionIntentRepositoryFromEnv(),

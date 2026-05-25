@@ -39,6 +39,10 @@ export {
   PostgresPostPlanReviewRepository
 } from "./reviews/postgres-post-plan-review-repository";
 export {
+  createMemoryLessonCandidateRepositoryFromEnv,
+  PostgresMemoryLessonCandidateRepository
+} from "./memory/postgres-memory-lesson-candidate-repository";
+export {
   createMarketPipelineReadModelRepositoryFromEnv,
   PostgresMarketPipelineReadModelRepository
 } from "./read-models/postgres-market-pipeline-read-model-repository";

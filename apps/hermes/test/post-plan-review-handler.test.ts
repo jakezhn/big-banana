@@ -98,6 +98,12 @@ class InMemoryMarketPipelineReadModelRepository
 class InMemoryPostPlanReviewRepository implements PostPlanReviewRepository {
   reviews: StoredPostPlanReview[] = [];
 
+  async getPostPlanReviewById(
+    reviewId: string
+  ): Promise<StoredPostPlanReview | null> {
+    return this.reviews.find((entry) => entry.id === reviewId) ?? null;
+  }
+
   async recordPostPlanReview(
     review: ReceivedPostPlanReview
   ): Promise<StoredPostPlanReview> {
