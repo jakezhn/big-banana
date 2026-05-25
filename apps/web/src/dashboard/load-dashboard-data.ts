@@ -70,6 +70,9 @@ export async function loadMarketPipeline(
       pipeline_status: string;
       market_state: MarketPipelineReadModel["marketState"];
       trade_plan_version: MarketPipelineReadModel["tradePlanVersion"];
+      latest_plan_revision_suggestion: MarketPipelineReadModel["latestPlanRevisionSuggestion"];
+      latest_post_plan_review: MarketPipelineReadModel["latestPostPlanReview"];
+      memory_lesson_candidates: MarketPipelineReadModel["memoryLessonCandidates"];
       risk_verdict: MarketPipelineReadModel["riskVerdict"];
       execution_intent: MarketPipelineReadModel["executionIntent"];
       latest_order: MarketPipelineReadModel["latestOrder"];
@@ -83,6 +86,9 @@ export async function loadMarketPipeline(
     pipelineStatus: body.data.pipeline_status,
     marketState: body.data.market_state,
     tradePlanVersion: body.data.trade_plan_version,
+    latestPlanRevisionSuggestion: body.data.latest_plan_revision_suggestion,
+    latestPostPlanReview: body.data.latest_post_plan_review,
+    memoryLessonCandidates: body.data.memory_lesson_candidates,
     riskVerdict: body.data.risk_verdict,
     executionIntent: body.data.execution_intent,
     latestOrder: body.data.latest_order,

@@ -775,6 +775,9 @@ function buildReviewablePipeline(marketKey: string): MarketPipelineReadModel {
       evidence: ["aligned_signal", "trend_continuation"],
       createdAt: "2026-05-25T15:00:00.000Z"
     },
+    latestPlanRevisionSuggestion: null,
+    latestPostPlanReview: null,
+    memoryLessonCandidates: [],
     riskVerdict: null,
     executionIntent: null,
     latestOrder: {

@@ -4,8 +4,11 @@ import type {
   StoredFill,
   StoredExecutionIntent,
   StoredMarketState,
+  StoredMemoryLessonCandidate,
   StoredOrder,
+  StoredPlanRevisionSuggestion,
   StoredPositionSnapshot,
+  StoredPostPlanReview,
   StoredRiskVerdict,
   StoredTradePlanVersion
 } from "@big-banana/domain";
@@ -114,6 +117,62 @@ type PositionCurrentRow = {
   last_fill_id: string;
 };
 
+type PlanRevisionSuggestionRow = {
+  id: string;
+  plan_id: string;
+  trade_plan_version_id: string;
+  market_key: string;
+  source_event_key: string;
+  revision_action: StoredPlanRevisionSuggestion["revisionAction"];
+  reason: string;
+  changed_fields_json: StoredPlanRevisionSuggestion["changedFields"];
+  new_invalidation_json: StoredPlanRevisionSuggestion["newInvalidation"];
+  new_management_rules_json: StoredPlanRevisionSuggestion["newManagementRules"];
+  requires_user_review: boolean;
+  agent_run_id: string | null;
+  created_at: string;
+};
+
+type PostPlanReviewRow = {
+  id: string;
+  plan_id: string;
+  trade_plan_version_id: string;
+  market_key: string;
+  source_event_key: string;
+  outcome_summary: string;
+  what_worked_json: string[];
+  what_failed_json: string[];
+  missed_context_json: string[];
+  early_warning_signals_json: string[];
+  lesson_candidates_json: string[];
+  should_update_strategy_memory: boolean;
+  agent_run_id: string | null;
+  created_at: string;
+};
+
+type MemoryLessonCandidateRow = {
+  id: string;
+  post_plan_review_id: string;
+  plan_id: string;
+  trade_plan_version_id: string;
+  market_key: string;
+  source_event_key: string;
+  lesson: string;
+  scope_market: string;
+  scope_asset_class: string | null;
+  scope_symbol: string | null;
+  scope_timeframe: string | null;
+  scope_regime: string | null;
+  scope_signal_type: string | null;
+  confidence: string | number;
+  sample_size: number;
+  decay_days: number;
+  retrieval_hint: string;
+  status: StoredMemoryLessonCandidate["status"];
+  agent_run_id: string | null;
+  created_at: string;
+};
+
 export class PostgresMarketPipelineReadModelRepository
   implements MarketPipelineReadModelRepository
 {
@@ -144,6 +203,35 @@ export class PostgresMarketPipelineReadModelRepository
     const tradePlanVersion = tradePlanVersionRow
       ? mapTradePlanVersionRow(tradePlanVersionRow)
       : null;
+
+    const [planRevisionSuggestionRow] = tradePlanVersion
+      ? await this.sql<PlanRevisionSuggestionRow[]>`
+          select *
+          from plan_revision_suggestions
+          where plan_id = ${tradePlanVersion.planId}
+          order by created_at desc
+          limit 1
+        `
+      : [];
+
+    const [postPlanReviewRow] = tradePlanVersion
+      ? await this.sql<PostPlanReviewRow[]>`
+          select *
+          from post_plan_reviews
+          where plan_id = ${tradePlanVersion.planId}
+          order by created_at desc
+          limit 1
+        `
+      : [];
+
+    const memoryLessonCandidateRows = postPlanReviewRow
+      ? await this.sql<MemoryLessonCandidateRow[]>`
+          select *
+          from memory_lesson_candidates
+          where post_plan_review_id = ${postPlanReviewRow.id}
+          order by created_at desc
+        `
+      : [];
 
     const [riskVerdictRow] = tradePlanVersion
       ? await this.sql<RiskVerdictRow[]>`
@@ -205,6 +293,15 @@ export class PostgresMarketPipelineReadModelRepository
       marketKey,
       marketState: mapMarketStateRow(marketStateRow),
       tradePlanVersion,
+      latestPlanRevisionSuggestion: planRevisionSuggestionRow
+        ? mapPlanRevisionSuggestionRow(planRevisionSuggestionRow)
+        : null,
+      latestPostPlanReview: postPlanReviewRow
+        ? mapPostPlanReviewRow(postPlanReviewRow)
+        : null,
+      memoryLessonCandidates: memoryLessonCandidateRows.map(
+        mapMemoryLessonCandidateRow
+      ),
       riskVerdict,
       executionIntent,
       latestOrder: orderRow ? mapOrderRow(orderRow) : null,
@@ -332,6 +429,72 @@ function mapPositionCurrentRow(
     closedAt: row.closed_at,
     updatedAt: row.updated_at,
     lastFillId: row.last_fill_id
+  };
+}
+
+function mapPlanRevisionSuggestionRow(
+  row: PlanRevisionSuggestionRow
+): StoredPlanRevisionSuggestion {
+  return {
+    id: row.id,
+    planId: row.plan_id,
+    tradePlanVersionId: row.trade_plan_version_id,
+    marketKey: row.market_key,
+    sourceEventKey: row.source_event_key,
+    revisionAction: row.revision_action,
+    reason: row.reason,
+    changedFields: row.changed_fields_json,
+    newInvalidation: row.new_invalidation_json,
+    newManagementRules: row.new_management_rules_json,
+    requiresUserReview: row.requires_user_review,
+    agentRunId: row.agent_run_id,
+    createdAt: row.created_at
+  };
+}
+
+function mapPostPlanReviewRow(row: PostPlanReviewRow): StoredPostPlanReview {
+  return {
+    id: row.id,
+    planId: row.plan_id,
+    tradePlanVersionId: row.trade_plan_version_id,
+    marketKey: row.market_key,
+    sourceEventKey: row.source_event_key,
+    outcomeSummary: row.outcome_summary,
+    whatWorked: row.what_worked_json,
+    whatFailed: row.what_failed_json,
+    missedContext: row.missed_context_json,
+    earlyWarningSignals: row.early_warning_signals_json,
+    lessonCandidates: row.lesson_candidates_json,
+    shouldUpdateStrategyMemory: row.should_update_strategy_memory,
+    agentRunId: row.agent_run_id,
+    createdAt: row.created_at
+  };
+}
+
+function mapMemoryLessonCandidateRow(
+  row: MemoryLessonCandidateRow
+): StoredMemoryLessonCandidate {
+  return {
+    id: row.id,
+    postPlanReviewId: row.post_plan_review_id,
+    planId: row.plan_id,
+    tradePlanVersionId: row.trade_plan_version_id,
+    marketKey: row.market_key,
+    sourceEventKey: row.source_event_key,
+    lesson: row.lesson,
+    scopeMarket: row.scope_market,
+    scopeAssetClass: row.scope_asset_class,
+    scopeSymbol: row.scope_symbol,
+    scopeTimeframe: row.scope_timeframe,
+    scopeRegime: row.scope_regime,
+    scopeSignalType: row.scope_signal_type,
+    confidence: toNumber(row.confidence),
+    sampleSize: row.sample_size,
+    decayDays: row.decay_days,
+    retrievalHint: row.retrieval_hint,
+    status: row.status,
+    agentRunId: row.agent_run_id,
+    createdAt: row.created_at
   };
 }
 

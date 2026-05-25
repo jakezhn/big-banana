@@ -71,6 +71,100 @@ export default async function MarketDetailPage({
       <section className="section-block">
         <div className="section-heading">
           <div>
+            <p className="section-kicker">Lifecycle</p>
+            <h2>Plan, revision, review, and lessons</h2>
+          </div>
+        </div>
+        <div className="card-grid">
+          <article className="metric-card">
+            <p className="metric-label">Plan Action</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.tradePlanVersion?.action ?? "—"}
+            </p>
+          </article>
+          <article className="metric-card">
+            <p className="metric-label">Execution State</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.tradePlanVersion?.executionPlaybook.state ?? "—"}
+            </p>
+          </article>
+          <article className="metric-card">
+            <p className="metric-label">Latest Revision</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.latestPlanRevisionSuggestion?.revisionAction ?? "—"}
+            </p>
+          </article>
+          <article className="metric-card">
+            <p className="metric-label">Review Summary</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.latestPostPlanReview
+                ? truncate(pipeline.latestPostPlanReview.outcomeSummary, 96)
+                : "—"}
+            </p>
+          </article>
+          <article className="metric-card">
+            <p className="metric-label">Lesson Candidates</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.memoryLessonCandidates.length}
+            </p>
+          </article>
+          <article className="metric-card">
+            <p className="metric-label">Review Created</p>
+            <p className="metric-value metric-value-compact">
+              {pipeline.latestPostPlanReview
+                ? formatTimestamp(pipeline.latestPostPlanReview.createdAt)
+                : "—"}
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Lessons</p>
+            <h2>Scoped lesson candidates</h2>
+          </div>
+        </div>
+        {pipeline.memoryLessonCandidates.length === 0 ? (
+          <p className="empty-cell">No lesson candidates recorded yet.</p>
+        ) : (
+          <div className="detail-grid">
+            {pipeline.memoryLessonCandidates.map((candidate) => (
+              <article key={candidate.id} className="detail-card">
+                <p className="metric-label">{candidate.status}</p>
+                <p className="metric-value metric-value-compact">
+                  {candidate.lesson}
+                </p>
+                <pre className="detail-pre">
+                  {JSON.stringify(
+                    {
+                      scope: {
+                        market: candidate.scopeMarket,
+                        asset_class: candidate.scopeAssetClass,
+                        symbol: candidate.scopeSymbol,
+                        timeframe: candidate.scopeTimeframe,
+                        regime: candidate.scopeRegime,
+                        signal_type: candidate.scopeSignalType
+                      },
+                      confidence: candidate.confidence,
+                      sampleSize: candidate.sampleSize,
+                      decayDays: candidate.decayDays,
+                      retrievalHint: candidate.retrievalHint
+                    },
+                    null,
+                    2
+                  )}
+                </pre>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="section-block">
+        <div className="section-heading">
+          <div>
             <p className="section-kicker">Chain</p>
             <h2>Latest pipeline records</h2>
           </div>
@@ -87,6 +181,18 @@ export default async function MarketDetailPage({
           <DetailCard
             title="Risk Verdict"
             content={JSON.stringify(pipeline.riskVerdict, null, 2)}
+          />
+          <DetailCard
+            title="Latest Revision Suggestion"
+            content={JSON.stringify(
+              pipeline.latestPlanRevisionSuggestion,
+              null,
+              2
+            )}
+          />
+          <DetailCard
+            title="Latest Post-Plan Review"
+            content={JSON.stringify(pipeline.latestPostPlanReview, null, 2)}
           />
           <DetailCard
             title="Execution Intent"
@@ -131,4 +237,18 @@ function formatNullableNumber(value: number | null | undefined): string {
   }
 
   return formatNumber(value);
+}
+
+function formatTimestamp(value: string): string {
+  return new Date(value).toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function truncate(value: string, maxLength: number): string {
+  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
 }

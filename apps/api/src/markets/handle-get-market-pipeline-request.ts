@@ -19,6 +19,9 @@ type SuccessResponse = {
     pipeline_status: MarketPipelineStatus;
     market_state: MarketPipelineReadModel["marketState"];
     trade_plan_version: MarketPipelineReadModel["tradePlanVersion"];
+    latest_plan_revision_suggestion: MarketPipelineReadModel["latestPlanRevisionSuggestion"];
+    latest_post_plan_review: MarketPipelineReadModel["latestPostPlanReview"];
+    memory_lesson_candidates: MarketPipelineReadModel["memoryLessonCandidates"];
     risk_verdict: MarketPipelineReadModel["riskVerdict"];
     execution_intent: MarketPipelineReadModel["executionIntent"];
     latest_order: MarketPipelineReadModel["latestOrder"];
@@ -58,6 +61,9 @@ export async function handleGetMarketPipelineRequest(
         pipeline_status: deriveMarketPipelineStatus(snapshot),
         market_state: snapshot.marketState,
         trade_plan_version: snapshot.tradePlanVersion,
+        latest_plan_revision_suggestion: snapshot.latestPlanRevisionSuggestion,
+        latest_post_plan_review: snapshot.latestPostPlanReview,
+        memory_lesson_candidates: snapshot.memoryLessonCandidates,
         risk_verdict: snapshot.riskVerdict,
         execution_intent: snapshot.executionIntent,
         latest_order: snapshot.latestOrder,

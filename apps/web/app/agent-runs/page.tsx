@@ -39,9 +39,11 @@ export default async function AgentRunsPage() {
               <tr>
                 <th>Market</th>
                 <th>Operation</th>
+                <th>Skill</th>
                 <th>Runner</th>
                 <th>Prompt</th>
                 <th>Status</th>
+                <th>Error</th>
                 <th>Eligible</th>
                 <th>Latency</th>
                 <th>Plan Version</th>
@@ -51,15 +53,23 @@ export default async function AgentRunsPage() {
             <tbody>
               {agentRuns.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="empty-cell">
+                  <td colSpan={11} className="empty-cell">
                     No agent runs available yet.
                   </td>
                 </tr>
               ) : (
                 agentRuns.map((run) => (
                   <tr key={run.id}>
-                    <td>{run.marketKey}</td>
+                    <td>
+                      <Link
+                        href={`/markets/${encodeURIComponent(run.marketKey)}`}
+                        className="action-link action-link-inline"
+                      >
+                        {run.marketKey}
+                      </Link>
+                    </td>
                     <td>{run.operation}</td>
+                    <td>{run.skillName}</td>
                     <td>
                       {run.model
                         ? `${run.modelProvider ?? run.runnerKind}:${run.model}`
@@ -71,6 +81,7 @@ export default async function AgentRunsPage() {
                         {run.status}
                       </span>
                     </td>
+                    <td>{run.errorMessage ?? "—"}</td>
                     <td>{formatEligible(run.executionEligible)}</td>
                     <td>{run.latencyMs} ms</td>
                     <td>{run.tradePlanVersionId ?? "—"}</td>

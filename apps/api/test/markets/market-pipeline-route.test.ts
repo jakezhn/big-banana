@@ -51,6 +51,9 @@ describe("GET /api/market-pipeline", () => {
             createdAt: "2026-05-18T00:00:00.000Z"
           },
           tradePlanVersion: null,
+          latestPlanRevisionSuggestion: null,
+          latestPostPlanReview: null,
+          memoryLessonCandidates: [],
           riskVerdict: null,
           executionIntent: null,
           latestOrder: null,
@@ -70,6 +73,9 @@ describe("GET /api/market-pipeline", () => {
           marketKey: "BINANCE:BTCUSDT:240"
         }),
         trade_plan_version: null,
+        latest_plan_revision_suggestion: null,
+        latest_post_plan_review: null,
+        memory_lesson_candidates: [],
         risk_verdict: null,
         execution_intent: null,
         latest_order: null,

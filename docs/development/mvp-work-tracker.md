@@ -136,12 +136,12 @@
 | Read Models / Dashboard | `GET /api/market-pipeline` 单 market 快照 | 已完成 | 100% | 当前唯一主要 read API |
 | Read Models / Dashboard | Overview read API | 已完成 | 100% | `/api/dashboard/overview` 已可用 |
 | Read Models / Dashboard | Pipeline Monitor list API | 已完成 | 100% | `/api/dashboard/pipelines` 已可用 |
-| Read Models / Dashboard | Market Detail API | 已完成 | 100% | 当前 market snapshot 已扩到 fill / position |
+| Read Models / Dashboard | Market Detail API | 已完成 | 100% | 当前 market snapshot 已扩到 fill / position / latest revision / latest review / memory lesson candidates |
 | Read Models / Dashboard | Agent Runs API | 已完成 | 100% | `/api/dashboard/agent-runs` 已可用 |
 | Frontend | Overview page | 已完成 | 100% | `/` 已提供 overview cards 和 recent pipelines |
 | Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
-| Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路 |
-| Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已可查看 planner runs |
+| Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路，并开始展示 revision / review / scoped lesson candidates |
+| Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已可查看 planner runs，并展示 skill / error / market detail 跳转 |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
@@ -281,6 +281,7 @@
 - 本轮已验证 memory lesson candidates foundation 回归通过：`pnpm --filter @big-banana/contracts test`、`pnpm --filter @big-banana/domain test`、`pnpm --filter @big-banana/api test`、`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 revision / review / memory 三条 worker 路径的 queue/runtime 本地 smoke：`revise_plan -> post_plan_review -> memory_curate` 已可通过同一 worker/job loop 完成 write-back
 - 当前可将后端视为“基本收尾”：剩余重点转向前端 UI、dashboard 手工 QA、以及这些新记录类型的可见性与少量 remote smoke
+- 本轮已开始前端 UI 阶段：`Market Detail` 已接入 revision / review / lesson candidates 可见性，`Agent Runs` 已增强 skill / error / market link 信息层
 - 本轮已完成 replay baseline archive 第一阶段：默认 replay batch 现在会生成结构化 JSON 报告文件，可作为后续 prompt/version 对比基线
 - 本轮已验证 replay report archive 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline compare 第一阶段：已支持从已归档报告读取 baseline/candidate 并生成 quality delta，对比 prompt/model 改动前后的 replay 结果
