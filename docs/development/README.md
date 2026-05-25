@@ -12,6 +12,7 @@
 | `mvp-agent-first-refactor.md` | active | 当前 staged 重构方案 |
 | `mvp-validation-and-dashboard.md` | active | 当前验证和 dashboard 路线 |
 | `mvp-work-tracker.md` | active tracker | 每轮开发/测试前后更新 |
+| `frontend/*` | active | 给 `v0` 使用的前端输入包与页面 brief |
 | `paper-smoke-runbook.md` | active runbook | Supabase / paper / planner 联调 |
 | `schemas/*.json` | frozen contracts | 机器可读 schema |
 | `archived/*` | archived | 旧 workflow-first 阶段上下文 |
@@ -51,6 +52,10 @@
   - 测试任务拆分
   - 各模块完成度
   - 每轮开发/测试后的进度更新入口
+- `frontend/`
+  - 给 `v0` 的前端上下文包
+  - 当前 read model 摘要
+  - 页面级 brief
 
 ### 4. 操作手册
 
