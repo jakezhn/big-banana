@@ -332,7 +332,7 @@ Broadcast is a better long-term fit for "something changed, re-fetch now" than u
 The current repo supports the refactor direction, but these gaps must be closed:
 
 - `apps/hermes` now handles both `replay_planner` and live `generate_plan`, and remote Supabase worker smoke has been validated; dashboard-level QA still remains
-- replay harness now supports DB-backed batch replay, summary aggregation, and quality-report primitives; the remaining gap is running stable replay baselines, review labels, and prompt/version interpretation
+- replay harness now supports DB-backed batch replay, summary aggregation, archived baseline reports, and automatic report comparison; the remaining gap is review labels and prompt/version interpretation
 - no plan revision model exists
 - no post-plan review or lesson candidate table exists
 - the MVP still lacks an explicit "single-timeframe reasoning, multi-timeframe coexistence" rule across planner, queue, and revision flows

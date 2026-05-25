@@ -4,11 +4,15 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { defaultReplayPlannerFixtures } from "../src/replay/default-replay-planner-fixtures";
 import {
+  buildDefaultReplayPlannerComparisonPath,
   buildDefaultReplayPlannerReportPath,
   buildReplayPlannerBatchReport,
   compareReplayPlannerBatchReports,
+  findLatestReplayPlannerBatchReportPath,
+  listReplayPlannerBatchReportPaths,
   readReplayPlannerBatchReport,
-  writeReplayPlannerBatchReport
+  writeReplayPlannerBatchReport,
+  writeReplayPlannerBatchReportComparison
 } from "../src/replay/replay-planner-report";
 import type { ReplayPlannerBatchRunResult } from "../src/replay/replay-planner-batch";
 
@@ -114,6 +118,60 @@ describe("writeReplayPlannerBatchReport", () => {
       1 / 3
     );
     expect(comparison.qualityComparison.overall.watchRateDelta).toBeCloseTo(-1 / 3);
+  });
+
+  it("lists the latest archived report and writes a comparison artifact", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "bb-replay-report-"));
+    const baselineGeneratedAt = "2026-05-25T10:00:00.000Z";
+    const candidateGeneratedAt = "2026-05-25T11:00:00.000Z";
+    const baselinePath = buildDefaultReplayPlannerReportPath(
+      baselineGeneratedAt,
+      tempDir
+    );
+    const candidatePath = buildDefaultReplayPlannerReportPath(
+      candidateGeneratedAt,
+      tempDir
+    );
+
+    await writeReplayPlannerBatchReport(
+      buildReplayPlannerBatchReport(
+        defaultReplayPlannerFixtures,
+        createBatchResult(),
+        baselineGeneratedAt
+      ),
+      baselinePath
+    );
+    await writeReplayPlannerBatchReport(
+      buildReplayPlannerBatchReport(
+        defaultReplayPlannerFixtures,
+        createBatchResult(),
+        candidateGeneratedAt
+      ),
+      candidatePath
+    );
+
+    const reportPaths = await listReplayPlannerBatchReportPaths(tempDir);
+    const latestPath = await findLatestReplayPlannerBatchReportPath(tempDir);
+
+    expect(reportPaths).toEqual([baselinePath, candidatePath]);
+    expect(latestPath).toBe(candidatePath);
+
+    const comparison = compareReplayPlannerBatchReports(
+      await readReplayPlannerBatchReport(baselinePath),
+      await readReplayPlannerBatchReport(candidatePath)
+    );
+    const comparisonPath = buildDefaultReplayPlannerComparisonPath(
+      candidateGeneratedAt,
+      tempDir
+    );
+
+    await writeReplayPlannerBatchReportComparison(comparison, comparisonPath);
+
+    const writtenComparison = JSON.parse(
+      await readFile(comparisonPath, "utf8")
+    ) as { candidateGeneratedAt: string };
+
+    expect(writtenComparison.candidateGeneratedAt).toBe(candidateGeneratedAt);
   });
 });
 

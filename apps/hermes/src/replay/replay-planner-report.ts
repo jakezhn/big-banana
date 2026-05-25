@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ReplayPlannerFixture } from "./replay-planner-harness";
 import type { ReplayPlannerBatchRunResult } from "./replay-planner-batch";
@@ -54,6 +54,14 @@ export function buildDefaultReplayPlannerReportPath(
   return path.join(rootDir, `${safeTimestamp}.json`);
 }
 
+export function buildDefaultReplayPlannerComparisonPath(
+  candidateGeneratedAt: string,
+  rootDir = path.join(process.cwd(), "artifacts", "replay-planner", "comparisons")
+): string {
+  const safeTimestamp = candidateGeneratedAt.replaceAll(":", "-");
+  return path.join(rootDir, `${safeTimestamp}.json`);
+}
+
 export async function writeReplayPlannerBatchReport(
   report: ReplayPlannerBatchReport,
   outputPath: string
@@ -66,6 +74,31 @@ export async function readReplayPlannerBatchReport(
   inputPath: string
 ): Promise<ReplayPlannerBatchReport> {
   return JSON.parse(await readFile(inputPath, "utf8")) as ReplayPlannerBatchReport;
+}
+
+export async function listReplayPlannerBatchReportPaths(
+  rootDir = path.join(process.cwd(), "artifacts", "replay-planner")
+): Promise<string[]> {
+  try {
+    const entries = await readdir(rootDir, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+      .map((entry) => path.join(rootDir, entry.name))
+      .sort();
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function findLatestReplayPlannerBatchReportPath(
+  rootDir = path.join(process.cwd(), "artifacts", "replay-planner")
+): Promise<string | null> {
+  const reportPaths = await listReplayPlannerBatchReportPaths(rootDir);
+  return reportPaths.at(-1) ?? null;
 }
 
 export function compareReplayPlannerBatchReports(
@@ -92,4 +125,12 @@ export function compareReplayPlannerBatchReports(
       candidate.qualityReport
     )
   };
+}
+
+export async function writeReplayPlannerBatchReportComparison(
+  comparison: ReplayPlannerBatchReportComparison,
+  outputPath: string
+): Promise<void> {
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(comparison, null, 2)}\n`, "utf8");
 }

@@ -118,7 +118,7 @@
 | Planner / Agent | single-timeframe reasoning rule | 已明确设计 | 100% | 当前 MVP 不做显式 HTF/LTF/MTF reasoning；`1H/4H/1D/1W` 计划按 `marketKey` 独立并存 |
 | Planner / Agent | replay harness | 已完成 | 100% | 已补 replay fixtures、job builder、batch runner、result summary、真实 `replay_planner` handler smoke；当前已具备进入 planner quality iteration loop 的基础运行能力 |
 | Planner / Agent | live `generate_plan` worker handoff | 已完成 | 100% | `apps/api` signal webhook 已改为 enqueue `generate_plan` job，`apps/hermes` 已接管 live planning；本地与 remote Supabase runtime smoke 都已跑通 |
-| Planner / Agent | planner quality iteration loop | 已开始 | 75% | 已具备 replay batch / summary / quality report / baseline comparison / archived report compare 工具；后续待补 review labels、prompt/version 结果解读与稳定跑数流程 |
+| Planner / Agent | planner quality iteration loop | 已开始 | 75% | 已具备 replay batch / summary / quality report / baseline comparison / archived report compare / stable baseline CLI；后续待补 review labels 与 prompt/version 结果解读流程 |
 | Planner / Agent | plan revision agent | 未开始 | 0% | 待补 `plan_revision_suggestions` 与 `plan.revise` |
 | Planner / Agent | post-plan review agent | 未开始 | 0% | 待补 `post_plan_reviews` 与 `plan.review` |
 | Planner / Agent | memory lesson candidates | 未开始 | 0% | 待补 scoped lesson candidates；不自动写长期 memory |
@@ -182,6 +182,7 @@
 | Integration | replay quality report regression | 已完成 | 100% | replay quality report、baseline delta 计算与 batch 聚合已通过 hermes tests |
 | Integration | replay report archive regression | 已完成 | 100% | replay baseline 报告封装与 JSON 落盘已通过 hermes tests |
 | Integration | replay report compare regression | 已完成 | 100% | replay baseline 报告读取、共享 fixture 检查与 quality delta 对比已通过 hermes tests |
+| Integration | replay baseline CLI regression | 已完成 | 100% | replay baseline 命令、最新报告发现与 comparison artifact 写入逻辑已通过 hermes tests |
 | Integration | live `generate_plan` worker handoff regression | 已完成 | 100% | `apps/api` webhook route tests、`apps/hermes` live planning handler tests、全仓 `typecheck` 已通过 |
 | Integration | local enqueue -> worker -> write-back smoke | 已完成 | 100% | 已补 API enqueue + Hermes worker + write-back 的最小闭环 smoke，验证 `queued -> completed -> order_submitted` 主路径 |
 | Integration | remote Supabase worker runtime smoke | 已完成 | 100% | 已用 remote Supabase 跑通 `apps/api + apps/hermes` 联调；fresh signal 能经历 `queued -> order_submitted`，`agent_runs` 与 `trade_plan_versions` 均已远端落库 |
@@ -280,6 +281,8 @@
 - 本轮已验证 replay report archive 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay baseline compare 第一阶段：已支持从已归档报告读取 baseline/candidate 并生成 quality delta，对比 prompt/model 改动前后的 replay 结果
 - 本轮已验证 replay report compare 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
+- 本轮已完成 replay baseline CLI 第一阶段：新增 `replay:baseline`，现在可自动写 baseline 报告、发现上一份归档并生成 comparison artifact
+- 本轮已验证 replay baseline CLI 回归通过：`pnpm --filter @big-banana/hermes test`、`pnpm typecheck`
 - 本轮已完成 replay harness 第一阶段：已补默认 replay fixtures、job builder、result summary parser/aggregator，以及真实 deterministic replay handler smoke
 - 本轮已验证 replay harness 回归通过：`pnpm --filter @big-banana/hermes test`
 - 本轮已完成 live `generate_plan` worker handoff 第一阶段：`apps/api` signal webhook 已改为 enqueue `generate_plan` job，live planning 已迁入 `apps/hermes` handler，并由 worker 负责写回 webhook `process_status`
