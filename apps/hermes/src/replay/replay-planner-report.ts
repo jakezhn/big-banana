@@ -1,7 +1,11 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ReplayPlannerFixture } from "./replay-planner-harness";
 import type { ReplayPlannerBatchRunResult } from "./replay-planner-batch";
+import {
+  compareReplayPlannerQualityReports,
+  type ReplayPlannerQualityComparison
+} from "./replay-planner-quality";
 
 export type ReplayPlannerBatchReport = {
   generatedAt: string;
@@ -13,6 +17,15 @@ export type ReplayPlannerBatchReport = {
   pendingJobs: number;
   summary: ReplayPlannerBatchRunResult["summary"];
   qualityReport: ReplayPlannerBatchRunResult["qualityReport"];
+};
+
+export type ReplayPlannerBatchReportComparison = {
+  baselineGeneratedAt: string;
+  candidateGeneratedAt: string;
+  sharedFixtureIds: string[];
+  baselineOnlyFixtureIds: string[];
+  candidateOnlyFixtureIds: string[];
+  qualityComparison: ReplayPlannerQualityComparison;
 };
 
 export function buildReplayPlannerBatchReport(
@@ -47,4 +60,36 @@ export async function writeReplayPlannerBatchReport(
 ): Promise<void> {
   await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+}
+
+export async function readReplayPlannerBatchReport(
+  inputPath: string
+): Promise<ReplayPlannerBatchReport> {
+  return JSON.parse(await readFile(inputPath, "utf8")) as ReplayPlannerBatchReport;
+}
+
+export function compareReplayPlannerBatchReports(
+  baseline: ReplayPlannerBatchReport,
+  candidate: ReplayPlannerBatchReport
+): ReplayPlannerBatchReportComparison {
+  const baselineFixtures = new Set(baseline.fixtureIds);
+  const candidateFixtures = new Set(candidate.fixtureIds);
+
+  return {
+    baselineGeneratedAt: baseline.generatedAt,
+    candidateGeneratedAt: candidate.generatedAt,
+    sharedFixtureIds: baseline.fixtureIds.filter((fixtureId) =>
+      candidateFixtures.has(fixtureId)
+    ),
+    baselineOnlyFixtureIds: baseline.fixtureIds.filter(
+      (fixtureId) => !candidateFixtures.has(fixtureId)
+    ),
+    candidateOnlyFixtureIds: candidate.fixtureIds.filter(
+      (fixtureId) => !baselineFixtures.has(fixtureId)
+    ),
+    qualityComparison: compareReplayPlannerQualityReports(
+      baseline.qualityReport,
+      candidate.qualityReport
+    )
+  };
 }

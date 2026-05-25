@@ -6,6 +6,8 @@ import { defaultReplayPlannerFixtures } from "../src/replay/default-replay-plann
 import {
   buildDefaultReplayPlannerReportPath,
   buildReplayPlannerBatchReport,
+  compareReplayPlannerBatchReports,
+  readReplayPlannerBatchReport,
   writeReplayPlannerBatchReport
 } from "../src/replay/replay-planner-report";
 import type { ReplayPlannerBatchRunResult } from "../src/replay/replay-planner-batch";
@@ -52,6 +54,66 @@ describe("writeReplayPlannerBatchReport", () => {
     expect(written.generatedAt).toBe(generatedAt);
     expect(written.totalFixtures).toBe(defaultReplayPlannerFixtures.length);
     expect(written.qualityReport.overall.actionableRate).toBeCloseTo(2 / 3);
+  });
+
+  it("reads a persisted report back and compares two baselines", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "bb-replay-report-"));
+    const baselinePath = buildDefaultReplayPlannerReportPath(
+      "2026-05-25T10:00:00.000Z",
+      tempDir
+    );
+    const candidatePath = buildDefaultReplayPlannerReportPath(
+      "2026-05-25T11:00:00.000Z",
+      tempDir
+    );
+
+    await writeReplayPlannerBatchReport(
+      buildReplayPlannerBatchReport(
+        defaultReplayPlannerFixtures,
+        createBatchResult(),
+        "2026-05-25T10:00:00.000Z"
+      ),
+      baselinePath
+    );
+    await writeReplayPlannerBatchReport(
+      buildReplayPlannerBatchReport(
+        defaultReplayPlannerFixtures,
+        {
+          ...createBatchResult(),
+          qualityReport: {
+            ...createBatchResult().qualityReport,
+            overall: {
+              ...createBatchResult().qualityReport.overall,
+              executionEligibleRate: 1,
+              actionableRate: 1,
+              watchRate: 0,
+              skipRate: 0
+            }
+          }
+        },
+        "2026-05-25T11:00:00.000Z"
+      ),
+      candidatePath
+    );
+
+    const [baseline, candidate] = await Promise.all([
+      readReplayPlannerBatchReport(baselinePath),
+      readReplayPlannerBatchReport(candidatePath)
+    ]);
+    const comparison = compareReplayPlannerBatchReports(baseline, candidate);
+
+    expect(comparison.sharedFixtureIds).toHaveLength(
+      defaultReplayPlannerFixtures.length
+    );
+    expect(comparison.baselineOnlyFixtureIds).toHaveLength(0);
+    expect(comparison.candidateOnlyFixtureIds).toHaveLength(0);
+    expect(comparison.qualityComparison.overall.executionEligibleRateDelta).toBeCloseTo(
+      1 / 3
+    );
+    expect(comparison.qualityComparison.overall.actionableRateDelta).toBeCloseTo(
+      1 / 3
+    );
+    expect(comparison.qualityComparison.overall.watchRateDelta).toBeCloseTo(-1 / 3);
   });
 });
 

@@ -6,6 +6,7 @@
     "dev": "tsx watch src/bootstrap.ts",
     "start": "tsx src/bootstrap.ts",
     "replay:default": "tsx src/replay/run-default-replay-batch.ts",
+    "replay:compare": "tsx src/replay/compare-replay-planner-reports.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
