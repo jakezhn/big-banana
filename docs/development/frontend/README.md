@@ -21,6 +21,8 @@
 | `frontend-read-models.md` | 当前前端真正消费的数据对象和字段摘要 |
 | `agent-runs-brief.md` | `Agent Runs` 页面目标、痛点、必须展示的信息、禁止发明的信息 |
 | `market-detail-brief.md` | `Market Detail` 页面目标、痛点、必须展示的信息、禁止发明的信息 |
+| `v0-repo-workflow.md` | `v0` 直接接入当前 monorepo 时的工作流、分支建议、编辑边界 |
+| `v0-repo-prompts.md` | 可直接复制给 `v0` 的 repo-mode prompt，包括项目结构和工作范围 |
 
 ## 推荐给 v0 的最小输入集
 
@@ -35,6 +37,22 @@
 1. `v0-context-pack.md`
 2. `frontend-read-models.md`
 3. `market-detail-brief.md`
+
+## 如果 v0 要直接接入仓库
+
+仅靠上面三份文档还不够。  
+还应额外给：
+
+1. `v0-repo-workflow.md`
+2. `v0-repo-prompts.md`
+
+原因是 repo-mode 需要额外约束：
+
+- 当前 monorepo 结构
+- `v0` 允许编辑的路径
+- `v0` 不允许改动的路径
+- 分支和合并策略
+- `Codex` 如何后续接回和工程化收口
 
 ## 不建议直接给 v0 的内容
 
