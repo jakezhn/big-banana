@@ -5,6 +5,13 @@ export {
 } from "./execution-intent";
 export type { ExecutionIntent } from "./execution-intent";
 export {
+  getPlanRevisionJsonSchema,
+  getPlanRevisionValidationErrors,
+  planRevisionSchemaVersion,
+  validatePlanRevision
+} from "./plan-revision";
+export type { PlanRevision } from "./plan-revision";
+export {
   getRiskVerdictValidationErrors,
   riskVerdictSchemaVersion,
   validateRiskVerdict

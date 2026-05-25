@@ -1,0 +1,17 @@
+{
+  "revision_action": "downgrade_to_watch",
+  "reason": "The latest signal lost alignment before entry and the active setup should stand down.",
+  "changed_fields": [
+    "execution_playbook.state",
+    "execution_playbook.allowed_triggers"
+  ],
+  "new_invalidation": {
+    "condition": "Fresh aligned signal must reappear before re-arming the setup.",
+    "level_reference": "EMA50",
+    "timeframe": "240"
+  },
+  "new_management_rules": [
+    "Do not arm fresh entries until alignment returns."
+  ],
+  "requires_user_review": false
+}

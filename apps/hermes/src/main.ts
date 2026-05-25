@@ -4,6 +4,7 @@ import {
   createExecutionIntentRepositoryFromEnv,
   createMarketStateRepositoryFromEnv,
   createOrderRepositoryFromEnv,
+  createPlanRevisionSuggestionRepositoryFromEnv,
   createPositionRepositoryFromEnv,
   createRiskVerdictRepositoryFromEnv,
   createTradePlanVersionRepositoryFromEnv,
@@ -24,6 +25,8 @@ async function main(): Promise<void> {
       tradePlanVersionRepository: createTradePlanVersionRepositoryFromEnv(),
       orderRepository: createOrderRepositoryFromEnv(),
       positionRepository: createPositionRepositoryFromEnv(),
+      planRevisionSuggestionRepository:
+        createPlanRevisionSuggestionRepositoryFromEnv(),
       agentRunRepository: createAgentRunRepositoryFromEnv(),
       riskVerdictRepository: createRiskVerdictRepositoryFromEnv(),
       executionIntentRepository: createExecutionIntentRepositoryFromEnv(),

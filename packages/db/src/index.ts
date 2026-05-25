@@ -27,6 +27,10 @@ export {
   PostgresOrderRepository
 } from "./orders/postgres-order-repository";
 export {
+  createPlanRevisionSuggestionRepositoryFromEnv,
+  PostgresPlanRevisionSuggestionRepository
+} from "./revisions/postgres-plan-revision-suggestion-repository";
+export {
   createPositionRepositoryFromEnv,
   PostgresPositionRepository
 } from "./positions/postgres-position-repository";

@@ -70,6 +70,9 @@ export {
   generateDeterministicTradePlan
 } from "./planner/generate-deterministic-trade-plan";
 export {
+  generateDeterministicPlanRevision
+} from "./revisions/generate-deterministic-plan-revision";
+export {
   generateAndRecordTradePlanWithGenerator
 } from "./planner/generate-and-record-trade-plan-with-generator";
 export type {
@@ -79,6 +82,17 @@ export type {
   TradePlanGenerator,
   TradePlanGeneratorContext
 } from "./planner/generate-and-record-trade-plan-with-generator";
+export {
+  generateAndRecordPlanRevisionWithGenerator,
+  InvalidGeneratedPlanRevisionError,
+  MissingActivePlanForRevisionError
+} from "./revisions/generate-and-record-plan-revision-with-generator";
+export type {
+  GeneratedPlanRevisionResult,
+  GenerateAndRecordPlanRevisionWithGeneratorResult,
+  PlanRevisionGenerator,
+  PlanRevisionGeneratorContext
+} from "./revisions/generate-and-record-plan-revision-with-generator";
 export {
   evaluateAndRecordDeterministicRiskVerdict,
   evaluateDeterministicRiskVerdict,
@@ -168,6 +182,11 @@ export type {
   StoredTradePlanVersion,
   TradePlanVersionRepository
 } from "./plans/trade-plan-version-repository";
+export type {
+  PlanRevisionSuggestionRepository,
+  ReceivedPlanRevisionSuggestion,
+  StoredPlanRevisionSuggestion
+} from "./revisions/plan-revision-suggestion-repository";
 export {
   assertOrderStateTransition,
   canTransitionOrderState,

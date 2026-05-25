@@ -4,6 +4,7 @@ import type {
   ExecutionIntentRepository,
   MarketStateRepository,
   OrderRepository,
+  PlanRevisionSuggestionRepository,
   PositionRepository,
   RiskVerdictRepository,
   TradePlanVersionRepository
@@ -11,6 +12,7 @@ import type {
 import type { AgentJobHandler } from "./agent-job-handler";
 import { createGeneratePlanHandler } from "./planning/generate-plan-handler";
 import { createReplayPlannerHandler } from "./replay/replay-planner-handler";
+import { createRevisePlanHandler } from "./revision/revise-plan-handler";
 import type { WebhookEventRepository } from "@big-banana/domain";
 
 export type DefaultAgentJobHandlerDependencies = {
@@ -19,6 +21,7 @@ export type DefaultAgentJobHandlerDependencies = {
   tradePlanVersionRepository: TradePlanVersionRepository;
   orderRepository: OrderRepository;
   positionRepository: PositionRepository;
+  planRevisionSuggestionRepository: PlanRevisionSuggestionRepository;
   agentRunRepository: AgentRunRepository;
   riskVerdictRepository: RiskVerdictRepository;
   executionIntentRepository: ExecutionIntentRepository;
@@ -40,6 +43,7 @@ export function createDefaultAgentJobHandlers(
 
   return {
     generate_plan: createGeneratePlanHandler(dependencies),
+    revise_plan: createRevisePlanHandler(dependencies),
     replay_planner: createReplayPlannerHandler(dependencies)
   };
 }

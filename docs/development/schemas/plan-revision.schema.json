@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bitpunk.local/schemas/plan-revision.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision_action",
+    "reason",
+    "changed_fields",
+    "new_invalidation",
+    "new_management_rules",
+    "requires_user_review"
+  ],
+  "properties": {
+    "revision_action": {
+      "type": "string",
+      "enum": [
+        "keep",
+        "tighten",
+        "loosen",
+        "downgrade_to_watch",
+        "invalidate",
+        "upgrade",
+        "close_partial",
+        "close_full"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "new_invalidation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "level_reference",
+        "timeframe"
+      ],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "level_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeframe": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "new_management_rules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "requires_user_review": {
+      "type": "boolean"
+    }
+  }
+}
