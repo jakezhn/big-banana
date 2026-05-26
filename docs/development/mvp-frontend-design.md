@@ -10,6 +10,7 @@ This document defines:
 - the design language derived from `docs/branding`
 - the page-by-page UI goals for the existing dashboard
 - the implementation boundary inside `apps/web`
+- the asset, language, and brand-usage rules for frontend implementation
 
 Current assumption:
 
@@ -28,6 +29,17 @@ The frontend is not:
 It is:
 
 > an operator-facing AI trading intelligence cockpit for validating signal -> plan -> risk -> execution -> review
+
+Current product language decision:
+
+- UI copy should default to Chinese
+- technical identifiers, market symbols, timestamps, and selected data labels may remain English where that improves clarity
+
+The intended result is:
+
+- Chinese-first operator UI
+- not a full Chinese localization exercise
+- not mixed-language noise on every card
 
 The UI must help a user answer:
 
@@ -105,12 +117,40 @@ Recommended UI direction from branding:
 - interface sans: `Sora`, `Space Grotesk`, or equivalent sharp geometric sans
 - data mono: `IBM Plex Mono` or `JetBrains Mono`
 
+Implementation decision for the current MVP:
+
+- use `Sora` for interface headings and major labels
+- use a clean sans fallback stack for body copy
+- use `IBM Plex Mono` for metrics, IDs, timestamps, symbols, and technical metadata
+
 Rules:
 
 - headings may carry more tension
 - body copy must stay clear and quiet
 - timestamps, IDs, statuses, and metrics should lean monospace
 - do not use the logo-style blade typeface as full UI body typography
+
+### 3.4 Brand Asset Usage Boundary
+
+Primary logo usage:
+
+- use the full `bitpunk.` mark in the app shell, top navigation, or key landing hero
+- do not repeat the full logo excessively inside every panel
+
+Monogram usage:
+
+- use `bp.` or a compact mark for compact navigation, avatar-like corners, or favicon contexts
+
+Color usage boundary:
+
+- `Cyber Cyan` should carry "system live / selected / active / execution-ready"
+- `Neon Red` should carry "risk / rejection / boundary / fault"
+- do not use red as a decorative accent unrelated to risk or failure
+
+Logo-style blade typography:
+
+- only for branding marks or very selective hero moments
+- never for dense tables, cards, or paragraph text
 
 ## 4. Current UI Gap
 
@@ -129,6 +169,26 @@ Current mismatch versus branding:
 - page styling still feels "functional prototype" rather than "Bitpunk operator cockpit"
 
 Therefore the next frontend phase should not just tweak layout. It should realign the visual system with brand direction while preserving the current data structure and route structure.
+
+## 4.1 Frontend Asset Location
+
+Frontend runtime assets should live in:
+
+```txt
+apps/web/public/assets/
+  brand/
+  marketing/
+  illustrations/
+  motion/
+```
+
+Branding reference documents may stay in `docs/branding`, but page-consumed assets should be copied or exported into `apps/web/public/assets/**`.
+
+Preference order:
+
+1. SVG for logos and icons
+2. optimized PNG/WebP for static imagery
+3. motion assets only when they help signal system state, not as decoration
 
 ## 5. Frontend Data Boundary
 
@@ -254,6 +314,7 @@ Frontend work should stay inside:
 ```txt
 apps/web/app/**
 apps/web/src/**
+apps/web/public/assets/**
 ```
 
 Preferred structure direction:

@@ -146,6 +146,7 @@
 | Frontend | `Agent Runs` UI refinement | 已开始 | 75% | 信息结构已经可用于 QA，后续待完成品牌化重绘、状态层级收口与交互细节 polish |
 | Frontend | `Market Detail` UI refinement | 已开始 | 75% | 生命周期信息架构已具备，后续待完成品牌化重绘、布局收口与调试层级优化 |
 | Frontend | `Overview` / `Pipelines` visual alignment | 未开始 | 0% | 当前页面仍停留在旧原型风格，待统一到 Bitpunk 视觉系统 |
+| Frontend | asset directory and usage rules | 已完成 | 100% | 已建立 `apps/web/public/assets/**` 目录约定，并在前端设计文档中明确 SVG 优先、品牌素材边界、中文优先文案策略 |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
@@ -310,6 +311,8 @@
 - 当前主线阻塞已从“worker handoff”转移到“dashboard 手工 QA、单 timeframe 计划质量迭代、plan revision、post-plan review”
 - 当前前端文档已完成收口：放弃 `v0`-specific workflow，改为由 Codex 直接基于 `mvp-frontend-design.md` 推进全部前端开发
 - 当前已确认品牌方向与现有实现存在视觉落差：下一轮前端工作将优先把暖色原型样式重构为 Bitpunk 深色交易智能控制台风格
+- 当前已建立前端素材目录：`apps/web/public/assets/{brand,marketing,illustrations,motion}`，后续营销图、插画、动效和最终页面素材都应从这里进入运行时前端
+- 当前产品语言策略已明确：页面文案以中文为主，技术标识与少量数据标签可保留英文以保持 operator 可读性
 
 ## 9. 更新规则
 
