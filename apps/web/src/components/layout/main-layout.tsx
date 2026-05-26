@@ -14,7 +14,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 lg:ml-64 pt-16">
+        <main className="main-content">
           <div className="p-6 max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

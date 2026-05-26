@@ -13,7 +13,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:block w-64 border-r border-line bg-graphite min-h-screen fixed left-0 top-16">
+    <aside className="sidebar-desktop">
       <nav className="flex flex-col gap-2 p-6">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;

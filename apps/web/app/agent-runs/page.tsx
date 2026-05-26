@@ -107,7 +107,7 @@ export default function AgentRunsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="metrics-grid mb-8">
         <MetricCard label="Total Runs" value={agentRuns.length} icon="🔄" />
         <MetricCard
           label="Successful"
@@ -130,7 +130,7 @@ export default function AgentRunsPage() {
       </div>
 
       {/* Focus Areas */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="detail-grid mb-8">
         {/* Latest Failure */}
         <div className="card-base p-6 border-l-4 border-l-neon-red">
           <h3 className="text-sm font-mono text-neon-red uppercase tracking-widest mb-3">

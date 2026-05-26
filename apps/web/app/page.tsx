@@ -98,7 +98,7 @@ export default function DashboardPage() {
       {/* Metrics Grid */}
       <section className="mb-8">
         <h2 className="text-xl font-bold text-off-white mb-4">Today&apos;s Operating Totals</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="metrics-grid">
           {metrics.map((metric) => (
             <MetricCard
               key={metric.label}

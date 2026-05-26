@@ -18,11 +18,11 @@ export function Header() {
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="font-bold text-lg text-off-white hidden sm:inline">bitpunk</span>
+          <span className="font-bold text-lg text-off-white">bitpunk</span>
         </Link>
 
         {/* Center Nav */}
-        <nav className="flex items-center gap-8">
+        <nav className="header-nav">
           <Link
             href="/"
             className="text-sm text-muted hover:text-cyber-cyan transition-colors"

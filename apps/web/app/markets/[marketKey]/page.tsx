@@ -86,7 +86,7 @@ export default function MarketDetailPage() {
       {/* Execution Checklist */}
       <section className="mb-8">
         <h2 className="text-xl font-bold text-off-white mb-4">Execution Checklist</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="detail-grid">
           {/* Left: Checklist */}
           <div className="card-base p-6">
             <div className="space-y-3">
@@ -132,7 +132,7 @@ export default function MarketDetailPage() {
       {/* Current State Metrics */}
       <section className="mb-8">
         <h2 className="text-xl font-bold text-off-white mb-4">Current Execution State</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="metrics-grid-6">
           <MetricCard 
             label="Status"
             value={pipeline.pipelineStatus || '—'}
@@ -169,7 +169,7 @@ export default function MarketDetailPage() {
       {/* Overview & Reasoning */}
       <section className="mb-8">
         <h2 className="text-xl font-bold text-off-white mb-4">Plan & Reasoning</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="detail-grid">
           {/* Summary */}
           <div className="card-base p-6 space-y-4">
             <h3 className="text-sm font-mono text-cyber-cyan uppercase tracking-widest">Summary</h3>
