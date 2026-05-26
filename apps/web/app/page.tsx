@@ -4,7 +4,7 @@ import {
   loadDashboardOverview,
   loadDashboardPipelines
 } from "../src/dashboard/load-dashboard-data";
-import { formatInteger } from "../src/ui/format";
+import { formatInteger, formatLatestTimestamp } from "../src/ui/format";
 import {
   DebugLink,
   MetricGrid,
@@ -23,6 +23,9 @@ export default async function DashboardPage() {
     loadDashboardOverview(),
     loadDashboardPipelines(12)
   ]);
+  const latestPipelineUpdate = formatLatestTimestamp(
+    pipelines.map((pipeline) => pipeline.updatedAt)
+  );
 
   const cards = [
     ["Signals Today", formatInteger(overview.signalsTodayCount)],
@@ -64,6 +67,7 @@ export default async function DashboardPage() {
       <Section
         kicker="Pipeline Monitor"
         title="Recent market pipelines"
+        description={`Showing ${pipelines.length} recent pipeline records from the dashboard read model sample. Latest update: ${latestPipelineUpdate}.`}
         action={<TextLink href="/pipelines">View full list</TextLink>}
       >
         <PipelineTable pipelines={pipelines} />

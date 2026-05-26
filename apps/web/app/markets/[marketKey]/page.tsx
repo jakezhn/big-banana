@@ -5,6 +5,7 @@ import {
   MarketPipelineNotFoundError
 } from "../../../src/dashboard/load-dashboard-data";
 import {
+  formatLatestTimestamp,
   formatNullableNumber,
   formatNumber,
   formatTimestamp,
@@ -22,7 +23,8 @@ import {
   PageHero,
   PageMeta,
   PageShell,
-  Section
+  Section,
+  StatusPill
 } from "../../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
@@ -46,9 +48,18 @@ export default async function MarketDetailPage({
 
     throw error;
   });
+  const latestPipelineUpdate = formatLatestTimestamp([
+    pipeline.marketState?.createdAt,
+    pipeline.tradePlanVersion?.createdAt,
+    pipeline.latestPlanRevisionSuggestion?.createdAt,
+    pipeline.latestPostPlanReview?.createdAt,
+    pipeline.latestOrder?.submittedAt,
+    pipeline.latestFill?.filledAt,
+    pipeline.currentPosition?.updatedAt
+  ]);
 
   const summaryCards = [
-    ["Pipeline Status", pipeline.pipelineStatus],
+    ["Pipeline Status", <StatusPill key="pipeline-status" value={pipeline.pipelineStatus} />],
     ["Ticker", pipeline.marketState?.tickerid ?? "-"],
     ["Timeframe", pipeline.marketState?.timeframe ?? "-"],
     ["Position", pipeline.currentPosition?.positionSide ?? "flat"],
@@ -127,7 +138,11 @@ export default async function MarketDetailPage({
         </DetailGrid>
       </Section>
 
-      <Section kicker="Snapshot" title="Current execution state">
+      <Section
+        kicker="Snapshot"
+        title="Current execution state"
+        description={`Latest record update across this market pipeline: ${latestPipelineUpdate}.`}
+      >
         <MetricGrid items={summaryCards} />
       </Section>
 
@@ -219,6 +234,7 @@ export default async function MarketDetailPage({
       <Section
         kicker="Debug Records"
         title="Latest pipeline records"
+        description="Raw records stay collapsed by default so operational summaries remain the primary view."
         action={
           <DebugLink
             href={`${apiBaseUrl}/api/market-pipeline?market_key=${encodeURIComponent(marketKey)}`}

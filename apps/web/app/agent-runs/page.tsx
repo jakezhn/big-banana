@@ -2,6 +2,7 @@ import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { loadDashboardAgentRuns } from "../../src/dashboard/load-dashboard-data";
 import {
   formatEligible,
+  formatLatestTimestamp,
   formatTimestamp,
   formatTokenUsage,
   shortenId,
@@ -34,6 +35,9 @@ export default async function AgentRunsPage() {
   const latestEligibleRun =
     agentRuns.find((run) => run.executionEligible === true) ?? null;
   const runMixRows = buildRunMixRows(agentRuns);
+  const latestRunStartedAt = formatLatestTimestamp(
+    agentRuns.map((run) => run.startedAt)
+  );
 
   return (
     <PageShell>
@@ -137,6 +141,9 @@ export default async function AgentRunsPage() {
       </Section>
 
       <Section
+        kicker="Run Sample"
+        title="Latest 50 agent runs"
+        description={`Loaded ${agentRuns.length} agent run records. Rows include live and replay operations from the recent API sample. Latest run: ${latestRunStartedAt}.`}
         action={
           <DebugLink href={`${apiBaseUrl}/api/dashboard/agent-runs?limit=50`}>
             Agent Runs API

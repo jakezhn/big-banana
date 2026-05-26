@@ -30,6 +30,25 @@ export function formatTimestamp(value: string): string {
   });
 }
 
+export function formatLatestTimestamp(
+  values: readonly (string | null | undefined)[]
+): string {
+  const latestTime = values.reduce<number | null>((latest, value) => {
+    if (!value) {
+      return latest;
+    }
+
+    const time = new Date(value).getTime();
+    if (Number.isNaN(time)) {
+      return latest;
+    }
+
+    return latest === null || time > latest ? time : latest;
+  }, null);
+
+  return latestTime === null ? "-" : formatTimestamp(new Date(latestTime).toISOString());
+}
+
 export function formatEligible(value: boolean | null): string {
   if (value === null) {
     return "-";

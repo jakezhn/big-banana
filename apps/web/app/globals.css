@@ -219,14 +219,23 @@ a {
 .debug-link {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: 30px;
+  padding: 0 0.62rem;
+  border: 1px solid rgba(230, 232, 236, 0.08);
+  border-radius: 999px;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.76rem;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.74;
+  font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
 }
 
 .debug-link:hover {
+  border-color: rgba(0, 229, 255, 0.22);
   color: var(--accent);
+  opacity: 1;
 }
 
 .section-block {
@@ -237,10 +246,18 @@ a {
 
 .section-heading {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.section-description {
+  margin: 0.45rem 0 0;
+  max-width: 52rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .text-link {

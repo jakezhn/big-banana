@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getStatusTone } from "../src/ui/status";
+import { getStatusMetadata, getStatusTone } from "../src/ui/status";
 
 describe("status tone mapping", () => {
   it("maps known terminal and failure statuses", () => {
@@ -13,5 +13,16 @@ describe("status tone mapping", () => {
     expect(getStatusTone("order_submitted")).toBe("accent");
     expect(getStatusTone("plan_ready")).toBe("warn");
     expect(getStatusTone("unknown_new_status")).toBe("neutral");
+  });
+
+  it("returns display metadata for known and unknown statuses", () => {
+    expect(getStatusMetadata("risk_rejected")).toMatchObject({
+      label: "Risk Rejected",
+      tone: "bad"
+    });
+    expect(getStatusMetadata("custom_status")).toMatchObject({
+      label: "Custom Status",
+      tone: "neutral"
+    });
   });
 });

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { formatTimestamp } from "./format";
-import { getStatusTone } from "./status";
+import { getStatusMetadata } from "./status";
 
 type ActionLink = {
   href: string;
@@ -52,11 +52,13 @@ export function PageHero({
 export function Section({
   kicker,
   title,
+  description,
   action,
   children
 }: {
   kicker?: string;
   title?: string;
+  description?: string;
   action?: ReactNode;
   children: ReactNode;
 }): ReactNode {
@@ -67,6 +69,7 @@ export function Section({
           <div>
             {kicker ? <p className="section-kicker">{kicker}</p> : null}
             {title ? <h2>{title}</h2> : null}
+            {description ? <p className="section-description">{description}</p> : null}
           </div>
           {action}
         </div>
@@ -213,8 +216,15 @@ export function JsonDisclosure({
 }
 
 export function StatusPill({ value }: { value: string }): ReactNode {
+  const status = getStatusMetadata(value);
+
   return (
-    <span className={`status-pill status-${getStatusTone(value)}`}>{value}</span>
+    <span
+      className={`status-pill status-${status.tone}`}
+      title={status.description}
+    >
+      {status.label}
+    </span>
   );
 }
 

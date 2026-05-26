@@ -1,6 +1,7 @@
 import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { PipelineTable } from "../../src/dashboard/pipeline-table";
 import { loadDashboardPipelines } from "../../src/dashboard/load-dashboard-data";
+import { formatLatestTimestamp } from "../../src/ui/format";
 import {
   DebugLink,
   PageHero,
@@ -14,6 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function PipelinesPage() {
   const apiBaseUrl = getApiBaseUrl();
   const pipelines = await loadDashboardPipelines(50);
+  const latestPipelineUpdate = formatLatestTimestamp(
+    pipelines.map((pipeline) => pipeline.updatedAt)
+  );
 
   return (
     <PageShell>
@@ -28,6 +32,9 @@ export default async function PipelinesPage() {
       <PageMeta />
 
       <Section
+        kicker="Pipeline Sample"
+        title="Latest 50 market records"
+        description={`Loaded ${pipelines.length} market pipeline records. Rows are ordered by latest update from the API sample. Latest update: ${latestPipelineUpdate}.`}
         action={
           <DebugLink href={`${apiBaseUrl}/api/dashboard/pipelines?limit=50`}>
             Pipelines API
