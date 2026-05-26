@@ -8,17 +8,20 @@ import {
   truncate
 } from "../../src/ui/format";
 import {
+  BlockEmptyState,
   DataTable,
+  DebugLink,
   DetailCard,
   DetailGrid,
   DetailList,
-  EmptyState,
   InlineLink,
   MetricGrid,
   PageHero,
+  PageMeta,
   PageShell,
   Section,
-  StatusPill
+  StatusPill,
+  TableEmptyState
 } from "../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
@@ -39,14 +42,10 @@ export default async function AgentRunsPage() {
         title="Recent planner runs"
         copy="Audit view for deterministic and future AI planner calls, including status, latency, and linked plan versions."
         actions={[
-          { href: "/", label: "Back to Overview" },
-          {
-            href: `${apiBaseUrl}/api/dashboard/agent-runs?limit=50`,
-            label: "View Agent Runs API",
-            variant: "muted"
-          }
+          { href: "/", label: "Back to Overview" }
         ]}
       />
+      <PageMeta />
 
       <Section kicker="Snapshot" title="Recent run health">
         <MetricGrid items={summaryCards} />
@@ -72,7 +71,7 @@ export default async function AgentRunsPage() {
                 />
               </div>
             ) : (
-              <EmptyState>No failed runs in the current sample.</EmptyState>
+              <BlockEmptyState>No failed runs in the current sample.</BlockEmptyState>
             )}
           </DetailCard>
           <DetailCard title="Latest execution-ready plan">
@@ -103,7 +102,9 @@ export default async function AgentRunsPage() {
                 />
               </div>
             ) : (
-              <EmptyState>No execution-eligible runs in the current sample.</EmptyState>
+              <BlockEmptyState>
+                No execution-eligible runs in the current sample.
+              </BlockEmptyState>
             )}
           </DetailCard>
         </DetailGrid>
@@ -135,7 +136,13 @@ export default async function AgentRunsPage() {
         </DetailGrid>
       </Section>
 
-      <Section>
+      <Section
+        action={
+          <DebugLink href={`${apiBaseUrl}/api/dashboard/agent-runs?limit=50`}>
+            Agent Runs API
+          </DebugLink>
+        }
+      >
         <DataTable>
           <thead>
             <tr>
@@ -154,7 +161,7 @@ export default async function AgentRunsPage() {
           </thead>
           <tbody>
             {agentRuns.length === 0 ? (
-              <EmptyState colSpan={11}>No agent runs available yet.</EmptyState>
+              <TableEmptyState colSpan={11}>No agent runs available yet.</TableEmptyState>
             ) : (
               agentRuns.map((run) => (
                 <tr key={run.id}>

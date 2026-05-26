@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { formatTimestamp } from "./format";
+import { getStatusTone } from "./status";
 
 type ActionLink = {
   href: string;
   label: string;
-  variant?: "primary" | "muted";
 };
 
 export function PageShell({ children }: { children: ReactNode }): ReactNode {
@@ -31,15 +32,13 @@ export function PageHero({
         <h1>{title}</h1>
         <p className="hero-copy">{copy}</p>
       </div>
-      {actions ? (
+      {actions && actions.length > 0 ? (
         <div className="hero-actions">
           {actions.map((action) => (
             <Link
               key={`${action.href}-${action.label}`}
               href={action.href}
-              className={`action-link${
-                action.variant === "muted" ? " action-link-muted" : ""
-              }`}
+              className="action-link"
             >
               {action.label}
             </Link>
@@ -63,17 +62,43 @@ export function Section({
 }): ReactNode {
   return (
     <section className="section-block">
-      {title ? (
+      {title || action ? (
         <div className="section-heading">
           <div>
             {kicker ? <p className="section-kicker">{kicker}</p> : null}
-            <h2>{title}</h2>
+            {title ? <h2>{title}</h2> : null}
           </div>
           {action}
         </div>
       ) : null}
       {children}
     </section>
+  );
+}
+
+export function PageMeta({
+  loadedAt = new Date()
+}: {
+  loadedAt?: Date;
+}): ReactNode {
+  return (
+    <div className="page-meta">
+      <span>Loaded at {formatTimestamp(loadedAt.toISOString())}</span>
+    </div>
+  );
+}
+
+export function DebugLink({
+  href,
+  children = "View API"
+}: {
+  href: string;
+  children?: ReactNode;
+}): ReactNode {
+  return (
+    <Link href={href} className="debug-link">
+      {children}
+    </Link>
   );
 }
 
@@ -172,27 +197,44 @@ export function JsonPre({ value }: { value: unknown }): ReactNode {
   return <pre className="detail-pre">{JSON.stringify(value, null, 2)}</pre>;
 }
 
-export function StatusPill({ value }: { value: string }): ReactNode {
-  return <span className={`status-pill status-${value}`}>{value}</span>;
+export function JsonDisclosure({
+  title,
+  value
+}: {
+  title: string;
+  value: unknown;
+}): ReactNode {
+  return (
+    <details className="json-disclosure">
+      <summary>{title}</summary>
+      <JsonPre value={value} />
+    </details>
+  );
 }
 
-export function EmptyState({
+export function StatusPill({ value }: { value: string }): ReactNode {
+  return (
+    <span className={`status-pill status-${getStatusTone(value)}`}>{value}</span>
+  );
+}
+
+export function TableEmptyState({
   children,
   colSpan
 }: {
   children: ReactNode;
-  colSpan?: number;
+  colSpan: number;
 }): ReactNode {
-  if (colSpan) {
-    return (
-      <tr>
-        <td colSpan={colSpan} className="empty-cell">
-          {children}
-        </td>
-      </tr>
-    );
-  }
+  return (
+    <tr>
+      <td colSpan={colSpan} className="empty-cell">
+        {children}
+      </td>
+    </tr>
+  );
+}
 
+export function BlockEmptyState({ children }: { children: ReactNode }): ReactNode {
   return <p className="empty-cell">{children}</p>;
 }
 

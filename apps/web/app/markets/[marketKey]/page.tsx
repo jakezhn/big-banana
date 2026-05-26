@@ -1,5 +1,9 @@
+import { notFound } from "next/navigation";
 import { getApiBaseUrl } from "../../../src/api/get-api-base-url";
-import { loadMarketPipeline } from "../../../src/dashboard/load-dashboard-data";
+import {
+  loadMarketPipeline,
+  MarketPipelineNotFoundError
+} from "../../../src/dashboard/load-dashboard-data";
 import {
   formatNullableNumber,
   formatNumber,
@@ -7,13 +11,16 @@ import {
   truncate
 } from "../../../src/ui/format";
 import {
+  BlockEmptyState,
+  DebugLink,
   DetailCard,
   DetailGrid,
   DetailList,
-  EmptyState,
   JsonPre,
+  JsonDisclosure,
   MetricGrid,
   PageHero,
+  PageMeta,
   PageShell,
   Section
 } from "../../../src/ui/primitives";
@@ -32,7 +39,13 @@ export default async function MarketDetailPage({
   const { marketKey: encodedMarketKey } = await params;
   const marketKey = decodeURIComponent(encodedMarketKey);
   const apiBaseUrl = getApiBaseUrl();
-  const pipeline = await loadMarketPipeline(marketKey);
+  const pipeline = await loadMarketPipeline(marketKey).catch((error: unknown) => {
+    if (error instanceof MarketPipelineNotFoundError) {
+      notFound();
+    }
+
+    throw error;
+  });
 
   const summaryCards = [
     ["Pipeline Status", pipeline.pipelineStatus],
@@ -98,14 +111,10 @@ export default async function MarketDetailPage({
         title={marketKey}
         copy="Single-market execution trace across state, plan, risk, intent, order, fill, current position, reviews, and scoped lessons."
         actions={[
-          { href: "/pipelines", label: "Back to Pipeline Monitor" },
-          {
-            href: `${apiBaseUrl}/api/market-pipeline?market_key=${encodeURIComponent(marketKey)}`,
-            label: "View Market API",
-            variant: "muted"
-          }
+          { href: "/pipelines", label: "Back to Pipeline Monitor" }
         ]}
       />
+      <PageMeta />
 
       <Section kicker="Checklist" title="Current action state">
         <DetailGrid tight>
@@ -174,7 +183,7 @@ export default async function MarketDetailPage({
 
       <Section kicker="Lessons" title="Scoped lesson candidates">
         {pipeline.memoryLessonCandidates.length === 0 ? (
-          <EmptyState>No lesson candidates recorded yet.</EmptyState>
+          <BlockEmptyState>No lesson candidates recorded yet.</BlockEmptyState>
         ) : (
           <DetailGrid>
             {pipeline.memoryLessonCandidates.map((candidate) => (
@@ -207,8 +216,18 @@ export default async function MarketDetailPage({
         )}
       </Section>
 
-      <Section kicker="Chain" title="Latest pipeline records">
-        <DetailGrid>
+      <Section
+        kicker="Debug Records"
+        title="Latest pipeline records"
+        action={
+          <DebugLink
+            href={`${apiBaseUrl}/api/market-pipeline?market_key=${encodeURIComponent(marketKey)}`}
+          >
+            Market API
+          </DebugLink>
+        }
+      >
+        <div className="json-disclosure-stack">
           <RecordCard title="Market State" value={pipeline.marketState} />
           <RecordCard title="Trade Plan" value={pipeline.tradePlanVersion} />
           <RecordCard title="Risk Verdict" value={pipeline.riskVerdict} />
@@ -224,7 +243,7 @@ export default async function MarketDetailPage({
           <RecordCard title="Latest Order" value={pipeline.latestOrder} />
           <RecordCard title="Latest Fill" value={pipeline.latestFill} />
           <RecordCard title="Current Position" value={pipeline.currentPosition} />
-        </DetailGrid>
+        </div>
       </Section>
     </PageShell>
   );
@@ -248,9 +267,5 @@ function ReasoningCallout({
 }
 
 function RecordCard({ title, value }: { title: string; value: unknown }) {
-  return (
-    <DetailCard title={title}>
-      <JsonPre value={value} />
-    </DetailCard>
-  );
+  return <JsonDisclosure title={title} value={value} />;
 }

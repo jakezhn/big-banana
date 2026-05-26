@@ -6,7 +6,9 @@ import {
 } from "../src/dashboard/load-dashboard-data";
 import { formatInteger } from "../src/ui/format";
 import {
+  DebugLink,
   MetricGrid,
+  PageMeta,
   PageHero,
   PageShell,
   Section,
@@ -42,16 +44,20 @@ export default async function DashboardPage() {
         compact={false}
         actions={[
           { href: "/pipelines", label: "Open Pipeline Monitor" },
-          { href: "/agent-runs", label: "Open Agent Runs", variant: "muted" },
-          {
-            href: `${apiBaseUrl}/api/dashboard/overview`,
-            label: "View Overview API",
-            variant: "muted"
-          }
+          { href: "/agent-runs", label: "Open Agent Runs" }
         ]}
       />
+      <PageMeta />
 
-      <Section kicker="Overview" title="Today's operating totals">
+      <Section
+        kicker="Overview"
+        title="Today's operating totals"
+        action={
+          <DebugLink href={`${apiBaseUrl}/api/dashboard/overview`}>
+            Overview API
+          </DebugLink>
+        }
+      >
         <MetricGrid items={cards} />
       </Section>
 

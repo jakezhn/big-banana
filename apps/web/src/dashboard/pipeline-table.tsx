@@ -1,7 +1,12 @@
 import type { DashboardPipelineListItem } from "@big-banana/domain";
 import type { ReactNode } from "react";
 import { formatTimestamp } from "../ui/format";
-import { DataTable, EmptyState, InlineLink, StatusPill } from "../ui/primitives";
+import {
+  DataTable,
+  InlineLink,
+  StatusPill,
+  TableEmptyState
+} from "../ui/primitives";
 
 export function PipelineTable({
   pipelines,
@@ -30,7 +35,7 @@ export function PipelineTable({
       </thead>
       <tbody>
         {pipelines.length === 0 ? (
-          <EmptyState colSpan={colSpan}>{emptyMessage}</EmptyState>
+          <TableEmptyState colSpan={colSpan}>{emptyMessage}</TableEmptyState>
         ) : (
           pipelines.map((pipeline) => (
             <tr key={pipeline.marketKey}>

@@ -59,6 +59,10 @@ export async function loadMarketPipeline(
     }
   );
 
+  if (response.status === 404) {
+    return Promise.reject(new MarketPipelineNotFoundError(marketKey));
+  }
+
   if (!response.ok) {
     throw new Error(`Failed to load market pipeline: ${response.status}`);
   }
@@ -95,6 +99,13 @@ export async function loadMarketPipeline(
     latestFill: body.data.latest_fill,
     currentPosition: body.data.current_position
   };
+}
+
+export class MarketPipelineNotFoundError extends Error {
+  constructor(readonly marketKey: string) {
+    super(`Market pipeline not found: ${marketKey}`);
+    this.name = "MarketPipelineNotFoundError";
+  }
 }
 
 export async function loadDashboardAgentRuns(

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { AppNav } from "../src/ui/app-nav";
 import "./globals.css";
 
 export const metadata = {
@@ -26,11 +27,7 @@ export default function RootLayout({
               className="brand-logo"
             />
           </Link>
-          <nav className="site-nav" aria-label="Dashboard sections">
-            <Link href="/">Overview</Link>
-            <Link href="/pipelines">Pipelines</Link>
-            <Link href="/agent-runs">Agent Runs</Link>
-          </nav>
+          <AppNav />
         </header>
         {children}
       </body>
