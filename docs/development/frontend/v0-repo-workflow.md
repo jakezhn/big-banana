@@ -182,3 +182,16 @@ ui/v0-market-detail
 所以 repo-mode 下最重要的不是“给更多上下文”，而是：
 
 - 给更清楚的边界
+
+## Fallback
+
+如果 `v0` 的仓库导入、分支同步或 monorepo 识别在你的环境里表现不稳定，优先退回到：
+
+1. 继续使用当前输入包，让 `v0` 只生成页面改动方案
+2. 或者只把 `apps/web` 相关文件作为现有代码输入给 `v0`
+3. 然后由 `Codex` 接回主仓库
+
+也就是说：
+
+- repo-mode 是首选
+- prompt-only / scoped-file import 是可接受的后备方案
