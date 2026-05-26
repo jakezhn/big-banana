@@ -10,9 +10,9 @@
 | `webhook-payload-spec.md` | frozen reference | 外部 payload 协议 |
 | `mvp-architecture.md` | active | 当前 agent-first MVP 架构 |
 | `mvp-agent-first-refactor.md` | active | 当前 staged 重构方案 |
+| `mvp-frontend-design.md` | active | 当前 MVP 前端设计、品牌映射与页面风格源 |
 | `mvp-validation-and-dashboard.md` | active | 当前验证和 dashboard 路线 |
 | `mvp-work-tracker.md` | active tracker | 每轮开发/测试前后更新 |
-| `frontend/*` | active | 给 `v0` 使用的前端输入包与页面 brief |
 | `paper-smoke-runbook.md` | active runbook | Supabase / paper / planner 联调 |
 | `schemas/*.json` | frozen contracts | 机器可读 schema |
 | `archived/*` | archived | 旧 workflow-first 阶段上下文 |
@@ -39,6 +39,10 @@
   - 受影响模块
   - staged 重构计划
   - Hermes / skill / memory 边界
+- `mvp-frontend-design.md`
+  - MVP 前端设计主文档
+  - Bitpunk 品牌到 UI 的映射
+  - 页面风格与前端实现边界
 
 ### 3. 验证与产品化
 
@@ -52,10 +56,6 @@
   - 测试任务拆分
   - 各模块完成度
   - 每轮开发/测试后的进度更新入口
-- `frontend/`
-  - 给 `v0` 的前端上下文包
-  - 当前 read model 摘要
-  - 页面级 brief
 
 ### 4. 操作手册
 
@@ -81,9 +81,10 @@
 2. `webhook-payload-spec.md`
 3. `mvp-architecture.md`
 4. `mvp-agent-first-refactor.md`
-5. `mvp-validation-and-dashboard.md`
-6. `mvp-work-tracker.md`
-7. `paper-smoke-runbook.md`
+5. `mvp-frontend-design.md`
+6. `mvp-validation-and-dashboard.md`
+7. `mvp-work-tracker.md`
+8. `paper-smoke-runbook.md`
 
 ## 合并说明
 

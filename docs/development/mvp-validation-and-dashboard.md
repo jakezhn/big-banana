@@ -42,6 +42,8 @@ Existing pages remain valid:
 - Market Detail
 - Agent Runs
 
+The next frontend phase should be guided by `mvp-frontend-design.md`, not by separate v0-specific briefs. Frontend work now belongs directly inside the MVP implementation path.
+
 Agent-first additions should make the dashboard answer:
 
 - what context did Hermes see?
@@ -95,6 +97,25 @@ Add a minimal internal page or API to replay fixed scenarios:
 - execution-eligible rate
 
 This can start as an API and script before becoming UI.
+
+## 4.1 Frontend UI Phase
+
+Frontend no longer needs a separate `frontend/` doc subtree or a v0-specific workflow.
+
+The active frontend path is:
+
+1. keep existing routes and read models
+2. realign the visual system with Bitpunk branding
+3. improve `Agent Runs` and `Market Detail` first
+4. then align `Overview` and `Pipelines`
+5. finish with manual QA and polish
+
+For the current MVP, the frontend should optimize for:
+
+- operator readability
+- lifecycle traceability
+- risk and failure visibility
+- dense but structured diagnostics
 
 ### Realtime Refresh
 

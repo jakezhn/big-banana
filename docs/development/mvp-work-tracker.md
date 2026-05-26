@@ -142,6 +142,10 @@
 | Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
 | Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路，现已补 overview / reasoning summary / revision / review / scoped lesson candidate 展示位 |
 | Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已补运行汇总卡片，并展示 skill / prompt / token usage / error / market detail 跳转 |
+| Frontend | brand-aligned visual system | 已开始 | 25% | 已完成品牌方向确认与前端设计文档；待把当前暖色原型风格切换到 Bitpunk 深色控制台视觉系统 |
+| Frontend | `Agent Runs` UI refinement | 已开始 | 75% | 信息结构已经可用于 QA，后续待完成品牌化重绘、状态层级收口与交互细节 polish |
+| Frontend | `Market Detail` UI refinement | 已开始 | 75% | 生命周期信息架构已具备，后续待完成品牌化重绘、布局收口与调试层级优化 |
+| Frontend | `Overview` / `Pipelines` visual alignment | 未开始 | 0% | 当前页面仍停留在旧原型风格，待统一到 Bitpunk 视觉系统 |
 | Platform / Deployment | Supabase remote smoke | 已完成 | 100% | 已跑通 remote Supabase |
 | Platform / Deployment | RLS / index hardening | 已完成 | 100% | advisor 基线已处理 |
 | Platform / Deployment | Supabase SDK framework layer | 已完成 | 100% | health route 已可用 |
@@ -223,20 +227,24 @@
 - advanced interventions
 - dashboard realtime refresh wiring
 - optional Inngest fallback
+- brand-aligned frontend visual system
+- final dashboard UI polish
 
 ## 6. 当前建议的下一轮开发顺序
 
-1. 前端 UI 开发并继续推进 `Agent Runs / Market Detail` 手工 QA
-2. planner quality iteration loop baseline interpretation
-3. revision / review / memory lesson candidate 的更细可见性与交互
-4. multi-Hermes router
+1. 前端视觉系统重构并对齐 Bitpunk branding
+2. 完成 `Agent Runs / Market Detail` 的品牌化 UI 收口与手工 QA
+3. 统一 `Overview` / `Pipelines` 到同一视觉系统
+4. planner quality iteration loop baseline interpretation
+5. revision / review / memory lesson candidate 的更细可见性与交互
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. replay_planner batch smoke
-2. multi-market AI replay baseline
-3. dashboard Agent Runs / Market Detail manual QA
-4. remote revision / review / memory lesson candidate smoke
+1. dashboard Agent Runs / Market Detail manual QA
+2. Overview / Pipelines visual regression
+3. replay_planner batch smoke
+4. multi-market AI replay baseline
+5. remote revision / review / memory lesson candidate smoke
 
 ## 8. 本轮状态快照
 
@@ -300,6 +308,8 @@
 - 本轮还修复了一个真实联调 bug：`/api/market-pipeline` 和 dashboard GET 路由此前会返回旧缓存结果，现在已强制改为 dynamic/no-cache 路径
 - 本轮已补 `apps/hermes` 自动加载 `.env.local`：worker 启动命令与 runbook 现在一致，不再要求手动 `source` 环境变量
 - 当前主线阻塞已从“worker handoff”转移到“dashboard 手工 QA、单 timeframe 计划质量迭代、plan revision、post-plan review”
+- 当前前端文档已完成收口：放弃 `v0`-specific workflow，改为由 Codex 直接基于 `mvp-frontend-design.md` 推进全部前端开发
+- 当前已确认品牌方向与现有实现存在视觉落差：下一轮前端工作将优先把暖色原型样式重构为 Bitpunk 深色交易智能控制台风格
 
 ## 9. 更新规则
 
