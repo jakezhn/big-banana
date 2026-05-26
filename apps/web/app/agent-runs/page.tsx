@@ -1,6 +1,25 @@
-import Link from "next/link";
 import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { loadDashboardAgentRuns } from "../../src/dashboard/load-dashboard-data";
+import {
+  formatEligible,
+  formatTimestamp,
+  formatTokenUsage,
+  shortenId,
+  truncate
+} from "../../src/ui/format";
+import {
+  DataTable,
+  DetailCard,
+  DetailGrid,
+  DetailList,
+  EmptyState,
+  InlineLink,
+  MetricGrid,
+  PageHero,
+  PageShell,
+  Section,
+  StatusPill
+} from "../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -14,90 +33,54 @@ export default async function AgentRunsPage() {
   const runMixRows = buildRunMixRows(agentRuns);
 
   return (
-    <main className="dashboard-shell">
-      <section className="hero-panel hero-panel-compact">
-        <div>
-          <p className="eyebrow">Agent Runs</p>
-          <h1>Recent planner runs</h1>
-          <p className="hero-copy">
-            Audit view for deterministic and future AI planner calls, including
-            status, latency, and linked plan versions.
-          </p>
-        </div>
-        <div className="hero-actions">
-          <Link href="/" className="action-link">
-            Back to Overview
-          </Link>
-          <Link
-            href={`${apiBaseUrl}/api/dashboard/agent-runs?limit=50`}
-            className="action-link action-link-muted"
-          >
-            View Agent Runs API
-          </Link>
-        </div>
-      </section>
+    <PageShell>
+      <PageHero
+        eyebrow="Agent Runs"
+        title="Recent planner runs"
+        copy="Audit view for deterministic and future AI planner calls, including status, latency, and linked plan versions."
+        actions={[
+          { href: "/", label: "Back to Overview" },
+          {
+            href: `${apiBaseUrl}/api/dashboard/agent-runs?limit=50`,
+            label: "View Agent Runs API",
+            variant: "muted"
+          }
+        ]}
+      />
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Snapshot</p>
-            <h2>Recent run health</h2>
-          </div>
-        </div>
-        <div className="card-grid">
-          {summaryCards.map(([label, value]) => (
-            <article key={label} className="metric-card">
-              <p className="metric-label">{label}</p>
-              <p className="metric-value metric-value-compact">{value}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <Section kicker="Snapshot" title="Recent run health">
+        <MetricGrid items={summaryCards} />
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Focus</p>
-            <h2>What needs attention</h2>
-          </div>
-        </div>
-        <div className="detail-grid detail-grid-tight">
-          <article className="detail-card">
-            <p className="metric-label">Latest failure</p>
+      <Section kicker="Focus" title="What needs attention">
+        <DetailGrid tight>
+          <DetailCard title="Latest failure">
             {latestFailedRun ? (
               <div className="callout-stack">
                 <div className="callout-panel callout-panel-danger">
                   <p className="callout-title">
-                    {latestFailedRun.marketKey} · {latestFailedRun.status}
+                    {latestFailedRun.marketKey} / {latestFailedRun.status}
                   </p>
                   <p>{truncate(latestFailedRun.errorMessage ?? "Unknown failure", 220)}</p>
                 </div>
-                <dl className="detail-list">
-                  <div className="detail-list-row">
-                    <dt>Skill</dt>
-                    <dd>{latestFailedRun.skillName ?? latestFailedRun.operation}</dd>
-                  </div>
-                  <div className="detail-list-row">
-                    <dt>Prompt</dt>
-                    <dd>{latestFailedRun.promptVersion ?? "—"}</dd>
-                  </div>
-                  <div className="detail-list-row">
-                    <dt>Started</dt>
-                    <dd>{formatTimestamp(latestFailedRun.startedAt)}</dd>
-                  </div>
-                </dl>
+                <DetailList
+                  rows={[
+                    ["Skill", latestFailedRun.skillName ?? latestFailedRun.operation],
+                    ["Prompt", latestFailedRun.promptVersion ?? "-"],
+                    ["Started", formatTimestamp(latestFailedRun.startedAt)]
+                  ]}
+                />
               </div>
             ) : (
-              <p className="empty-cell">No failed runs in the current sample.</p>
+              <EmptyState>No failed runs in the current sample.</EmptyState>
             )}
-          </article>
-          <article className="detail-card">
-            <p className="metric-label">Latest execution-ready plan</p>
+          </DetailCard>
+          <DetailCard title="Latest execution-ready plan">
             {latestEligibleRun ? (
               <div className="callout-stack">
                 <div className="callout-panel">
                   <p className="callout-title">
-                    {latestEligibleRun.marketKey} · {latestEligibleRun.status}
+                    {latestEligibleRun.marketKey} / {latestEligibleRun.status}
                   </p>
                   <p>
                     {latestEligibleRun.skillName ?? latestEligibleRun.operation} via{" "}
@@ -106,53 +89,32 @@ export default async function AgentRunsPage() {
                       : latestEligibleRun.runnerKind}
                   </p>
                 </div>
-                <dl className="detail-list">
-                  <div className="detail-list-row">
-                    <dt>Prompt</dt>
-                    <dd>{latestEligibleRun.promptVersion ?? "—"}</dd>
-                  </div>
-                  <div className="detail-list-row">
-                    <dt>Latency</dt>
-                    <dd>{latestEligibleRun.latencyMs} ms</dd>
-                  </div>
-                  <div className="detail-list-row">
-                    <dt>Plan Version</dt>
-                    <dd>
-                      {latestEligibleRun.tradePlanVersionId
+                <DetailList
+                  rows={[
+                    ["Prompt", latestEligibleRun.promptVersion ?? "-"],
+                    ["Latency", `${latestEligibleRun.latencyMs} ms`],
+                    [
+                      "Plan Version",
+                      latestEligibleRun.tradePlanVersionId
                         ? shortenId(latestEligibleRun.tradePlanVersionId)
-                        : "—"}
-                    </dd>
-                  </div>
-                </dl>
+                        : "-"
+                    ]
+                  ]}
+                />
               </div>
             ) : (
-              <p className="empty-cell">No execution-eligible runs in the current sample.</p>
+              <EmptyState>No execution-eligible runs in the current sample.</EmptyState>
             )}
-          </article>
-        </div>
-      </section>
+          </DetailCard>
+        </DetailGrid>
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Mix</p>
-            <h2>Live, replay, and market breakdown</h2>
-          </div>
-        </div>
-        <div className="detail-grid detail-grid-tight">
-          <article className="detail-card">
-            <p className="metric-label">Current mix</p>
-            <dl className="detail-list">
-              {runMixRows.map(([label, value]) => (
-                <div key={label} className="detail-list-row">
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </article>
-          <article className="detail-card">
-            <p className="metric-label">Why this matters</p>
+      <Section kicker="Mix" title="Live, replay, and market breakdown">
+        <DetailGrid tight>
+          <DetailCard title="Current mix">
+            <DetailList rows={runMixRows} />
+          </DetailCard>
+          <DetailCard title="Why this matters">
             <div className="callout-stack">
               <div className="callout-panel">
                 <p className="callout-title">Live runs</p>
@@ -169,84 +131,73 @@ export default async function AgentRunsPage() {
                 </p>
               </div>
             </div>
-          </article>
-        </div>
-      </section>
+          </DetailCard>
+        </DetailGrid>
+      </Section>
 
-      <section className="section-block">
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Market</th>
-                <th>Operation</th>
-                <th>Skill</th>
-                <th>Runner</th>
-                <th>Prompt</th>
-                <th>Status</th>
-                <th>Error</th>
-                <th>Eligible</th>
-                <th>Latency</th>
-                <th>Plan Version</th>
-                <th>Started</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agentRuns.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="empty-cell">
-                    No agent runs available yet.
+      <Section>
+        <DataTable>
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Operation</th>
+              <th>Skill</th>
+              <th>Runner</th>
+              <th>Prompt</th>
+              <th>Status</th>
+              <th>Error</th>
+              <th>Eligible</th>
+              <th>Latency</th>
+              <th>Plan Version</th>
+              <th>Started</th>
+            </tr>
+          </thead>
+          <tbody>
+            {agentRuns.length === 0 ? (
+              <EmptyState colSpan={11}>No agent runs available yet.</EmptyState>
+            ) : (
+              agentRuns.map((run) => (
+                <tr key={run.id}>
+                  <td>
+                    <InlineLink href={`/markets/${encodeURIComponent(run.marketKey)}`}>
+                      {run.marketKey}
+                    </InlineLink>
                   </td>
-                </tr>
-              ) : (
-                agentRuns.map((run) => (
-                  <tr key={run.id}>
-                    <td>
-                      <Link
-                        href={`/markets/${encodeURIComponent(run.marketKey)}`}
-                        className="action-link action-link-inline"
-                      >
-                        {run.marketKey}
-                      </Link>
-                    </td>
-                    <td>{run.operation}</td>
-                    <td>{run.skillName ?? "—"}</td>
-                    <td>
-                      <div className="table-stack">
-                        <span>
-                          {run.model
-                            ? `${run.modelProvider ?? run.runnerKind}:${run.model}`
-                            : run.runnerKind}
-                        </span>
-                        <span className="table-subtle">{shortenId(run.id)}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="table-stack">
-                        <span>{run.promptVersion ?? "—"}</span>
-                        <span className="table-subtle">
-                          {formatTokenUsage(run.tokenUsageJson)}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`status-pill status-${run.status}`}>
-                        {run.status}
+                  <td>{run.operation}</td>
+                  <td>{run.skillName ?? "-"}</td>
+                  <td>
+                    <div className="table-stack">
+                      <span>
+                        {run.model
+                          ? `${run.modelProvider ?? run.runnerKind}:${run.model}`
+                          : run.runnerKind}
                       </span>
-                    </td>
-                    <td>{run.errorMessage ? truncate(run.errorMessage, 88) : "—"}</td>
-                    <td>{formatEligible(run.executionEligible)}</td>
-                    <td>{run.latencyMs} ms</td>
-                    <td>{run.tradePlanVersionId ? shortenId(run.tradePlanVersionId) : "—"}</td>
-                    <td>{formatTimestamp(run.startedAt)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+                      <span className="table-subtle">{shortenId(run.id)}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="table-stack">
+                      <span>{run.promptVersion ?? "-"}</span>
+                      <span className="table-subtle">
+                        {formatTokenUsage(run.tokenUsageJson)}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <StatusPill value={run.status} />
+                  </td>
+                  <td>{run.errorMessage ? truncate(run.errorMessage, 88) : "-"}</td>
+                  <td>{formatEligible(run.executionEligible)}</td>
+                  <td>{run.latencyMs} ms</td>
+                  <td>{run.tradePlanVersionId ? shortenId(run.tradePlanVersionId) : "-"}</td>
+                  <td>{formatTimestamp(run.startedAt)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </DataTable>
+      </Section>
+    </PageShell>
   );
 }
 
@@ -291,43 +242,4 @@ function buildRunMixRows(
     ["OpenAI Runs", String(openAiRuns)],
     ["BINANCE Markets", String(cryptoRuns)]
   ] as const;
-}
-
-function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function formatEligible(value: boolean | null): string {
-  if (value === null) {
-    return "—";
-  }
-
-  return value ? "yes" : "no";
-}
-
-function formatTokenUsage(value: unknown): string {
-  if (!value || typeof value !== "object") {
-    return "usage unavailable";
-  }
-
-  const totalTokens = (value as { total_tokens?: unknown }).total_tokens;
-  if (typeof totalTokens === "number") {
-    return `${totalTokens.toLocaleString("en-US")} tokens`;
-  }
-
-  return "usage recorded";
-}
-
-function shortenId(value: string): string {
-  return value.length <= 14 ? value : `${value.slice(0, 8)}…${value.slice(-4)}`;
-}
-
-function truncate(value: string, maxLength: number): string {
-  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
 }

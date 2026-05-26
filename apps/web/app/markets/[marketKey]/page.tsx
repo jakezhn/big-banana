@@ -1,6 +1,22 @@
-import Link from "next/link";
 import { getApiBaseUrl } from "../../../src/api/get-api-base-url";
 import { loadMarketPipeline } from "../../../src/dashboard/load-dashboard-data";
+import {
+  formatNullableNumber,
+  formatNumber,
+  formatTimestamp,
+  truncate
+} from "../../../src/ui/format";
+import {
+  DetailCard,
+  DetailGrid,
+  DetailList,
+  EmptyState,
+  JsonPre,
+  MetricGrid,
+  PageHero,
+  PageShell,
+  Section
+} from "../../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -20,26 +36,23 @@ export default async function MarketDetailPage({
 
   const summaryCards = [
     ["Pipeline Status", pipeline.pipelineStatus],
-    ["Ticker", pipeline.marketState?.tickerid ?? "—"],
-    ["Timeframe", pipeline.marketState?.timeframe ?? "—"],
+    ["Ticker", pipeline.marketState?.tickerid ?? "-"],
+    ["Timeframe", pipeline.marketState?.timeframe ?? "-"],
     ["Position", pipeline.currentPosition?.positionSide ?? "flat"],
     ["Signed Qty", formatNumber(pipeline.currentPosition?.signedQty ?? 0)],
     ["Avg Entry", formatNullableNumber(pipeline.currentPosition?.avgEntryPrice)]
   ] as const;
   const overviewRows = [
-    ["Latest Plan Version", pipeline.tradePlanVersion?.version?.toString() ?? "—"],
-    ["Risk Verdict", pipeline.riskVerdict?.verdict ?? "—"],
-    ["Order Status", pipeline.latestOrder?.status ?? "—"],
+    ["Latest Plan Version", pipeline.tradePlanVersion?.version?.toString() ?? "-"],
+    ["Risk Verdict", pipeline.riskVerdict?.verdict ?? "-"],
+    ["Order Status", pipeline.latestOrder?.status ?? "-"],
     ["Fill Price", formatNullableNumber(pipeline.latestFill?.price)],
-    [
-      "Lesson Candidate Status",
-      pipeline.memoryLessonCandidates[0]?.status ?? "—"
-    ],
+    ["Lesson Candidate Status", pipeline.memoryLessonCandidates[0]?.status ?? "-"],
     [
       "Last Revision At",
       pipeline.latestPlanRevisionSuggestion
         ? formatTimestamp(pipeline.latestPlanRevisionSuggestion.createdAt)
-        : "—"
+        : "-"
     ]
   ] as const;
   const actionChecklist = [
@@ -54,330 +67,190 @@ export default async function MarketDetailPage({
     ]
   ] as const;
   const latestLifecycleEvents = [
-    ["Plan", pipeline.tradePlanVersion ? formatTimestamp(pipeline.tradePlanVersion.createdAt) : "—"],
+    [
+      "Plan",
+      pipeline.tradePlanVersion
+        ? formatTimestamp(pipeline.tradePlanVersion.createdAt)
+        : "-"
+    ],
     [
       "Revision",
       pipeline.latestPlanRevisionSuggestion
         ? formatTimestamp(pipeline.latestPlanRevisionSuggestion.createdAt)
-        : "—"
+        : "-"
     ],
     [
       "Review",
       pipeline.latestPostPlanReview
         ? formatTimestamp(pipeline.latestPostPlanReview.createdAt)
-        : "—"
+        : "-"
     ],
-    ["Order", pipeline.latestOrder ? formatTimestamp(pipeline.latestOrder.submittedAt) : "—"]
+    [
+      "Order",
+      pipeline.latestOrder ? formatTimestamp(pipeline.latestOrder.submittedAt) : "-"
+    ]
   ] as const;
 
   return (
-    <main className="dashboard-shell">
-      <section className="hero-panel hero-panel-compact">
-        <div>
-          <p className="eyebrow">Market Detail</p>
-          <h1>{marketKey}</h1>
-          <p className="hero-copy">
-            Single-market execution trace across state, plan, risk, intent,
-            order, fill, and current position.
-          </p>
-        </div>
-        <div className="hero-actions">
-          <Link href="/pipelines" className="action-link">
-            Back to Pipeline Monitor
-          </Link>
-          <Link
-            href={`${apiBaseUrl}/api/market-pipeline?market_key=${encodeURIComponent(marketKey)}`}
-            className="action-link action-link-muted"
-          >
-            View Market API
-          </Link>
-        </div>
-      </section>
+    <PageShell>
+      <PageHero
+        eyebrow="Market Detail"
+        title={marketKey}
+        copy="Single-market execution trace across state, plan, risk, intent, order, fill, current position, reviews, and scoped lessons."
+        actions={[
+          { href: "/pipelines", label: "Back to Pipeline Monitor" },
+          {
+            href: `${apiBaseUrl}/api/market-pipeline?market_key=${encodeURIComponent(marketKey)}`,
+            label: "View Market API",
+            variant: "muted"
+          }
+        ]}
+      />
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Checklist</p>
-            <h2>Current action state</h2>
-          </div>
-        </div>
-        <div className="detail-grid detail-grid-tight">
-          <article className="detail-card">
-            <p className="metric-label">Execution checklist</p>
-            <dl className="detail-list">
-              {actionChecklist.map(([label, value]) => (
-                <div key={label} className="detail-list-row">
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </article>
-          <article className="detail-card">
-            <p className="metric-label">Latest lifecycle timestamps</p>
-            <dl className="detail-list">
-              {latestLifecycleEvents.map(([label, value]) => (
-                <div key={label} className="detail-list-row">
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </article>
-        </div>
-      </section>
+      <Section kicker="Checklist" title="Current action state">
+        <DetailGrid tight>
+          <DetailCard title="Execution checklist">
+            <DetailList rows={actionChecklist} />
+          </DetailCard>
+          <DetailCard title="Latest lifecycle timestamps">
+            <DetailList rows={latestLifecycleEvents} />
+          </DetailCard>
+        </DetailGrid>
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Snapshot</p>
-            <h2>Current execution state</h2>
-          </div>
-        </div>
-        <div className="card-grid">
-          {summaryCards.map(([label, value]) => (
-            <article key={label} className="metric-card">
-              <p className="metric-label">{label}</p>
-              <p className="metric-value metric-value-compact">{value}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <Section kicker="Snapshot" title="Current execution state">
+        <MetricGrid items={summaryCards} />
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Overview</p>
-            <h2>Plan and execution summary</h2>
-          </div>
-        </div>
-        <div className="detail-grid detail-grid-tight">
-          <article className="detail-card">
-            <p className="metric-label">Current summary</p>
-            <dl className="detail-list">
-              {overviewRows.map(([label, value]) => (
-                <div key={label} className="detail-list-row">
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </article>
-          <article className="detail-card">
-            <p className="metric-label">Active reasoning summary</p>
+      <Section kicker="Overview" title="Plan and execution summary">
+        <DetailGrid tight>
+          <DetailCard title="Current summary">
+            <DetailList rows={overviewRows} />
+          </DetailCard>
+          <DetailCard title="Active reasoning summary">
             <div className="callout-stack">
-              <div className="callout-panel">
-                <p className="callout-title">Trade plan</p>
-                <p>
-                  {pipeline.tradePlanVersion?.reasoningSummary
-                    ? truncate(pipeline.tradePlanVersion.reasoningSummary, 220)
-                    : "No active plan reasoning recorded."}
-                </p>
-              </div>
-              <div className="callout-panel">
-                <p className="callout-title">Latest revision</p>
-                <p>
-                  {pipeline.latestPlanRevisionSuggestion?.reason
-                    ? truncate(pipeline.latestPlanRevisionSuggestion.reason, 220)
-                    : "No revision suggestion recorded."}
-                </p>
-              </div>
-              <div className="callout-panel">
-                <p className="callout-title">Latest review</p>
-                <p>
-                  {pipeline.latestPostPlanReview?.outcomeSummary
-                    ? truncate(pipeline.latestPostPlanReview.outcomeSummary, 220)
-                    : "No post-plan review recorded."}
-                </p>
-              </div>
+              <ReasoningCallout
+                title="Trade plan"
+                value={pipeline.tradePlanVersion?.reasoningSummary}
+                fallback="No active plan reasoning recorded."
+              />
+              <ReasoningCallout
+                title="Latest revision"
+                value={pipeline.latestPlanRevisionSuggestion?.reason}
+                fallback="No revision suggestion recorded."
+              />
+              <ReasoningCallout
+                title="Latest review"
+                value={pipeline.latestPostPlanReview?.outcomeSummary}
+                fallback="No post-plan review recorded."
+              />
             </div>
-          </article>
-        </div>
-      </section>
+          </DetailCard>
+        </DetailGrid>
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Lifecycle</p>
-            <h2>Plan, revision, review, and lessons</h2>
-          </div>
-        </div>
-        <div className="card-grid">
-          <article className="metric-card">
-            <p className="metric-label">Plan Action</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.tradePlanVersion?.action ?? "—"}
-            </p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Execution State</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.tradePlanVersion?.executionPlaybook.state ?? "—"}
-            </p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Latest Revision</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.latestPlanRevisionSuggestion?.revisionAction ?? "—"}
-            </p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Review Summary</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.latestPostPlanReview
+      <Section kicker="Lifecycle" title="Plan, revision, review, and lessons">
+        <MetricGrid
+          items={[
+            ["Plan Action", pipeline.tradePlanVersion?.action ?? "-"],
+            ["Execution State", pipeline.tradePlanVersion?.executionPlaybook.state ?? "-"],
+            ["Latest Revision", pipeline.latestPlanRevisionSuggestion?.revisionAction ?? "-"],
+            [
+              "Review Summary",
+              pipeline.latestPostPlanReview
                 ? truncate(pipeline.latestPostPlanReview.outcomeSummary, 96)
-                : "—"}
-            </p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Lesson Candidates</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.memoryLessonCandidates.length}
-            </p>
-          </article>
-          <article className="metric-card">
-            <p className="metric-label">Review Created</p>
-            <p className="metric-value metric-value-compact">
-              {pipeline.latestPostPlanReview
+                : "-"
+            ],
+            ["Lesson Candidates", pipeline.memoryLessonCandidates.length],
+            [
+              "Review Created",
+              pipeline.latestPostPlanReview
                 ? formatTimestamp(pipeline.latestPostPlanReview.createdAt)
-                : "—"}
-            </p>
-          </article>
-        </div>
-      </section>
+                : "-"
+            ]
+          ]}
+        />
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Lessons</p>
-            <h2>Scoped lesson candidates</h2>
-          </div>
-        </div>
+      <Section kicker="Lessons" title="Scoped lesson candidates">
         {pipeline.memoryLessonCandidates.length === 0 ? (
-          <p className="empty-cell">No lesson candidates recorded yet.</p>
+          <EmptyState>No lesson candidates recorded yet.</EmptyState>
         ) : (
-          <div className="detail-grid">
+          <DetailGrid>
             {pipeline.memoryLessonCandidates.map((candidate) => (
-              <article key={candidate.id} className="detail-card">
-                <p className="metric-label">
-                  {candidate.status} · confidence {formatNumber(candidate.confidence)}
-                </p>
+              <DetailCard
+                key={candidate.id}
+                title={`${candidate.status} / confidence ${formatNumber(candidate.confidence)}`}
+              >
                 <p className="metric-value metric-value-compact">
                   {candidate.lesson}
                 </p>
-                <pre className="detail-pre">
-                  {JSON.stringify(
-                    {
-                      scope: {
-                        market: candidate.scopeMarket,
-                        asset_class: candidate.scopeAssetClass,
-                        symbol: candidate.scopeSymbol,
-                        timeframe: candidate.scopeTimeframe,
-                        regime: candidate.scopeRegime,
-                        signal_type: candidate.scopeSignalType
-                      },
-                      confidence: candidate.confidence,
-                      sampleSize: candidate.sampleSize,
-                      decayDays: candidate.decayDays,
-                      retrievalHint: candidate.retrievalHint
+                <JsonPre
+                  value={{
+                    scope: {
+                      market: candidate.scopeMarket,
+                      asset_class: candidate.scopeAssetClass,
+                      symbol: candidate.scopeSymbol,
+                      timeframe: candidate.scopeTimeframe,
+                      regime: candidate.scopeRegime,
+                      signal_type: candidate.scopeSignalType
                     },
-                    null,
-                    2
-                  )}
-                </pre>
-              </article>
+                    confidence: candidate.confidence,
+                    sampleSize: candidate.sampleSize,
+                    decayDays: candidate.decayDays,
+                    retrievalHint: candidate.retrievalHint
+                  }}
+                />
+              </DetailCard>
             ))}
-          </div>
+          </DetailGrid>
         )}
-      </section>
+      </Section>
 
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Chain</p>
-            <h2>Latest pipeline records</h2>
-          </div>
-        </div>
-        <div className="detail-grid">
-          <DetailCard
-            title="Market State"
-            content={JSON.stringify(pipeline.marketState, null, 2)}
-          />
-          <DetailCard
-            title="Trade Plan"
-            content={JSON.stringify(pipeline.tradePlanVersion, null, 2)}
-          />
-          <DetailCard
-            title="Risk Verdict"
-            content={JSON.stringify(pipeline.riskVerdict, null, 2)}
-          />
-          <DetailCard
+      <Section kicker="Chain" title="Latest pipeline records">
+        <DetailGrid>
+          <RecordCard title="Market State" value={pipeline.marketState} />
+          <RecordCard title="Trade Plan" value={pipeline.tradePlanVersion} />
+          <RecordCard title="Risk Verdict" value={pipeline.riskVerdict} />
+          <RecordCard
             title="Latest Revision Suggestion"
-            content={JSON.stringify(
-              pipeline.latestPlanRevisionSuggestion,
-              null,
-              2
-            )}
+            value={pipeline.latestPlanRevisionSuggestion}
           />
-          <DetailCard
+          <RecordCard
             title="Latest Post-Plan Review"
-            content={JSON.stringify(pipeline.latestPostPlanReview, null, 2)}
+            value={pipeline.latestPostPlanReview}
           />
-          <DetailCard
-            title="Execution Intent"
-            content={JSON.stringify(pipeline.executionIntent, null, 2)}
-          />
-          <DetailCard
-            title="Latest Order"
-            content={JSON.stringify(pipeline.latestOrder, null, 2)}
-          />
-          <DetailCard
-            title="Latest Fill"
-            content={JSON.stringify(pipeline.latestFill, null, 2)}
-          />
-          <DetailCard
-            title="Current Position"
-            content={JSON.stringify(pipeline.currentPosition, null, 2)}
-          />
-        </div>
-      </section>
-    </main>
+          <RecordCard title="Execution Intent" value={pipeline.executionIntent} />
+          <RecordCard title="Latest Order" value={pipeline.latestOrder} />
+          <RecordCard title="Latest Fill" value={pipeline.latestFill} />
+          <RecordCard title="Current Position" value={pipeline.currentPosition} />
+        </DetailGrid>
+      </Section>
+    </PageShell>
   );
 }
 
-function DetailCard({ title, content }: { title: string; content: string }) {
+function ReasoningCallout({
+  title,
+  value,
+  fallback
+}: {
+  title: string;
+  value: string | null | undefined;
+  fallback: string;
+}) {
   return (
-    <article className="detail-card">
-      <p className="metric-label">{title}</p>
-      <pre className="detail-pre">{content}</pre>
-    </article>
+    <div className="callout-panel">
+      <p className="callout-title">{title}</p>
+      <p>{value ? truncate(value, 220) : fallback}</p>
+    </div>
   );
 }
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 8
-  }).format(value);
-}
-
-function formatNullableNumber(value: number | null | undefined): string {
-  if (value === null || value === undefined) {
-    return "—";
-  }
-
-  return formatNumber(value);
-}
-
-function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function truncate(value: string, maxLength: number): string {
-  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1)}…`;
+function RecordCard({ title, value }: { title: string; value: unknown }) {
+  return (
+    <DetailCard title={title}>
+      <JsonPre value={value} />
+    </DetailCard>
+  );
 }

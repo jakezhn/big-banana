@@ -1,16 +1,18 @@
 :root {
-  --bg: #f4efe6;
-  --panel: rgba(255, 251, 243, 0.84);
-  --panel-strong: #fff9ef;
-  --ink: #221d16;
-  --muted: #6b6257;
-  --line: rgba(34, 29, 22, 0.12);
-  --accent: #b95f2d;
-  --accent-soft: rgba(185, 95, 45, 0.12);
-  --good: #2d7a4f;
-  --warn: #9f6d14;
-  --bad: #9a3d2a;
-  --shadow: 0 24px 60px rgba(58, 40, 18, 0.08);
+  --bg: #eef2ef;
+  --panel: rgba(255, 255, 252, 0.88);
+  --panel-strong: #ffffff;
+  --ink: #111714;
+  --muted: #5f6b64;
+  --line: rgba(17, 23, 20, 0.12);
+  --accent: #176b5f;
+  --accent-soft: rgba(23, 107, 95, 0.12);
+  --good: #1f7a4d;
+  --warn: #8a650a;
+  --bad: #a13d35;
+  --radius-panel: 12px;
+  --radius-card: 8px;
+  --shadow: 0 20px 50px rgba(22, 36, 30, 0.08);
 }
 
 * {
@@ -22,9 +24,9 @@ body {
   margin: 0;
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(185, 95, 45, 0.14), transparent 28rem),
-    radial-gradient(circle at top right, rgba(45, 122, 79, 0.1), transparent 26rem),
-    linear-gradient(180deg, #fbf6ec 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, rgba(23, 107, 95, 0.12), transparent 28rem),
+    radial-gradient(circle at top right, rgba(31, 122, 77, 0.09), transparent 26rem),
+    linear-gradient(180deg, #f8faf8 0%, var(--bg) 100%);
   color: var(--ink);
   font-family: "Avenir Next", "IBM Plex Sans", "Segoe UI", sans-serif;
 }
@@ -34,10 +36,60 @@ a {
   text-decoration: none;
 }
 
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: min(1180px, calc(100vw - 3rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 0;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  width: min(220px, 48vw);
+}
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 252, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.site-nav a:hover {
+  background: rgba(34, 29, 22, 0.06);
+  color: var(--ink);
+}
+
 .dashboard-shell {
   width: min(1180px, calc(100vw - 3rem));
   margin: 0 auto;
-  padding: 2rem 0 4rem;
+  padding: 1.25rem 0 4rem;
 }
 
 .hero-panel,
@@ -54,7 +106,7 @@ a {
   gap: 1.5rem;
   grid-template-columns: minmax(0, 1fr) auto;
   padding: 2rem;
-  border-radius: 28px;
+  border-radius: var(--radius-panel);
 }
 
 .hero-panel-compact {
@@ -110,7 +162,7 @@ a {
 .action-link {
   padding: 0.8rem 1.05rem;
   background: var(--ink);
-  color: #f8f4ec;
+  color: #f8faf8;
 }
 
 .action-link-inline {
@@ -135,7 +187,7 @@ a {
 .section-block {
   margin-top: 1.5rem;
   padding: 1.5rem;
-  border-radius: 24px;
+  border-radius: var(--radius-panel);
 }
 
 .section-heading {
@@ -159,7 +211,7 @@ a {
 
 .metric-card {
   padding: 1rem 1rem 1.1rem;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--panel-strong);
 }
 
@@ -234,7 +286,7 @@ a {
 
 .status-order_submitted,
 .status-intent_ready {
-  background: rgba(185, 95, 45, 0.12);
+  background: rgba(23, 107, 95, 0.12);
   color: var(--accent);
 }
 
@@ -272,7 +324,7 @@ a {
 
 .detail-card {
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--panel-strong);
   padding: 1rem;
 }
@@ -375,6 +427,11 @@ a {
   .hero-actions {
     min-width: 0;
   }
+
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
@@ -383,10 +440,28 @@ a {
     padding: 1rem 0 2rem;
   }
 
+  .site-header {
+    width: min(100vw - 1.25rem, 100%);
+    padding-top: 1rem;
+  }
+
+  .brand-link {
+    width: min(180px, 58vw);
+  }
+
+  .site-nav {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .site-nav a {
+    flex: 1 0 auto;
+  }
+
   .hero-panel,
   .section-block {
     padding: 1.1rem;
-    border-radius: 20px;
+    border-radius: var(--radius-card);
   }
 
   .card-grid {
