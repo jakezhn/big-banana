@@ -1,24 +1,21 @@
+import { Suspense } from "react";
 import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { PipelineTable } from "../../src/dashboard/pipeline-table";
 import { loadDashboardPipelines } from "../../src/dashboard/load-dashboard-data";
 import { formatLatestTimestamp } from "../../src/ui/format";
 import {
   DebugLink,
+  LoadingSection,
   PageHero,
   PageMeta,
   PageShell,
-  Section
+  Section,
+  TableSkeleton
 } from "../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
-export default async function PipelinesPage() {
-  const apiBaseUrl = getApiBaseUrl();
-  const pipelines = await loadDashboardPipelines(50);
-  const latestPipelineUpdate = formatLatestTimestamp(
-    pipelines.map((pipeline) => pipeline.updatedAt)
-  );
-
+export default function PipelinesPage() {
   return (
     <PageShell>
       <PageHero
@@ -31,18 +28,42 @@ export default async function PipelinesPage() {
       />
       <PageMeta />
 
-      <Section
-        kicker="Pipeline Sample"
-        title="Latest 50 market records"
-        description={`Loaded ${pipelines.length} market pipeline records. Rows are ordered by latest update from the API sample. Latest update: ${latestPipelineUpdate}.`}
-        action={
-          <DebugLink href={`${apiBaseUrl}/api/dashboard/pipelines?limit=50`}>
-            Pipelines API
-          </DebugLink>
+      <Suspense
+        fallback={
+          <LoadingSection
+            kicker="Pipeline Sample"
+            title="Latest 50 market records"
+            description="Loading the latest market pipeline records."
+          >
+            <TableSkeleton columns={8} rows={8} />
+          </LoadingSection>
         }
       >
-        <PipelineTable pipelines={pipelines} showMarketKey />
-      </Section>
+        <PipelinesTableSection />
+      </Suspense>
     </PageShell>
+  );
+}
+
+async function PipelinesTableSection() {
+  const apiBaseUrl = getApiBaseUrl();
+  const pipelines = await loadDashboardPipelines(50);
+  const latestPipelineUpdate = formatLatestTimestamp(
+    pipelines.map((pipeline) => pipeline.updatedAt)
+  );
+
+  return (
+    <Section
+      kicker="Pipeline Sample"
+      title="Latest 50 market records"
+      description={`Loaded ${pipelines.length} market pipeline records. Rows are ordered by latest update from the API sample. Latest update: ${latestPipelineUpdate}.`}
+      action={
+        <DebugLink href={`${apiBaseUrl}/api/dashboard/pipelines?limit=50`}>
+          Pipelines API
+        </DebugLink>
+      }
+    >
+      <PipelineTable pipelines={pipelines} showMarketKey />
+    </Section>
   );
 }

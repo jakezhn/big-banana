@@ -1,15 +1,22 @@
+import {
+  LoadingSection,
+  MetricGridSkeleton,
+  PageShell,
+  TableSkeleton
+} from "../src/ui/primitives";
+
 export default function LoadingPage() {
   return (
-    <main className="dashboard-shell">
-      <section className="section-block">
-        <div className="section-heading">
-          <div>
-            <p className="section-kicker">Loading</p>
-            <h2>Loading dashboard data</h2>
-          </div>
-        </div>
-        <p className="empty-cell">Waiting for the latest pipeline read models.</p>
-      </section>
-    </main>
+    <PageShell>
+      <LoadingSection
+        title="Loading dashboard data"
+        description="Preparing the latest read-model components."
+      >
+        <MetricGridSkeleton count={4} />
+      </LoadingSection>
+      <LoadingSection title="Loading pipeline records">
+        <TableSkeleton columns={7} rows={4} />
+      </LoadingSection>
+    </PageShell>
   );
 }

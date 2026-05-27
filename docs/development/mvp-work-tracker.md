@@ -142,7 +142,9 @@
 | Frontend | Pipeline Monitor page | 已完成 | 100% | `/pipelines` 已提供列表页 |
 | Frontend | Market Detail page | 已完成 | 100% | `/markets/[marketKey]` 已可查看完整链路，现已补 overview / reasoning summary / revision / review / scoped lesson candidate 展示位 |
 | Frontend | Agent Runs page | 已完成 | 100% | `/agent-runs` 已补运行汇总卡片，并展示 skill / prompt / token usage / error / market detail 跳转 |
-| Frontend | brand-aligned visual system | 已开始 | 25% | 已完成品牌方向确认与前端设计文档；待把当前暖色原型风格切换到 Bitpunk 深色控制台视觉系统 |
+| Frontend | brand-aligned visual system | 已开始 | 75% | 已完成 Bitpunk 深色控制台基础视觉、品牌素材接入、状态语义与 debug 层级弱化；下一阶段转向 ChatGPT-like sidebar workspace 重构 |
+| Frontend | sidebar workspace IA | 已明确设计 | 25% | 已更新设计文档：左侧 Overview / Agent Runs / Markets + 最近 pipeline 列表，右侧 canvas 打开 overview、agent runs overview 或 market detail；实现待开始 |
+| Frontend | component-level loading skeleton | 已完成 | 100% | 已用 `Suspense` + section skeleton 落地 API-backed section 加载态：先显示组件边框/标题/布局骨架，再替换真实数据 |
 | Frontend | `Agent Runs` UI refinement | 已开始 | 75% | 信息结构已经可用于 QA，后续待完成品牌化重绘、状态层级收口与交互细节 polish |
 | Frontend | `Market Detail` UI refinement | 已开始 | 75% | 生命周期信息架构已具备，后续待完成品牌化重绘、布局收口与调试层级优化 |
 | Frontend | `Overview` / `Pipelines` visual alignment | 未开始 | 0% | 当前页面仍停留在旧原型风格，待统一到 Bitpunk 视觉系统 |
@@ -175,7 +177,7 @@
 | Integration | `cancel_pending_entry` smoke | 已完成 | 100% | 已联调通过 |
 | Integration | advisory mode remote test | 未开始 | 0% | 当前 MVP 默认 full，可后置 |
 | Integration | real TradingView external webhook | 未开始 | 0% | 目前主要是本地 fixture replay |
-| Integration | dashboard manual QA | 已开始 | 75% | 已完成本地 localhost 级页面验证、remote migration 收口，并确认 `Agent Runs / Market Detail` 新增焦点区块与生命周期区块可正常返回；仍待结合后续 UI 收口做完整联调级手工 QA |
+| Integration | dashboard manual QA | 已开始 | 80% | 已完成本地 localhost 级页面验证、remote migration 收口，并确认 `Agent Runs / Market Detail` 新增焦点区块、生命周期区块与组件级 skeleton 加载态可正常返回；仍待结合 sidebar workspace 重构做完整联调级手工 QA |
 | Integration | real AI planner paper validation | 已完成 | 100% | 已完成 Vercel AI Gateway -> plan -> risk -> intent -> order -> reconcile 闭环验证 |
 | Integration | `PlannerInput` context v2 unit / route regression | 已完成 | 100% | domain/api test 与 `typecheck` 已通过 |
 | Integration | `agent_jobs` queue / lock foundation regression | 已完成 | 100% | domain tests、API tests、`typecheck` 已通过；timeout recovery 已计入 attempt / maxAttempts |
@@ -229,27 +231,28 @@
 - dashboard realtime refresh wiring
 - optional Inngest fallback
 - brand-aligned frontend visual system
+- sidebar workspace UI 重构
 - final dashboard UI polish
 
 ## 6. 当前建议的下一轮开发顺序
 
-1. 前端视觉系统重构并对齐 Bitpunk branding
-2. 完成 `Agent Runs / Market Detail` 的品牌化 UI 收口与手工 QA
-3. 统一 `Overview` / `Pipelines` 到同一视觉系统
+1. 实现 ChatGPT-like sidebar workspace shell，并把 pipeline 列表迁入左侧 Markets 区
+2. 重构 `Market Detail` 为 overview -> full reasoning -> snapshots -> checklist -> lessons -> debug 的右侧 canvas
+3. 收敛 `Agent Runs` 为全局 overview，并规划 market-specific agent run 信息进入 Market Detail
 4. planner quality iteration loop baseline interpretation
 5. revision / review / memory lesson candidate 的更细可见性与交互
 
 ## 7. 当前建议的下一轮测试顺序
 
-1. dashboard Agent Runs / Market Detail manual QA
-2. Overview / Pipelines visual regression
-3. replay_planner batch smoke
-4. multi-market AI replay baseline
-5. remote revision / review / memory lesson candidate smoke
+1. sidebar workspace browser manual QA
+2. component-level loading / skeleton visual regression
+3. dashboard Agent Runs / Market Detail manual QA
+4. replay_planner batch smoke
+5. multi-market AI replay baseline
 
 ## 8. 本轮状态快照
 
-更新时间：`2026-05-25`
+更新时间：`2026-05-27`
 
 本轮结论：
 
@@ -313,6 +316,10 @@
 - 当前已确认品牌方向与现有实现存在视觉落差：下一轮前端工作将优先把暖色原型样式重构为 Bitpunk 深色交易智能控制台风格
 - 当前已建立前端素材目录：`apps/web/public/assets/{brand,marketing,illustrations,motion}`，后续营销图、插画、动效和最终页面素材都应从这里进入运行时前端
 - 当前产品语言策略已明确：页面文案以中文为主，技术标识与少量数据标签可保留英文以保持 operator 可读性
+- 本轮已更新前端方向为 ChatGPT-like workspace：左侧 resizable sidebar 承载 Overview、Agent Runs、Markets 与最近 pipeline 列表，右侧 canvas 承载 Overview / Agent Runs overview / Market Detail
+- 本轮已明确 `/pipelines` 不再是长期主 IA，Markets 将作为 sidebar 标签存在，pipeline item 以 market + timeframe 两行显示并打开对应 market detail
+- 本轮已补组件级加载规则：API-backed section 在数据未返回前先显示边框、标题和 skeleton/shimmer，占位形态贴近最终 metric grid、detail card 或 table
+- 本轮已在当前页面落地 `Suspense` 分段加载：Overview totals、Recent pipelines、Pipeline table、Agent Runs content、Market Detail content 都已有 section-level skeleton fallback
 
 ## 9. 更新规则
 

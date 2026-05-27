@@ -255,3 +255,93 @@ export function DataTable({ children }: { children: ReactNode }): ReactNode {
     </div>
   );
 }
+
+export function LoadingSection({
+  kicker = "Loading",
+  title,
+  description,
+  children
+}: {
+  kicker?: string;
+  title: string;
+  description?: string;
+  children: ReactNode;
+}): ReactNode {
+  return (
+    <Section kicker={kicker} title={title} description={description}>
+      <div className="skeleton-region" aria-hidden="true">
+        {children}
+      </div>
+    </Section>
+  );
+}
+
+export function SkeletonLine({
+  width = "100%"
+}: {
+  width?: string;
+}): ReactNode {
+  return <span className="skeleton-line" style={{ width }} />;
+}
+
+export function MetricGridSkeleton({ count = 4 }: { count?: number }): ReactNode {
+  return (
+    <div className="card-grid">
+      {Array.from({ length: count }, (_, index) => (
+        <article key={index} className="metric-card skeleton-card">
+          <SkeletonLine width="44%" />
+          <SkeletonLine width="72%" />
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export function DetailGridSkeleton({ count = 2 }: { count?: number }): ReactNode {
+  return (
+    <DetailGrid tight={count === 2}>
+      {Array.from({ length: count }, (_, index) => (
+        <DetailCard key={index} title="Loading">
+          <div className="skeleton-stack">
+            <SkeletonLine width="96%" />
+            <SkeletonLine width="84%" />
+            <SkeletonLine width="68%" />
+          </div>
+        </DetailCard>
+      ))}
+    </DetailGrid>
+  );
+}
+
+export function TableSkeleton({
+  columns = 6,
+  rows = 5
+}: {
+  columns?: number;
+  rows?: number;
+}): ReactNode {
+  return (
+    <DataTable>
+      <thead>
+        <tr>
+          {Array.from({ length: columns }, (_, index) => (
+            <th key={index}>
+              <SkeletonLine width="64%" />
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from({ length: rows }, (_, rowIndex) => (
+          <tr key={rowIndex}>
+            {Array.from({ length: columns }, (_, columnIndex) => (
+              <td key={columnIndex}>
+                <SkeletonLine width={columnIndex === 0 ? "82%" : "58%"} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </DataTable>
+  );
+}

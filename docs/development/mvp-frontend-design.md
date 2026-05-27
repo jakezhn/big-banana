@@ -16,6 +16,7 @@ Current assumption:
 
 - backend API and Hermes worker flow are basically closed for MVP
 - frontend work now shifts from "make data visible" to "make the operator experience clear, coherent, and brand-aligned"
+- the next UI phase should move from top-level page switching to a ChatGPT-like workspace: persistent left sidebar plus right-side detail canvas
 
 ## 2. Product Role
 
@@ -154,7 +155,7 @@ Logo-style blade typography:
 
 ## 4. Current UI Gap
 
-The current shipped UI already has useful information architecture, but its visual language is still transitional.
+The current shipped UI already has useful information architecture, but its layout model is still transitional.
 
 Current strengths:
 
@@ -162,13 +163,15 @@ Current strengths:
 - `Agent Runs` and `Market Detail` have meaningful structure
 - page hierarchy supports QA and debugging
 
-Current mismatch versus branding:
+Current mismatch versus the next MVP operator experience:
 
-- current global palette is warm/light and reads more like an editorial ops dashboard
-- branding calls for a dark control-room look
-- page styling still feels "functional prototype" rather than "Bitpunk operator cockpit"
+- top navigation creates separate destinations, while the operator workflow is closer to "select an item from the left, inspect it on the right"
+- `Pipelines` is currently a page, but it should become a market list inside the sidebar
+- `Agent Runs` currently has a full table page, but MVP needs the run-health overview globally and market-specific run context inside each market
+- `Market Detail` still reads as a long report; the next design should feel like opening a focused technical conversation about one market
+- the Bitpunk dark styling is in place, but it can become more compact, precise, and workspace-like
 
-Therefore the next frontend phase should not just tweak layout. It should realign the visual system with brand direction while preserving the current data structure and route structure.
+Therefore the next frontend phase should not just tweak cards. It should restructure the shell into a persistent sidebar workspace while preserving the current API contracts and read-model boundaries.
 
 ## 4.1 Frontend Asset Location
 
@@ -209,9 +212,62 @@ Frontend must not invent:
 - new plan lifecycle states
 - execution controls or account controls that do not exist
 
-## 6. Page Style Summary
+## 6. Workspace Model
 
-### 6.1 Overview
+The next MVP UI should use a ChatGPT-inspired workspace pattern adapted to Bitpunk:
+
+```txt
+┌─────────────────────────────┬───────────────────────────────────────────────┐
+│ Sidebar                     │ Main canvas                                   │
+│                             │                                               │
+│ Overview                    │ Overview content, agent-run overview,         │
+│ Agent Runs                  │ or selected market detail                     │
+│ Markets                     │                                               │
+│   BINANCE:BTCUSDT           │                                               │
+│   240                       │                                               │
+│   BINANCE:SOLUSDT           │                                               │
+│   240                       │                                               │
+└─────────────────────────────┴───────────────────────────────────────────────┘
+```
+
+Navigation rules:
+
+- Refreshing `/` opens `Overview` by default.
+- The left sidebar is always visible on desktop.
+- `Overview` is the first actual navigation button.
+- `Agent Runs` is the second navigation button.
+- `Markets` is a text label, not a button.
+- The market list below `Markets` shows recent pipeline items.
+- Each market item is clickable and opens its market detail in the main canvas.
+- The sidebar width should be user-resizable on desktop, with reasonable min/max bounds.
+- On narrow screens, the sidebar can collapse into a drawer or stacked top area; desktop is the MVP priority.
+
+Market list item format:
+
+```txt
+BINANCE:BTCUSDT
+240
+```
+
+Rules:
+
+- first line = market symbol/key, visually dominant
+- second line = timeframe, muted monospace metadata
+- status may be shown as a compact dot or small pill, but must not make the list noisy
+- initial load shows the latest 50 pipelines
+- scrolling to the bottom should load more once the API supports pagination or cursor-based loading
+
+MVP implementation note:
+
+- if backend pagination is not available yet, implement the list against `limit=50` first and keep the scroll-load behavior as a documented follow-up, not fake UI
+
+## 7. Canvas Content
+
+### 7.1 Overview
+
+Route:
+
+- `/`
 
 Role:
 
@@ -225,37 +281,22 @@ Needs:
 
 - concise KPI cards
 - recent activity
-- immediate path into pipelines and agent runs
+- immediate visibility into the latest operating totals
+- compact entry points into recent markets
 
 Design note:
 
 - cards should feel terminal-grade and sharp, not "friendly analytics tiles"
 
-### 6.2 Pipelines
+### 7.2 Agent Runs
+
+Route:
+
+- `/agent-runs`
 
 Role:
 
-- scan-first market monitor
-
-Should feel like:
-
-- dense operational list with quick status reading
-
-Needs:
-
-- strong status chips
-- row readability
-- fast navigation into `Market Detail`
-
-Design note:
-
-- prioritize scan speed over decorative charting
-
-### 6.3 Agent Runs
-
-Role:
-
-- planner diagnostics console
+- global planner diagnostics overview
 
 Should feel like:
 
@@ -263,51 +304,128 @@ Should feel like:
 
 Needs:
 
-- failed vs successful separation
-- live vs replay distinction
-- clear prompt/model/skill visibility
-- obvious execution-eligibility signal
-- direct jump into related `Market Detail`
+- the former `Agent Runs` overview modules:
+- recent run health
+- latest failure
+- latest execution-ready plan
+- live/replay/model/market breakdown
 
 Design note:
 
-- surface abnormal runs first
-- make metadata readable without drowning the page in raw JSON
+- this screen should not own all run detail forever
+- per-market agent run context belongs in the selected market canvas once the API can query runs by market
 
-### 6.4 Market Detail
+### 7.3 Markets List
+
+Route:
+
+- no standalone `Markets` page in MVP
 
 Role:
 
-- single-market plan lifecycle workspace
+- sidebar scan surface for pipeline selection
+
+Needs:
+
+- latest 50 pipeline records
+- market + timeframe two-line label
+- pipeline status
+- updated timestamp or freshness hint
+- active selected state matching the opened market detail
+
+Design note:
+
+- this replaces the old `Pipelines` page as the primary way to open market detail
+- a temporary `/pipelines` route may redirect to `/` or remain as a compatibility page during migration, but it should not be the target IA
+
+### 7.4 Market Detail
+
+Route:
+
+- `/markets/[marketKey]`
+
+Role:
+
+- selected-market workspace, similar to opening a conversation
 
 Should feel like:
 
 - one market, one chain of reasoning, one execution trace
 
-Needs:
+Content order:
 
-- current state summary
-- plan summary
-- risk/execution/fill/position trace
-- revision/review/lesson candidate follow-up
-- raw trace section as fallback
+1. Market overview at the very top.
+2. Full text blocks for `Trade Plan`, `Latest Revision`, and `Latest Review`.
+3. Snapshots.
+4. Checklist.
+5. Lessons.
+6. Debug Records.
+
+Rules:
+
+- `Trade Plan`, `Latest Revision`, and `Latest Review` must show complete text, not truncated snippets.
+- dense cards are preferred over large hero panels.
+- summary and metadata should be compact enough to keep important information above the fold on desktop.
+- raw records remain collapsed by default.
+- API/debug links remain visible but visually secondary.
+
+### 7.5 Component Loading States
+
+The UI should use component-level loading states instead of a single blank page whenever possible.
+
+Rule:
+
+- when a data component has not fully received its API data, render that component's panel border and layout shell first
+- fill the panel with skeleton/shimmer placeholders that suggest the eventual card, table, or detail layout
+- replace the skeleton with real content when the async component resolves
+- keep skeletons neutral/cyan and low intensity; they should communicate "loading" without feeling like an alert
+- do not show spinners as the primary loading pattern for dense dashboard data
+- route-level loading can remain as a fallback, but component-level `Suspense` boundaries are preferred for dashboard sections
 
 Design note:
 
-- this page is the most important page in the MVP
-- organize it like a lifecycle narrative, not a dump of records
+- the market detail canvas is the most important MVP surface
+- it should read like a technical investigation thread, not a static report page
 
-## 7. Page Implementation Priorities
+## 8. Visual Direction
+
+The next visual direction should combine:
+
+- Bitpunk dark cockpit palette
+- ChatGPT-style persistent workspace structure
+- compact engineering-console density
+- restrained cyber-cyan focus states
+- red only for failure/risk boundaries
+
+UI characteristics:
+
+- left sidebar uses deeper black and a clear active rail
+- main canvas uses graphite/slate surfaces with thin separators
+- transitions are minimal and functional
+- hover states should clarify clickability, not create visual noise
+- typography stays sharp: Sora/Space Grotesk for UI, IBM Plex Mono for technical metadata
+- no oversized marketing hero after the app shell migration
+
+自由发挥方向：
+
+- use a "black terminal workspace with cyan instrumentation" mood, not a literal ChatGPT clone
+- add subtle grid/noise only at the shell background level
+- keep cards matte and dense; avoid glassmorphism overuse
+- make the selected market feel like the active conversation target through a cyan rail, not through a giant bright fill
+
+## 9. Page Implementation Priorities
 
 The frontend should now progress in this order:
 
-1. visual system realignment with Bitpunk branding
-2. `Agent Runs` refinement
-3. `Market Detail` refinement
-4. `Overview` and `Pipelines` alignment into the same system
-5. manual QA and polish
+1. introduce the sidebar workspace shell and route-aware active state
+2. move pipeline selection into the sidebar market list
+3. keep `/` as default Overview canvas
+4. reduce `Agent Runs` to its overview modules and move market-specific run context into market detail when API support exists
+5. refactor `Market Detail` content order and density
+6. add sidebar resize behavior
+7. manual browser QA and polish
 
-## 8. Repo Boundary
+## 10. Repo Boundary
 
 Frontend work should stay inside:
 
@@ -324,8 +442,9 @@ apps/web/
   app/
   src/
     components/
+      shell/
       overview/
-      pipelines/
+      markets/
       agent-runs/
       market-detail/
       shared/
@@ -337,16 +456,17 @@ apps/web/
 
 Rules:
 
-- keep route structure stable
 - keep API contracts stable
+- route structure may change only to support the sidebar workspace model
 - extract presentational components instead of rewriting the app shell first
 - use CSS variables for the Bitpunk visual system
 
-## 9. Frontend Do / Do Not
+## 11. Frontend Do / Do Not
 
 Do:
 
 - build an operator-first interface
+- make the sidebar the primary navigation and selection surface
 - use brand colors with discipline
 - emphasize state, hierarchy, and traceability
 - keep raw debug access available
@@ -355,15 +475,18 @@ Do:
 Do not:
 
 - turn the app into a generic SaaS dashboard
+- copy ChatGPT visuals literally without Bitpunk brand translation
 - overuse neon effects
 - treat replay and live runs as the same thing visually
 - invent missing backend concepts
 - bury failures or risk events in secondary UI
 
-## 10. Immediate Next Design Tasks
+## 12. Immediate Next Design Tasks
 
-1. replace the current warm/light palette with a dark Bitpunk system
-2. align typography with Sora + IBM Plex Mono direction
-3. refactor `Agent Runs` into a stronger diagnostics layout
-4. refactor `Market Detail` into a cleaner lifecycle layout
-5. then unify `Overview` and `Pipelines` under the same visual language
+1. implement persistent resizable sidebar shell
+2. replace top nav with sidebar controls
+3. render latest 50 pipelines as sidebar market items
+4. keep component-level skeleton loading around every API-backed section
+5. refactor market detail into overview -> full reasoning text -> snapshots -> checklist -> lessons -> debug
+6. keep debug records collapsed and secondary
+7. run browser-level QA against API + Supabase-backed data

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { getApiBaseUrl } from "../../../src/api/get-api-base-url";
 import {
   loadMarketPipeline,
@@ -16,10 +17,13 @@ import {
   DebugLink,
   DetailCard,
   DetailGrid,
+  DetailGridSkeleton,
   DetailList,
   JsonPre,
   JsonDisclosure,
+  LoadingSection,
   MetricGrid,
+  MetricGridSkeleton,
   PageHero,
   PageMeta,
   PageShell,
@@ -40,6 +44,27 @@ export default async function MarketDetailPage({
 }: MarketDetailPageProps) {
   const { marketKey: encodedMarketKey } = await params;
   const marketKey = decodeURIComponent(encodedMarketKey);
+
+  return (
+    <PageShell>
+      <PageHero
+        eyebrow="Market Detail"
+        title={marketKey}
+        copy="Single-market execution trace across state, plan, risk, intent, order, fill, current position, reviews, and scoped lessons."
+        actions={[
+          { href: "/pipelines", label: "Back to Pipeline Monitor" }
+        ]}
+      />
+      <PageMeta />
+
+      <Suspense fallback={<MarketDetailLoadingSections />}>
+        <MarketDetailContent marketKey={marketKey} />
+      </Suspense>
+    </PageShell>
+  );
+}
+
+async function MarketDetailContent({ marketKey }: { marketKey: string }) {
   const apiBaseUrl = getApiBaseUrl();
   const pipeline = await loadMarketPipeline(marketKey).catch((error: unknown) => {
     if (error instanceof MarketPipelineNotFoundError) {
@@ -116,17 +141,7 @@ export default async function MarketDetailPage({
   ] as const;
 
   return (
-    <PageShell>
-      <PageHero
-        eyebrow="Market Detail"
-        title={marketKey}
-        copy="Single-market execution trace across state, plan, risk, intent, order, fill, current position, reviews, and scoped lessons."
-        actions={[
-          { href: "/pipelines", label: "Back to Pipeline Monitor" }
-        ]}
-      />
-      <PageMeta />
-
+    <>
       <Section kicker="Checklist" title="Current action state">
         <DetailGrid tight>
           <DetailCard title="Execution checklist">
@@ -261,7 +276,30 @@ export default async function MarketDetailPage({
           <RecordCard title="Current Position" value={pipeline.currentPosition} />
         </div>
       </Section>
-    </PageShell>
+    </>
+  );
+}
+
+function MarketDetailLoadingSections() {
+  return (
+    <>
+      <LoadingSection kicker="Checklist" title="Current action state">
+        <DetailGridSkeleton count={2} />
+      </LoadingSection>
+      <LoadingSection
+        kicker="Snapshot"
+        title="Current execution state"
+        description="Loading the latest records for this market pipeline."
+      >
+        <MetricGridSkeleton count={6} />
+      </LoadingSection>
+      <LoadingSection kicker="Overview" title="Plan and execution summary">
+        <DetailGridSkeleton count={2} />
+      </LoadingSection>
+      <LoadingSection kicker="Lifecycle" title="Plan, revision, review, and lessons">
+        <MetricGridSkeleton count={6} />
+      </LoadingSection>
+    </>
   );
 }
 

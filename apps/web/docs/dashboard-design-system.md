@@ -4,14 +4,15 @@
 
 The MVP web UI should feel like a black trading intelligence cockpit: dense, scannable, sharp, and built for repeated inspection. It should avoid marketing-page patterns, oversized decorative sections, random glitch effects, neon-city cyberpunk, and any visual language that feels like hype instead of an auditable signal system.
 
-The current direction is:
+The next direction is:
 
 - Dark operational surface using the Bitpunk brand palette.
 - Cyber cyan for system/running/active signal emphasis.
 - Neon red only for risk, rejection, and failure boundaries.
 - Compact panels and tables.
-- Brand present in the header, with the UI staying subordinate to operational data.
+- Brand present in the sidebar shell, with the UI staying subordinate to operational data.
 - Raw API/debug access available but visually secondary.
+- ChatGPT-like navigation pattern: persistent left sidebar, active right-side canvas.
 
 ## Visual Tokens
 
@@ -35,32 +36,56 @@ MVP rule: add new visual tokens only when at least two components need them.
 
 ## Layout System
 
-### App Header
+### App Shell
 
 Elements:
 
-- Bitpunk logo.
-- Primary nav: Overview, Pipelines, Agent Runs.
+- Resizable left sidebar.
+- Bitpunk logo or compact mark at the top of the sidebar.
+- Sidebar buttons: Overview, Agent Runs.
+- Sidebar label: Markets.
+- Sidebar market list from recent pipelines.
+- Main canvas for Overview, Agent Runs overview, or selected Market Detail.
 
 Rules:
 
-- Header is global.
-- Header should not include environment controls until auth and deployment environments are defined.
-- Active nav state is provided by the client `AppNav` component.
-- Active nav uses cyan emphasis, not a bright filled marketing button.
+- The sidebar is global on desktop.
+- Sidebar resize should have min/max bounds and should not break table/card layout.
+- Active nav uses a cyan rail or subtle filled state, not a bright marketing button.
+- Environment controls remain out of scope until auth and deployment environments are defined.
+- Mobile can collapse the sidebar later; desktop workflow is the MVP priority.
+
+### Sidebar Market List
+
+Purpose: replace the old top-nav `Pipelines` destination with a scan-first market selector.
+
+Item structure:
+
+- first line: market key or symbol
+- second line: timeframe
+- optional compact status dot or pill
+- optional muted updated timestamp
+
+Rules:
+
+- Latest 50 items are enough for the first implementation.
+- Infinite scroll / "load more on bottom" requires backend pagination or cursor support; do not fake it against a fixed `limit=50`.
+- Selected market item should remain visible and clearly active.
+- Keep list density high enough that a desktop operator can scan many markets quickly.
 
 ### Page Shell
 
-`PageShell` constrains content width and vertical spacing.
+`PageShell` becomes the main canvas content wrapper after the sidebar migration.
 
 Rules:
 
 - Pages should use `PageShell`.
 - Do not create page-local wrappers unless layout requirements are meaningfully different.
+- Remove oversized hero spacing from routine internal views.
 
 ### Page Hero
 
-`PageHero` gives each page a short operational purpose and action links.
+`PageHero` should become a compact canvas header. The old marketing-like hero treatment should be reserved for no regular dashboard route after the sidebar migration.
 
 Rules:
 
@@ -68,7 +93,7 @@ Rules:
 - Actions should be primary page navigation only.
 - Debug API links should use `DebugLink` in section headers or debug sections.
 - Avoid long onboarding text.
-- For MVP, keep hero compact except the Overview page.
+- For MVP, keep all canvas headers compact.
 
 ### Sections
 
@@ -79,6 +104,19 @@ Rules:
 - Every section should have a clear title unless it contains only the main table immediately following a hero.
 - Section actions should be links, not buttons, unless they mutate state.
 - Do not nest section panels inside other section panels.
+
+### Component Loading
+
+API-backed sections should load independently with component-level skeletons.
+
+Rules:
+
+- Keep the final section border, title, and approximate layout visible while data loads.
+- Use skeleton/shimmer fills for metric cards, detail cards, and tables.
+- Prefer `Suspense` boundaries around async dashboard sections.
+- Route-level `loading.tsx` is only the fallback for the whole route.
+- Do not use high-intensity neon or red in loading states; loading is neutral system activity, not a warning.
+- Do not replace dense dashboards with centered spinners.
 
 ## Components
 
@@ -104,7 +142,6 @@ Purpose: primary scan surface.
 
 Use for:
 
-- Recent pipelines.
 - Recent agent runs.
 
 Rules:
@@ -113,6 +150,7 @@ Rules:
 - Put identifiers in the first column.
 - Make drill-down links obvious but not visually dominant.
 - Prefer server-side shaping over client-side table logic during MVP.
+- Pipeline scanning should move to the sidebar market list rather than remain a primary full-width table.
 
 ### StatusPill
 
@@ -146,8 +184,25 @@ Purpose: debugging read models.
 Rules:
 
 - Raw JSON is acceptable in MVP because backend read models are still changing.
-- JSON should move behind collapsible disclosure once pages become too long.
+- JSON should stay behind collapsible disclosure by default.
 - Do not expose secrets or credentials in raw payloads.
+
+### Market Detail Reasoning Blocks
+
+Purpose: show the complete reasoning chain for the selected market.
+
+Use for:
+
+- Trade Plan.
+- Latest Revision.
+- Latest Review.
+
+Rules:
+
+- Do not truncate these three text blocks.
+- Use dense readable cards, not oversized prose sections.
+- Put these blocks near the top, directly under the market overview.
+- Metadata can be compact, but reasoning text must remain complete.
 
 ### BlockEmptyState And TableEmptyState
 
@@ -180,24 +235,25 @@ Avoid:
 
 Desktop:
 
+- Sidebar remains visible and resizable.
 - Tables may scroll horizontally.
 - Metric grid should use multiple columns.
 - Detail grids can use two columns.
 
 Tablet/mobile:
 
-- Header stacks.
-- Nav scrolls horizontally if needed.
+- Sidebar can collapse into a drawer or stack above the canvas.
 - Tables remain horizontally scrollable.
 - Detail grids collapse to one column.
 
-MVP acceptance: pages must be readable on mobile, but full operational efficiency can remain desktop-first.
+MVP acceptance: pages must be readable on mobile, but full operational efficiency and sidebar resizing are desktop-first.
 
 ## Known Design Gaps
 
-- Route-level loading and error states are intentionally minimal.
-- Data freshness is limited to a per-page "Loaded at" label.
+- Route-level error states are intentionally minimal.
+- Data freshness is visible, but not yet tied to polling or stale thresholds.
 - Debug API links are quieter than page navigation, but still visible.
 - No documented accessibility checks beyond semantic HTML basics.
 - Market Detail raw records are collapsible, but still visually dense.
 - The dashboard now matches the Bitpunk dark brand direction, but it still lacks screenshot-based visual QA.
+- Sidebar market list pagination depends on backend pagination or cursor support.

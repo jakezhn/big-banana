@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getApiBaseUrl } from "../../src/api/get-api-base-url";
 import { loadDashboardAgentRuns } from "../../src/dashboard/load-dashboard-data";
 import {
@@ -13,32 +14,25 @@ import {
   DataTable,
   DebugLink,
   DetailCard,
+  DetailGridSkeleton,
   DetailGrid,
   DetailList,
   InlineLink,
+  LoadingSection,
   MetricGrid,
+  MetricGridSkeleton,
   PageHero,
   PageMeta,
   PageShell,
   Section,
   StatusPill,
+  TableSkeleton,
   TableEmptyState
 } from "../../src/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
-export default async function AgentRunsPage() {
-  const apiBaseUrl = getApiBaseUrl();
-  const agentRuns = await loadDashboardAgentRuns(50);
-  const summaryCards = buildSummaryCards(agentRuns);
-  const latestFailedRun = agentRuns.find((run) => run.status !== "success") ?? null;
-  const latestEligibleRun =
-    agentRuns.find((run) => run.executionEligible === true) ?? null;
-  const runMixRows = buildRunMixRows(agentRuns);
-  const latestRunStartedAt = formatLatestTimestamp(
-    agentRuns.map((run) => run.startedAt)
-  );
-
+export default function AgentRunsPage() {
   return (
     <PageShell>
       <PageHero
@@ -51,6 +45,27 @@ export default async function AgentRunsPage() {
       />
       <PageMeta />
 
+      <Suspense fallback={<AgentRunsLoadingSections />}>
+        <AgentRunsContent />
+      </Suspense>
+    </PageShell>
+  );
+}
+
+async function AgentRunsContent() {
+  const apiBaseUrl = getApiBaseUrl();
+  const agentRuns = await loadDashboardAgentRuns(50);
+  const summaryCards = buildSummaryCards(agentRuns);
+  const latestFailedRun = agentRuns.find((run) => run.status !== "success") ?? null;
+  const latestEligibleRun =
+    agentRuns.find((run) => run.executionEligible === true) ?? null;
+  const runMixRows = buildRunMixRows(agentRuns);
+  const latestRunStartedAt = formatLatestTimestamp(
+    agentRuns.map((run) => run.startedAt)
+  );
+
+  return (
+    <>
       <Section kicker="Snapshot" title="Recent run health">
         <MetricGrid items={summaryCards} />
       </Section>
@@ -211,7 +226,30 @@ export default async function AgentRunsPage() {
           </tbody>
         </DataTable>
       </Section>
-    </PageShell>
+    </>
+  );
+}
+
+function AgentRunsLoadingSections() {
+  return (
+    <>
+      <LoadingSection kicker="Snapshot" title="Recent run health">
+        <MetricGridSkeleton count={5} />
+      </LoadingSection>
+      <LoadingSection kicker="Focus" title="What needs attention">
+        <DetailGridSkeleton count={2} />
+      </LoadingSection>
+      <LoadingSection kicker="Mix" title="Live, replay, and market breakdown">
+        <DetailGridSkeleton count={2} />
+      </LoadingSection>
+      <LoadingSection
+        kicker="Run Sample"
+        title="Latest 50 agent runs"
+        description="Loading planner run records from the dashboard read model."
+      >
+        <TableSkeleton columns={11} rows={7} />
+      </LoadingSection>
+    </>
   );
 }
 
